@@ -1,0 +1,768 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "baseUrl": "https://api.openai.com/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://platform.openai.com/api-keys",
+      "keyHint": "Starts with sk-; create one on OpenAI's API keys page.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, access-control-allow-origin echoes the origin, access-control-allow-headers authorization,content-type. GET /models preflight: HTTP 200, allow-origin *.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without). Lists every model on the account, including embedding, audio and image models, so filter by id."
+      },
+      "models": [
+        {
+          "id": "gpt-6-luna",
+          "label": "GPT-6 Luna",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: quick, reads your photos, and the cheapest here.",
+          "devNote": "OpenAI calls it its most efficient model for focused, high-volume tasks. Reasoning model with image input, and the cheapest current GPT-6."
+        },
+        {
+          "id": "gpt-6.1-terra",
+          "label": "GPT-6.1 Terra",
+          "inputPerM": 1.0,
+          "outputPerM": 5.0,
+          "vision": true,
+          "default": false,
+          "why": "A mid-priced step up for long reviews across many brews.",
+          "devNote": "Middle tier, for long multi-brew trend reviews when Luna's advice is too thin."
+        },
+        {
+          "id": "gpt-6.2-sol",
+          "label": "GPT-6.2 Sol",
+          "inputPerM": 2.0,
+          "outputPerM": 10.0,
+          "vision": true,
+          "default": false,
+          "why": "The most capable and the priciest here, for the hardest dial-in questions.",
+          "devNote": "OpenAI's pick for balancing intelligence and cost. Use it for the hardest dial-in questions."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices: Standard tier, prompts up to 272K tokens, from https://developers.openai.com/api/docs/pricing; models and image input from https://developers.openai.com/api/docs/models ('All latest OpenAI models support text and image input'). These are reasoning models: send max_completion_tokens instead of max_tokens (OpenAI's Chat Completions reference says max_tokens 'is now deprecated in favor of max_completion_tokens, and is not compatible with o-series models', and that parameter support differs 'particularly for newer reasoning models'; https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create), and leave temperature unset (OpenRouter's supported_parameters for openai/gpt-6-luna on 2026-11-17 list max_completion_tokens and reasoning_effort but not temperature). response_format json_schema (Structured Outputs) is supported. Images go in user content as {type:'image_url', image_url:{url:'data:image/jpeg;base64,...'}}. OpenAI's model pages document new models through the Responses API; Chat Completions still answers. Key prefix: sk-, and sk-proj- for project keys."
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic (Claude)",
+      "baseUrl": "https://api.anthropic.com/v1",
+      "api": "anthropic-messages",
+      "auth": "x-api-key",
+      "extraHeaders": {
+        "anthropic-version": "2026-10-21"
+      },
+      "browserHeaders": {
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      "keyUrl": "https://platform.claude.com/settings/keys",
+      "keyHint": "Starts with sk-ant-; API use is billed separately from a Claude.ai subscription.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /messages from https://coffee-test.vercel.app requesting x-api-key,anthropic-version,anthropic-dangerous-direct-browser-access,content-type on 2026-11-17: HTTP 200, access-control-allow-origin *. The same preflight without anthropic-dangerous-direct-browser-access fails: HTTP 400 'Disallowed CORS origin' with no allow-origin header (seen on /chat/completions, and re-checked on /messages on 2026-11-17: HTTP 400, 22-byte body, no allow-origin). A key-less POST /messages carrying the header answered 401 with access-control-allow-origin *; without the header the 401 had no allow-origin. So the browser header is mandatory. GET /models preflight with the header: HTTP 200, allow-origin *.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Send the same x-api-key, anthropic-version and browser header as chat. Returns data[] with id, display_name, max_input_tokens, max_tokens and capabilities."
+      },
+      "models": [
+        {
+          "id": "claude-haiku-5-5",
+          "label": "Claude Haiku 5.5",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: quick, reads your photos, and the cheapest Claude.",
+          "devNote": "Cheapest current Claude, with vision and a 1M context. Price rises to $0.50/$2.50 for prompts over 100K tokens. Adaptive thinking is on (default effort medium); send output_config.effort 'low' to keep analyses cheap."
+        },
+        {
+          "id": "claude-sonnet-5-5",
+          "label": "Claude Sonnet 5.5",
+          "inputPerM": 2.0,
+          "outputPerM": 10.0,
+          "vision": true,
+          "default": false,
+          "why": "A step up for long reviews across many brews, at a much higher price.",
+          "devNote": "Anthropic's 'best combination of speed and intelligence'. Step up for long multi-brew trend reviews."
+        },
+        {
+          "id": "claude-opus-5-5",
+          "label": "Claude Opus 5.5",
+          "inputPerM": 4.0,
+          "outputPerM": 20.0,
+          "vision": true,
+          "default": false,
+          "why": "The most capable Claude and the priciest; far more than a brew note needs.",
+          "devNote": "Anthropic's default recommendation for most workloads. Far more than a brew note needs; offer it for users who want it."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Native Messages API: POST {baseUrl}/messages with {model, max_tokens (required), system, messages:[{role, content:[{type:'text', text} | {type:'image', source:{type:'base64', media_type:'image/jpeg', data}}]}]}. Answer = content blocks of type 'text' (skip 'thinking' blocks). stop_reason 'max_tokens' means truncated, 'refusal' means declined. On anthropic-version 2026-10-21 the temperature, top_p and top_k parameters are removed and any of them returns HTTP 400, so never send them (https://platform.claude.com/docs/en/api/versioning). JSON output: output_config.format {type:'json_schema', schema}. A personal or service-account key not scoped to a workspace must also send anthropic-workspace-id. Why not Anthropic's OpenAI-compatible endpoint (https://api.anthropic.com/v1/chat/completions): Anthropic says it is 'primarily intended to test and compare model capabilities' and not production-ready; response_format accepts only json_schema with strict:true (json_object or text returns 400); temperature below 1 returns 400 on Claude 4.7 and later; prompt caching is unsupported (https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk; the old /docs/en/api/openai-sdk path still serves it). Prices: https://platform.claude.com/docs/en/about-claude/pricing; models: https://platform.claude.com/docs/en/about-claude/models/overview. Browser header background: https://simonwillison.net/2024/Aug/23/anthropic-dangerous-direct-browser-access/"
+    },
+    {
+      "id": "google-gemini",
+      "name": "Google Gemini",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://aistudio.google.com/apikey",
+      "keyHint": "A Google AI Studio key, usually starting with AIza; the models listed here have a free tier.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, Access-Control-Allow-Origin echoes the origin, Access-Control-Allow-Headers authorization,content-type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key. Google documents GET /models and GET /models/{id} on the OpenAI-compatible endpoint; without a key it returned 404."
+      },
+      "models": [
+        {
+          "id": "gemini-3.1-flash-lite",
+          "label": "Gemini 3.1 Flash-Lite",
+          "inputPerM": 0.25,
+          "outputPerM": 1.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: the cheapest here, reads your photos, and has a free tier.",
+          "devNote": "Cheapest stable Gemini text model with image input, and it has a free tier."
+        },
+        {
+          "id": "gemini-3.5-flash-lite",
+          "label": "Gemini 3.5 Flash-Lite",
+          "inputPerM": 0.3,
+          "outputPerM": 2.5,
+          "vision": true,
+          "default": false,
+          "why": "A newer Flash-Lite that costs a little more.",
+          "devNote": "Google: 'For any new projects, use our latest models: Gemini 4 Hydrogen or 3.5 Flash-Lite.' The cheaper of the two. Newer than 3.1, with dearer output."
+        },
+        {
+          "id": "gemini-4-hydrogen",
+          "label": "Gemini 4 Hydrogen",
+          "inputPerM": 1.5,
+          "outputPerM": 7.5,
+          "vision": true,
+          "default": false,
+          "why": "Google's newer Gemini 4 model for harder questions; the priciest here, with a free tier.",
+          "devNote": "Google's other pick for new projects: the efficient Gemini 4 model, with text, image, audio, video and PDF input and a free tier. Same price 3.8 Flash moves to on 2027-01-01."
+        },
+        {
+          "id": "gemini-3.8-flash",
+          "label": "Gemini 3.8 Flash",
+          "inputPerM": 0.75,
+          "outputPerM": 3.75,
+          "vision": true,
+          "default": false,
+          "why": "Stronger reasoning than Flash-Lite at a middle price, which Google plans to raise in January 2027.",
+          "devNote": "Stronger reasoning than Flash-Lite; Google now calls it its previous-generation Flash. Google lists a rise to $1.50/$7.50 from 2027-01-01."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Base URL as Google gives it (https://aistudio.google.com/docs/openai), which says OpenAI compatibility is 'still in beta'. Images: image_url with a base64 data URL. Structured output: response_format json_schema (Google shows it through the OpenAI SDK's parse helper). reasoning_effort maps to Gemini thinking levels (xhigh only on gemini-4-hydrogen); 'Reasoning cannot be turned off for Gemini 2.5 Pro, Gemini 3, or Gemini 4 models.' Gemini 4 Hydrogen's price and modalities are from the pricing and models pages and match OpenRouter's google/gemini-4-hydrogen listing on 2026-11-17; Gemini 4 Argon and Carbon have no free tier and are not listed here. Gemini 2.5 Pro and 2.5 Flash are deprecated and requests route to newer models from 2026-12-01. Prices: Standard paid tier from https://aistudio.google.com/docs/pricing (ai.google.dev/gemini-api/docs/pricing redirects there); stability from https://aistudio.google.com/docs/models."
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://openrouter.ai/settings/keys",
+      "keyHint": "Starts with sk-or-v1-; one key reaches models from every major lab, paid with prepaid credits.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 204, Access-Control-Allow-Origin *, Access-Control-Allow-Headers includes Authorization, Content-Type, HTTP-Referer and X-Title.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Public: HTTP 200 without a key (478 models on 2026-11-17). Each entry has pricing.prompt and pricing.completion in USD per token (multiply by 1,000,000) and architecture.input_modalities, so the app can show live prices and filter to image-capable models."
+      },
+      "models": [
+        {
+          "id": "openai/gpt-6-luna",
+          "label": "GPT-6 Luna (via OpenRouter)",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: quick, reads your photos, and the cheapest here.",
+          "devNote": "Cheapest model here at the maker's own price, with image input and structured outputs."
+        },
+        {
+          "id": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5 (via OpenRouter)",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "Claude's quick model at the same low price; reads your photos.",
+          "devNote": "Same price as Luna through OpenRouter's OpenAI format, so no separate Anthropic wire format is needed. Note the dot in this id."
+        },
+        {
+          "id": "google/gemini-3.1-flash-lite",
+          "label": "Gemini 3.1 Flash-Lite (via OpenRouter)",
+          "inputPerM": 0.25,
+          "outputPerM": 1.5,
+          "vision": true,
+          "default": false,
+          "why": "Google's low-cost model; reads your photos and costs a little more.",
+          "devNote": "Google's cheap stable vision model."
+        },
+        {
+          "id": "z-ai/glm-5.3-flash",
+          "label": "GLM-5.3 Flash (via OpenRouter)",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "Low-cost and reads your photos; the model this app was first tested with.",
+          "devNote": "The Android app's current default model. $0.15/$0.50 is Z.AI's own price; quantised hosts on OpenRouter charge as little as $0.04/$0.08."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices shown are the model maker's own endpoint price from https://openrouter.ai/api/v1/models/{id}/endpoints on 2026-11-17. OpenRouter may route a request to another host at a different price (GLM-5.3 Flash ranged from $0.04/$0.08 on fp4 hosts to $0.225/$0.75), so read prices from /models at run time if cost matters. Optional attribution headers HTTP-Referer and X-Title pass CORS. Model ids differ from the makers' own (anthropic/claude-haiku-5.5, not claude-haiku-5-5)."
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "baseUrl": "https://api.deepseek.com",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://platform.deepseek.com/api_keys",
+      "keyHint": "Starts with sk-; DeepSeek is prepaid, so top up a balance before the key works.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, access-control-allow-origin echoes the origin, access-control-allow-credentials true, access-control-allow-methods POST, allow-headers authorization,content-type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without). The base URL has no /v1, so the path is https://api.deepseek.com/models."
+      },
+      "models": [
+        {
+          "id": "deepseek-flash",
+          "label": "DeepSeek V4.1 Flash",
+          "inputPerM": 0.3,
+          "outputPerM": 1.2,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost and reads your photos; half price outside DeepSeek's busy hours.",
+          "devNote": "DeepSeek-V4.1-Flash-1017: vision, JSON output, 1M context. Price shown is peak; off-peak is half ($0.15/$0.60). Peak is 01:00-04:00 and 06:00-10:00 UTC, Monday to Friday."
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "label": "DeepSeek V4 Pro",
+          "inputPerM": 1.32,
+          "outputPerM": 3.96,
+          "vision": false,
+          "default": false,
+          "why": "Stronger reasoning at a higher price, but it can't see photos.",
+          "devNote": "Stronger reasoning, no image input. Peak price shown; half off-peak."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "From https://api-docs.deepseek.com/quick_start/pricing: send model 'deepseek-flash'. The old names deepseek-v4-flash and deepseek-v4-flash-vision-exp still work, but those models are retired and requests go to V4.1 Flash at the Flash price. Thinking mode is on by default; the reasoning arrives in reasoning_content, which should not be shown as the answer. Weekends and Chinese public holidays are off-peak all day. DeepSeek also offers an Anthropic-format endpoint at https://api.deepseek.com/anthropic."
+    },
+    {
+      "id": "xai",
+      "name": "xAI (Grok)",
+      "baseUrl": "https://api.x.ai/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://console.x.ai",
+      "keyHint": "Starts with xai-; create one in the xAI Console under API keys.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, access-control-allow-origin *, access-control-allow-headers *, access-control-allow-methods *.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without)."
+      },
+      "models": [
+        {
+          "id": "grok-4.3",
+          "label": "Grok 4.3",
+          "inputPerM": 1.25,
+          "outputPerM": 2.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: the lowest-priced general Grok, and it reads your photos.",
+          "devNote": "Cheapest general Grok with image input and structured outputs (grok-build-0.1 is cheaper at $1/$2 but is a coding model). Reasoning effort none to xhigh, default low."
+        },
+        {
+          "id": "grok-4.20-0309-non-reasoning",
+          "label": "Grok 4.20 (non-reasoning)",
+          "inputPerM": 1.25,
+          "outputPerM": 2.5,
+          "vision": true,
+          "default": false,
+          "why": "Same price, with faster replies because it skips the thinking step.",
+          "devNote": "Same price, no thinking, so faster replies."
+        },
+        {
+          "id": "grok-4.7",
+          "label": "Grok 4.7",
+          "inputPerM": 2.0,
+          "outputPerM": 6.0,
+          "vision": true,
+          "default": false,
+          "why": "xAI's most capable model, at a higher price.",
+          "devNote": "xAI's flagship and its recommendation for everything except media."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices are for prompts under 200K tokens (double above, for every token in the request), from https://docs.x.ai/docs/models on 2026-11-17. Image input: grok-4.3's own page (https://docs.x.ai/docs/models/grok-4.3) says text and image in, text out; the overview table has no modality column, so image support for grok-4.20-0309-non-reasoning and grok-4.7 follows OpenRouter's x-ai listings (text, image, file). xAI now labels Chat Completions a legacy endpoint ('New features will come to the Responses API first', https://docs.x.ai/developers/model-capabilities/legacy/chat-completions) but still documents it at https://api.x.ai/v1/chat/completions."
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://console.groq.com/keys",
+      "keyHint": "Starts with gsk_; create one in the GroqCloud console under API Keys.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 204, access-control-allow-origin *, access-control-allow-headers authorization,content-type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without)."
+      },
+      "models": [
+        {
+          "id": "openai/gpt-oss-120b",
+          "label": "GPT-OSS 120B",
+          "inputPerM": 0.15,
+          "outputPerM": 0.6,
+          "vision": false,
+          "default": true,
+          "why": "A good everyday pick: cheap and very fast, but it can't see photos.",
+          "devNote": "Cheap, very fast open-weight reasoning model. Text only."
+        },
+        {
+          "id": "openai/gpt-oss-20b",
+          "label": "GPT-OSS 20B",
+          "inputPerM": 0.075,
+          "outputPerM": 0.3,
+          "vision": false,
+          "default": false,
+          "why": "Half the price, but a smaller model that is weaker at comparing several brews.",
+          "devNote": "Half the price, but a smaller model that is weaker at multi-brew reasoning."
+        },
+        {
+          "id": "qwen/qwen3.8-27b",
+          "label": "Qwen3.8 27B (preview)",
+          "inputPerM": 0.8,
+          "outputPerM": 4.0,
+          "vision": true,
+          "default": false,
+          "why": "The only one here that can see photos; it costs more and is a preview Groq may withdraw.",
+          "devNote": "The only Groq chat model that takes images (up to 3 per request, each counted as 2,048 input tokens). Preview: Groq says previews may be discontinued at short notice."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "From https://console.groq.com/docs/models on 2026-11-17: no production model accepts images. The preview qwen/qwen3.8-27b does ('Text, images' input and a Vision capability on https://console.groq.com/docs/model/qwen/qwen3.8-27b), so photo feedback on Groq means that preview model or another provider. llama-3.1-8b-instant and llama-3.3-70b-versatile now show 'Contact sales' instead of a price."
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "baseUrl": "https://api.mistral.ai/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://console.mistral.ai/api-keys",
+      "keyHint": "A random string with no fixed start; create one in Mistral's console under API keys.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, access-control-allow-origin *, access-control-allow-headers include Authorization, Content-Type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without)."
+      },
+      "models": [
+        {
+          "id": "mistral-small-2603",
+          "label": "Mistral Small 4",
+          "inputPerM": 0.15,
+          "outputPerM": 0.6,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost and reads your photos.",
+          "devNote": "One model for instruct, reasoning and coding, with image input and structured outputs. Alias mistral-small-latest."
+        },
+        {
+          "id": "ministral-8b-2512",
+          "label": "Ministral 3 8B",
+          "inputPerM": 0.15,
+          "outputPerM": 0.15,
+          "vision": true,
+          "default": false,
+          "why": "The cheapest here and it reads your photos, but it is a small model.",
+          "devNote": "Cheapest output with text and vision, but a small model. Alias ministral-8b-latest."
+        },
+        {
+          "id": "mistral-large-4",
+          "label": "Mistral Large 4",
+          "inputPerM": 0.7,
+          "outputPerM": 2.1,
+          "vision": true,
+          "default": false,
+          "why": "Mistral's most capable model, for harder questions at a higher price.",
+          "devNote": "Mistral's multimodal flagship, 1M context. Alias mistral-large-latest."
+        },
+        {
+          "id": "zai-glm-5-3-flash",
+          "label": "GLM-5.3 Flash (on Mistral)",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "Low-cost and reads your photos; the model this app was first tested with.",
+          "devNote": "Z.ai's GLM-5.3 Flash hosted by Mistral; Mistral's model page calls it multimodal."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Ids and prices from each model card under https://docs.mistral.ai/models/ (for example /models/mistral-small-4-0-26-03). https://mistral.ai/pricing shows an unversioned 'Mistral Large' at $0.50/$1.50. That matches Mistral Large 3 (mistral-large-2512, $0.50/$1.50 on OpenRouter), not Large 4: the Large 4 card says $0.70/$2.10, and OpenRouter lists mistralai/mistral-large-4-0 at $0.70/$2.10 too. Exact ids come from each card's copy badge: mistral-small-2603 (alias mistral-small-latest), ministral-8b-2512 (ministral-8b-latest), mistral-large-4 (also mistral-large-4-0, mistral-large-latest) and zai-glm-5-3-flash. GLM-5.3 Flash on Mistral: $0.15 in, $0.50 out. Mistral Medium 3.5 is deprecated (2026-10-31)."
+    },
+    {
+      "id": "together",
+      "name": "Together AI",
+      "baseUrl": "https://api.together.xyz/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://api.together.ai/settings/api-keys",
+      "keyHint": "Create one in Together's dashboard under Settings > API keys.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, Access-Control-Allow-Origin *, access-control-allow-headers authorization,content-type, methods POST,OPTIONS.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without). Accept either a bare JSON array or {data:[...]}."
+      },
+      "models": [
+        {
+          "id": "zai-org/GLM-5.3-Flash",
+          "label": "GLM-5.3 Flash",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost, reads your photos, and the model this app was first tested with.",
+          "devNote": "Same model as the Android app's default. Together's model page lists text and image input."
+        },
+        {
+          "id": "nvidia/NVIDIA-Nemotron-3.5-Super-VL",
+          "label": "Nemotron 3.5 Super VL",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "Another low-cost model that reads your photos, at the same price.",
+          "devNote": "Listed in Together's vision models; same price."
+        },
+        {
+          "id": "openai/gpt-oss-120b",
+          "label": "GPT-OSS 120B",
+          "inputPerM": 0.15,
+          "outputPerM": 0.6,
+          "vision": false,
+          "default": false,
+          "why": "Low-cost and good at reasoning, but it can't see photos.",
+          "devNote": "Open-weight reasoning model, text only."
+        },
+        {
+          "id": "deepseek-ai/DeepSeek-V4.1-Flash",
+          "label": "DeepSeek V4.1 Flash",
+          "inputPerM": 0.3,
+          "outputPerM": 1.2,
+          "vision": false,
+          "default": false,
+          "why": "DeepSeek's quick model at about twice the price; here it can't see photos.",
+          "devNote": "DeepSeek at DeepSeek's peak price with no off-peak discount; Together does not list it among vision models."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices from https://www.together.ai/pricing; model strings from https://docs.together.ai/docs/serverless-models; GLM-5.3 Flash modalities (text and image in) from https://www.together.ai/models/glm-5-3-flash. That page still shows a 'Launching soon' waitlist, but the model is in the serverless chat table at $0.15/$0.50, and OpenRouter listed Together as a live GLM-5.3 Flash host (100% uptime over the last day) on 2026-11-17. Together's docs vision table does not list GLM-5.3 Flash, so image input on Together is from the model page only."
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "baseUrl": "https://api.fireworks.ai/inference/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://app.fireworks.ai/settings/users/api-keys",
+      "keyHint": "Starts with fw_; create one in the Fireworks app under Settings > API Keys.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 200, Access-Control-Allow-Origin *, Access-Control-Allow-Headers Authorization, Content-Type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without)."
+      },
+      "models": [
+        {
+          "id": "accounts/fireworks/models/glm-5p3-flash",
+          "label": "GLM-5.3 Flash",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost, reads your photos, and the model this app was first tested with.",
+          "devNote": "Same model as the Android app's default; Fireworks calls it natively multimodal and lists it among serverless vision models."
+        },
+        {
+          "id": "accounts/fireworks/models/deepseek-v4p1-flash",
+          "label": "DeepSeek V4.1 Flash",
+          "inputPerM": 0.3,
+          "outputPerM": 1.2,
+          "vision": true,
+          "default": false,
+          "why": "DeepSeek's quick model; reads your photos and costs about twice as much.",
+          "devNote": "Vision-capable; Fireworks spot pricing is $0.21/$0.84."
+        },
+        {
+          "id": "accounts/fireworks/models/gpt-oss-120b",
+          "label": "GPT-OSS 120B",
+          "inputPerM": 0.15,
+          "outputPerM": 0.6,
+          "vision": false,
+          "default": false,
+          "why": "Low-cost and good at reasoning, but it can't see photos.",
+          "devNote": "Open-weight reasoning model, text only."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices from https://fireworks.ai/pricing (Standard mode). Model ids are full paths, read from each model page's 'Ready model path' (for example https://fireworks.ai/models/fireworks/glm-5p3-flash)."
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "baseUrl": "https://api.perplexity.ai/orchestrator/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://www.perplexity.ai/account/api/keys",
+      "keyHint": "Starts with pplx-; create one in Perplexity's API settings.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /orchestrator/v1/chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 204, access-control-allow-origin *, access-control-allow-headers include Authorization and Content-Type.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Needs the key (401 without)."
+      },
+      "models": [
+        {
+          "id": "perplexity/glm-5.3-flash",
+          "label": "GLM-5.3 Flash (Perplexity)",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost, reads your photos, and works on a new account.",
+          "devNote": "Cheapest model a new account (usage tier 0) can call."
+        },
+        {
+          "id": "openai/gpt-6-luna",
+          "label": "GPT-6 Luna (Perplexity)",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "A little cheaper, but Perplexity unlocks it only after you have bought $50 of credit.",
+          "devNote": "Cheaper, but needs usage tier 1."
+        },
+        {
+          "id": "google/gemini-3.5-flash-lite",
+          "label": "Gemini 3.5 Flash-Lite (Perplexity)",
+          "inputPerM": 0.3,
+          "outputPerM": 2.5,
+          "vision": true,
+          "default": false,
+          "why": "Google's low-cost model; works on a new account and costs more.",
+          "devNote": "Available at tier 0."
+        },
+        {
+          "id": "anthropic/claude-haiku-5-5",
+          "label": "Claude Haiku 5.5 (Perplexity)",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "Claude's quick, low-cost model; unlocked only after you have bought $50 of credit.",
+          "devNote": "Claude in OpenAI format; needs usage tier 1. $0.50/$2.50 above 100K-token prompts."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Uses Perplexity's Orchestrator, an OpenAI Chat Completions-shaped gateway to other labs' models (https://docs.perplexity.ai/api-reference/gateway-chat-completions-post.md): image_url parts are accepted; response_format text, json_object or json_schema (json_schema is always strict); max_tokens is a deprecated alias of max_completion_tokens; unsupported parameters such as seed return 400. Models and tiers from https://docs.perplexity.ai/docs/orchestrator/models.md, which does not list per-model image support, so vision flags follow the upstream model. A model above the organisation's tier returns HTTP 402. New organisations start at Tier 0; Tier 1 needs $50 and Tier 2 $250 in lifetime credit purchases (https://docs.perplexity.ai/docs/admin/rate-limits-usage-tiers.md). Perplexity's own web-search Sonar models answer at https://api.perplexity.ai/chat/completions (CORS also open) with extra search fees; Perplexity now points Sonar users to its Agent API."
+    },
+    {
+      "id": "commandcode",
+      "name": "Command Code",
+      "baseUrl": "https://api.commandcode.ai/provider/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://commandcode.ai/studio",
+      "keyHint": "Create one in Command Code Studio under API keys; you may need the $15 a month Provider plan.",
+      "browserCors": "yes",
+      "corsEvidence": "OPTIONS /chat/completions from https://coffee-test.vercel.app on 2026-11-17: HTTP 204, Access-Control-Allow-Origin *, Access-Control-Allow-Headers Content-Type,Authorization, Access-Control-Max-Age 86400.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Public: HTTP 200 without a key (104 models on 2026-11-17), so it cannot prove a key works. Each entry has supported_endpoints; Claude models are /messages-only. No prices in the response."
+      },
+      "models": [
+        {
+          "id": "z-ai/glm-5.3-flash",
+          "label": "GLM-5.3 Flash",
+          "inputPerM": 0.15,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": true,
+          "why": "A good everyday pick: low-cost, reads your photos, and the model this app was first tested with.",
+          "devNote": "The Android app's current default, already tested with its prompts. GPT-6 Luna is $0.05 cheaper on input but untested with the app's request shape."
+        },
+        {
+          "id": "deepseek/deepseek-v4.1-flash",
+          "label": "DeepSeek V4.1 Flash",
+          "inputPerM": 0.3,
+          "outputPerM": 1.2,
+          "vision": true,
+          "default": false,
+          "why": "DeepSeek's quick model; about twice the price, or half that outside its busy hours.",
+          "devNote": "Peak price shown; $0.15/$0.60 off-peak (peak is 01-04 and 06-10 UTC, Monday to Friday)."
+        },
+        {
+          "id": "xiaomi/mimo-v2.6-pro",
+          "label": "MiMo V2.6 Pro",
+          "inputPerM": 0.435,
+          "outputPerM": 0.87,
+          "vision": true,
+          "default": false,
+          "why": "A stronger model from Xiaomi; costs a little more, still well under a cent per analysis.",
+          "devNote": "Pro tier, still well under a cent per analysis."
+        },
+        {
+          "id": "gpt-6-luna",
+          "label": "GPT-6 Luna",
+          "inputPerM": 0.1,
+          "outputPerM": 0.5,
+          "vision": true,
+          "default": false,
+          "why": "OpenAI's quick model; reads your photos and is slightly cheaper.",
+          "devNote": "Cheapest input here, with image input; listed for /chat/completions on Command Code."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Prices from Pricing & Limits (https://commandcode.ai/docs/enterprise) on 2026-11-17, unchanged from the app's 2026-09-27 values. Endpoints from https://commandcode.ai/docs/provider-api: POST /chat/completions, POST /responses, POST /messages (Anthropic format; x-api-key also accepted there) and GET /models; requests may include images, while audio, file and document parts are rejected. Vision flags follow the upstream model (GLM-5.3 Flash is natively multimodal; DeepSeek V4.1 Flash supports vision per DeepSeek; MiMo V2.6 Pro is tagged multimodal and vision-language on Xiaomi's own Hugging Face repos, and OpenRouter lists text, image, video and audio input for it; unlike the text-only MiMo V2.5 Pro). Command Code does not block images sent to a text-only model; the upstream returns its own error. Key access: Pricing & Limits lists Provider API access only on the $15/month Provider plan; the Provider API docs say every plan except Go has access (Go gets 403 upgrade_required)."
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama (on this computer)",
+      "baseUrl": "http://localhost:11434/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://ollama.com/download",
+      "keyHint": "No key needed; Ollama only answers on the computer it is running on.",
+      "browserCors": "no",
+      "corsEvidence": "Not testable here on 2026-11-17 (no server running). Ollama's FAQ (https://docs.ollama.com/faq): cross-origin requests are allowed from 127.0.0.1 and 0.0.0.0 by default; any other origin, such as the hosted web app, must be added with OLLAMA_ORIGINS and Ollama restarted.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Lists the models the user has pulled (https://docs.ollama.com/api/openai-compatibility)."
+      },
+      "models": [
+        {
+          "id": "ornith-1.5:9b",
+          "label": "Ornith 1.5 9B",
+          "inputPerM": null,
+          "outputPerM": null,
+          "vision": true,
+          "default": true,
+          "why": "A popular model that reads photos and runs free on your own computer; download it in Ollama first.",
+          "devNote": "Suggestion only: 489.5K pulls on 2026-11-17, the most of any vision and thinking model in Ollama's vision list that comes in a 9B size. Its tags are 9b, 35b, 122b and 397b with no 'latest', so the size tag is required (plain 'ornith-1.5' will not resolve). Use whatever /models returns."
+        },
+        {
+          "id": "mimo-v2.6",
+          "label": "MiMo V2.6 9B",
+          "inputPerM": null,
+          "outputPerM": null,
+          "vision": true,
+          "default": false,
+          "why": "A small Xiaomi model that reads photos and runs free on your own computer; download it in Ollama first.",
+          "devNote": "Suggestion only: Xiaomi's MiMo-V2.6-Distill-Qwen-9B, text and image input with thinking and tools; 'latest' is the 9B build."
+        }
+      ],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "http://localhost only. Free; speed and quality depend on the computer. Images must be base64 data URLs (remote image URLs are not supported). From a hosted https page, Chrome 142 and later asks the user for Local Network Access permission before calling localhost (https://developer.chrome.com/blog/local-network-access). A phone's localhost is the phone, not the PC. Ollama Cloud (https://ollama.com/v1, real key required) is not covered here. Model suggestions from https://ollama.com/search?c=vision. Key: the local server requires a value but ignores it, so 'ollama' works."
+    },
+    {
+      "id": "lm-studio",
+      "name": "LM Studio (on this computer)",
+      "baseUrl": "http://localhost:1234/v1",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "https://lmstudio.ai/download",
+      "keyHint": "No key needed unless Require Authentication is on in LM Studio; then paste the token it shows.",
+      "browserCors": "no",
+      "corsEvidence": "Not testable here on 2026-11-17 (no server running). LM Studio's server settings (https://lmstudio.ai/docs/developer/core/server/settings) have an 'Enable CORS' switch that must be turned on before a web app on another origin can call it.",
+      "listModels": {
+        "path": "/models",
+        "works": true,
+        "note": "Lists the models downloaded in LM Studio (https://lmstudio.ai/docs/developer/openai-compat)."
+      },
+      "models": [],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "http://localhost only; 1234 is the port LM Studio's docs use. Free. Chat Completions accepts text and images. Pick a model from /models; there is no fixed catalogue. Same browser rules as Ollama: Chrome 142 and later asks for Local Network Access permission when a hosted page calls localhost."
+    },
+    {
+      "id": "custom",
+      "name": "Custom (OpenAI-compatible)",
+      "baseUrl": "",
+      "api": "openai-chat",
+      "auth": "bearer",
+      "extraHeaders": {},
+      "browserHeaders": {},
+      "keyUrl": "",
+      "keyHint": "The key your service gives you; it is sent only to the address you enter.",
+      "browserCors": "unknown",
+      "corsEvidence": "Depends on the server. The web app can only call it if an OPTIONS preflight for POST {baseUrl}/chat/completions with authorization,content-type returns an access-control-allow-origin that matches the app.",
+      "listModels": {
+        "path": "/models",
+        "works": false,
+        "note": "Not guaranteed. Most OpenAI-compatible servers answer GET /models, but if it fails let the user type a model id."
+      },
+      "models": [],
+      "pricesCheckedOn": "2026-11-17",
+      "notes": "Any service that speaks POST {baseUrl}/chat/completions in the OpenAI format, for example a company gateway or a self-hosted server. Prices are unknown, so show token counts without a cost. The key is sent as 'Authorization: Bearer <key>' to the address the user enters, and nowhere else."
+    }
+  ]
+}

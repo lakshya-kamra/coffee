@@ -1,0 +1,176 @@
+/* App shell: keep-alive tab layers, the detail layer, the bottom bar (web-spec §6.3–6.7). */
+
+.tabs {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-tabs);
+}
+/* Covered by an opaque detail: stop painting the tabs entirely. */
+.tabs[data-covered="true"] { visibility: hidden; }
+
+/* One scroll layer per tab. The body never scrolls (base.css), so viewport coordinates equal
+   page coordinates for layout measurement and pull-to-refresh never reloads a running brew. */
+.layer {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  contain: layout paint;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+/* Layers start hidden until transitions.ts marks one active; not display:none (keeps scroll
+   position and layout), not <Activity> (it would tear down live subscriptions). */
+.layer[data-hidden], .layer:not([data-state]) {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* The incoming layer sits over the leaving one, so taps reach only it during the fade. This is
+   the only rule on data-state, and it is on the layer itself: a change of data-state alone
+   (active → leaving) must not restyle the layer's contents (see setLayerState). */
+.layer[data-state="active"] { z-index: 1; }
+/* Infinite animations inside a hidden tab stop costing frames. */
+.layer[data-hidden] * { animation-play-state: paused !important; }
+
+.screen {
+  padding-bottom: var(--list-bottom-pad);
+  min-height: 100%;
+}
+
+/* Details sit above the bar; each is an opaque scroll layer with its own canvas. */
+.details {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-details);
+  pointer-events: none;
+}
+.detail {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  background: var(--bg);
+  pointer-events: auto;
+}
+.detail[data-covered="true"] { visibility: hidden; }
+/* Recipe detail with the shared header: the canvas fades in behind content that is not faded,
+   so the flying header stays fully visible. */
+.detail[data-backdrop="true"] { background: transparent; }
+.detailBackdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: -1;
+}
+.detailContent { position: relative; min-height: 100%; }
+
+/* ---------------------------------------------------------------- bottom bar */
+.barScrim {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--bottom-bar-h) + 40px + env(safe-area-inset-bottom));
+  z-index: var(--z-bar);
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg) 70%);
+}
+.barWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  z-index: var(--z-bar);
+  pointer-events: none;
+}
+.bar {
+  position: relative;
+  pointer-events: auto;
+  height: var(--bottom-bar-h);
+  border-radius: var(--r-nav);
+  background: var(--bar);
+  border: 1px solid var(--bar-border);
+  padding: 4px;
+}
+.barItems {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: 100%;
+}
+.barTrack { position: absolute; inset: 0; pointer-events: none; }
+.barPill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: calc(var(--r-nav) - 4px);
+  background: rgb(from var(--ink-high) r g b / 0.1);
+  will-change: transform;
+}
+:root[data-theme="light"] .barPill { background: rgb(from var(--ink-high) r g b / 0.06); }
+@supports not (color: rgb(from red r g b)) {
+  .barPill { background: var(--surface3); }
+}
+.barItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--bottom-bar-item);
+  color: var(--ink-low);
+  text-decoration: none;
+  transition: color 160ms var(--ease-emphasized);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.barItem[aria-current="page"] { color: var(--ink-high); }
+.barIcon { display: flex; }
+.barItem .barLabel { letter-spacing: 0.2px; }
+
+/* ---------------------------------------------------------------- notices */
+.toast {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--bottom-bar-h) + 24px + env(safe-area-inset-bottom));
+  z-index: var(--z-toast);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 var(--gutter);
+}
+.toastBody {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: var(--column-max);
+  width: 100%;
+  padding: 10px 10px 10px 16px;
+  border-radius: var(--r-button);
+  background: var(--inverse);
+  color: var(--on-inverse);
+}
+.toastText { flex: 1; }
+.toastAction {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--r-well);
+  color: var(--on-inverse);
+  font-weight: 700;
+}
+
+.fatal {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--ink-mid);
+}

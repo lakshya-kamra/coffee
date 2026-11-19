@@ -1,0 +1,220 @@
+{
+  "$comment": "Expected result of reading coffee-brew-log-1-sample.json (backup-v2 section 'Older files'). uid = 'legacy-' + first 16 hex of SHA-256('<exportedAt as written>|<bean|grinder|brew>|<id>'). Both apps must produce these values; the afterLinking block is what the catalog linker then sets.",
+  "exportedAtAsWritten": "2026-11-17T09:41:07.123456Z",
+  "beans": [
+    {
+      "uid": "legacy-bcf423451d822f64",
+      "name": "Red Brick",
+      "roaster": "Square Mile",
+      "origin": "Blend",
+      "varietal": "",
+      "processId": "washed",
+      "roastLevelId": "medium-light",
+      "roastedOn": "2026-10-29",
+      "tastingNotes": "Chocolate, plum"
+    },
+    {
+      "uid": "legacy-8512fb8aa081666a",
+      "name": "Kayon Mountain",
+      "roaster": "Tim Wendelboe",
+      "origin": "Ethiopia",
+      "varietal": "Heirloom",
+      "processId": "natural",
+      "roastLevelId": "light",
+      "roastedOn": null,
+      "tastingNotes": ""
+    },
+    {
+      "uid": "legacy-122513beae541bff",
+      "name": "La Esperanza",
+      "roaster": "",
+      "origin": "CO",
+      "varietal": "",
+      "processId": "carbonic-maceration",
+      "roastLevelId": "",
+      "roastedOn": null,
+      "tastingNotes": "Says \"NaN\" on the bag"
+    }
+  ],
+  "grinders": [
+    {
+      "uid": "legacy-87eb3772d7626988",
+      "brand": "1Zpresso",
+      "model": "K-Ultra",
+      "burr": "conical",
+      "setting": {
+        "style": "clicks",
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 10,
+        "micronsPerStep": null,
+        "dialFormat": ""
+      }
+    },
+    {
+      "uid": "legacy-be198e983d9440fb",
+      "brand": "Baratza",
+      "model": "Encore",
+      "burr": "conical",
+      "setting": {
+        "style": "numbers",
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialFormat": ""
+      }
+    },
+    {
+      "uid": "legacy-68bc03536cafdd40",
+      "brand": "Hand-me-down",
+      "model": "Blade grinder",
+      "burr": "blade",
+      "setting": {
+        "style": "stepless",
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialFormat": ""
+      }
+    }
+  ],
+  "brews": [
+    {
+      "uid": "legacy-5f646eac0e0c02fd",
+      "startedAt": "2026-11-10T07:12:30.500Z",
+      "recipeId": "hoffmann-v60",
+      "brewerId": "hario-v60-02",
+      "brewerLabel": "Hario V60",
+      "beanUid": "legacy-bcf423451d822f64",
+      "grinderUid": "legacy-87eb3772d7626988",
+      "grindClicks": 77,
+      "grindValue": null,
+      "doseG": 30,
+      "waterG": 500,
+      "tempC": 95,
+      "tdsPercent": 1.38,
+      "extractionYield": 20.8,
+      "flow": "on-target",
+      "bed": {
+        "shape": "flat",
+        "surface": "light",
+        "channelling": "none",
+        "notes": ""
+      },
+      "overall": 8,
+      "updatedAt": null,
+      "isFavourite": false
+    },
+    {
+      "uid": "legacy-728c126e0e661542",
+      "startedAt": "2026-11-12T08:01:00.000Z",
+      "recipeId": "kasuya-46",
+      "brewerId": "hario-v60-02",
+      "brewerLabel": "V60",
+      "beanUid": "legacy-8512fb8aa081666a",
+      "grinderUid": "legacy-be198e983d9440fb",
+      "grindClicks": null,
+      "grindValue": null,
+      "doseG": 20,
+      "waterG": 300,
+      "tempC": 92,
+      "tdsPercent": null,
+      "extractionYield": null,
+      "flow": "fast",
+      "bed": {
+        "shape": "domed",
+        "surface": "none",
+        "channelling": "suspected",
+        "notes": "Fast at the end"
+      },
+      "overall": 6,
+      "updatedAt": null,
+      "isFavourite": false
+    },
+    {
+      "uid": "legacy-cdded278a3f9a562",
+      "startedAt": "2026-11-14T18:30:45.250Z",
+      "recipeId": "",
+      "brewerId": "french-press",
+      "brewerLabel": "French Press",
+      "beanUid": null,
+      "grinderUid": "legacy-68bc03536cafdd40",
+      "grindClicks": null,
+      "grindValue": null,
+      "doseG": 18.5,
+      "waterG": 300,
+      "tempC": 96,
+      "tdsPercent": null,
+      "extractionYield": null,
+      "flow": null,
+      "bed": {
+        "shape": "muddy",
+        "surface": "heavy",
+        "channelling": null,
+        "notes": ""
+      },
+      "overall": 4,
+      "updatedAt": null,
+      "isFavourite": false,
+      "notes": "Note with NaN and Infinity typed in it"
+    },
+    {
+      "uid": "legacy-34b211997f289aa9",
+      "startedAt": "2026-11-16T06:45:00.000Z",
+      "recipeId": "hedrick-espresso",
+      "brewerId": "espresso-machine",
+      "brewerLabel": "Espresso",
+      "beanUid": null,
+      "grinderUid": null,
+      "grindClicks": null,
+      "grindValue": null,
+      "doseG": 18,
+      "waterG": 45,
+      "tempC": 93,
+      "tdsPercent": null,
+      "extractionYield": null,
+      "flow": "stalled",
+      "bed": {
+        "shape": "sinkhole",
+        "surface": null,
+        "channelling": "obvious",
+        "notes": "Puck had a hole."
+      },
+      "overall": 0,
+      "updatedAt": null,
+      "isFavourite": false
+    }
+  ],
+  "afterLinking": {
+    "grinders": {
+      "legacy-87eb3772d7626988": "1zpresso-k-ultra",
+      "legacy-be198e983d9440fb": "baratza-encore",
+      "legacy-68bc03536cafdd40": null
+    },
+    "beans": {
+      "legacy-bcf423451d822f64": {
+        "roasterId": "square-mile",
+        "originId": null
+      },
+      "legacy-8512fb8aa081666a": {
+        "roasterId": "tim-wendelboe",
+        "originId": "ethiopia"
+      },
+      "legacy-122513beae541bff": {
+        "roasterId": null,
+        "originId": "colombia"
+      }
+    },
+    "pendingNotices": [
+      "grinder-scale:legacy-87eb3772d7626988"
+    ]
+  }
+}

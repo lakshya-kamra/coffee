@@ -1,0 +1,15 @@
+# Allow-list: only the web app and the shared data it reads are uploaded to Vercel.
+# Android sources (app/, gradle/), build output and the research archive never leave the repo.
+/*
+!/web
+!/shared
+!/vercel.json
+!/.vercelignore
+/web/node_modules
+/web/dist
+/web/.vite
+/web/test-results
+**/build
+/docs/plan/research-results.json
+/app
+/gradle

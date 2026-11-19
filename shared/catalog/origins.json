@@ -1,0 +1,1305 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "origins": [
+    {
+      "id": "ethiopia",
+      "country": "Ethiopia",
+      "iso2": "ET",
+      "area": "Africa",
+      "growingRegions": [
+        "Yirgacheffe",
+        "Gedeb",
+        "Kochere",
+        "Guji",
+        "Hambela",
+        "Shakiso",
+        "Uraga",
+        "Sidama",
+        "Bensa",
+        "Harrar",
+        "Limu",
+        "Jimma",
+        "Agaro",
+        "Gera",
+        "Kaffa",
+        "Bench Maji (Bench Sheko)",
+        "Gesha (Gori Gesha)",
+        "Bale",
+        "West Arsi",
+        "Nensebo",
+        "Lekempti (Nekemte)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "anaerobic-natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "ethiopian-landrace",
+        "74110",
+        "74112",
+        "74158",
+        "kurume",
+        "wolisho",
+        "dega",
+        "gesha"
+      ]
+    },
+    {
+      "id": "kenya",
+      "country": "Kenya",
+      "iso2": "KE",
+      "area": "Africa",
+      "growingRegions": [
+        "Nyeri",
+        "Kirinyaga",
+        "Murang'a",
+        "Embu",
+        "Kiambu",
+        "Meru",
+        "Tharaka Nithi",
+        "Thika",
+        "Machakos",
+        "Kisii",
+        "Nakuru",
+        "Bungoma (Mount Elgon)"
+      ],
+      "commonProcesses": [
+        "kenyan-washed",
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "sl28",
+        "sl34",
+        "ruiru-11",
+        "batian",
+        "k7",
+        "blue-mountain"
+      ]
+    },
+    {
+      "id": "rwanda",
+      "country": "Rwanda",
+      "iso2": "RW",
+      "area": "Africa",
+      "growingRegions": [
+        "Nyamasheke",
+        "Rusizi",
+        "Karongi",
+        "Rutsiro",
+        "Huye",
+        "Nyamagabe",
+        "Nyaruguru",
+        "Gakenke",
+        "Rulindo"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "red-bourbon",
+        "bourbon-mayaguez",
+        "jackson",
+        "mibirizi"
+      ]
+    },
+    {
+      "id": "burundi",
+      "country": "Burundi",
+      "iso2": "BI",
+      "area": "Africa",
+      "growingRegions": [
+        "Kayanza",
+        "Ngozi",
+        "Muramvya",
+        "Kirundo",
+        "Gitega",
+        "Mwaro",
+        "Bubanza",
+        "Muyinga"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "red-bourbon",
+        "jackson",
+        "mibirizi",
+        "bourbon-mayaguez"
+      ]
+    },
+    {
+      "id": "uganda",
+      "country": "Uganda",
+      "iso2": "UG",
+      "area": "Africa",
+      "growingRegions": [
+        "Mount Elgon (Bugisu, Sipi)",
+        "Rwenzori Mountains",
+        "Kasese",
+        "West Nile",
+        "Masaka",
+        "Mukono",
+        "Luwero"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "sl14",
+        "sl28",
+        "nyasaland",
+        "kent",
+        "robusta"
+      ]
+    },
+    {
+      "id": "tanzania",
+      "country": "Tanzania",
+      "iso2": "TZ",
+      "area": "Africa",
+      "growingRegions": [
+        "Kilimanjaro",
+        "Arusha",
+        "Karatu (Ngorongoro)",
+        "Mbeya",
+        "Songwe (Mbozi)",
+        "Ruvuma (Mbinga)",
+        "Iringa",
+        "Kagera"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "bourbon",
+        "kent",
+        "n39",
+        "arusha",
+        "robusta"
+      ]
+    },
+    {
+      "id": "dr-congo",
+      "country": "Democratic Republic of the Congo",
+      "iso2": "CD",
+      "area": "Africa",
+      "growingRegions": [
+        "South Kivu (Kalehe, Minova)",
+        "Idjwi Island",
+        "North Kivu (Beni, Butembo)",
+        "Rwenzori",
+        "Ituri"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "red-bourbon",
+        "blue-mountain",
+        "robusta"
+      ]
+    },
+    {
+      "id": "malawi",
+      "country": "Malawi",
+      "iso2": "MW",
+      "area": "Africa",
+      "growingRegions": [
+        "Misuku Hills (Chitipa)",
+        "Mzuzu",
+        "Viphya (Mzimba)",
+        "Thyolo"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "gesha",
+        "catimor",
+        "nyasaland",
+        "caturra"
+      ]
+    },
+    {
+      "id": "zambia",
+      "country": "Zambia",
+      "iso2": "ZM",
+      "area": "Africa",
+      "growingRegions": [
+        "Northern Province (Kasama)",
+        "Muchinga (Nakonde)",
+        "Central (Mkushi)",
+        "Lusaka"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "zimbabwe",
+      "country": "Zimbabwe",
+      "iso2": "ZW",
+      "area": "Africa",
+      "growingRegions": [
+        "Chipinge",
+        "Chimanimani",
+        "Honde Valley (Mutasa)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "sl28",
+        "catuai"
+      ]
+    },
+    {
+      "id": "cameroon",
+      "country": "Cameroon",
+      "iso2": "CM",
+      "area": "Africa",
+      "growingRegions": [
+        "West (Bamboutos)",
+        "Northwest (Bamenda)",
+        "Littoral"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "java",
+        "robusta"
+      ]
+    },
+    {
+      "id": "cote-divoire",
+      "country": "Côte d'Ivoire",
+      "iso2": "CI",
+      "area": "Africa",
+      "growingRegions": [
+        "West (Man)",
+        "Centre-West (Daloa, Soubré)",
+        "East (Abengourou)"
+      ],
+      "commonProcesses": [
+        "natural"
+      ],
+      "commonVarietals": [
+        "robusta"
+      ]
+    },
+    {
+      "id": "angola",
+      "country": "Angola",
+      "iso2": "AO",
+      "area": "Africa",
+      "growingRegions": [
+        "Kwanza Sul (Amboim, Seles)",
+        "Uíge",
+        "Huambo",
+        "Bié"
+      ],
+      "commonProcesses": [
+        "natural",
+        "washed"
+      ],
+      "commonVarietals": [
+        "robusta",
+        "typica"
+      ]
+    },
+    {
+      "id": "sierra-leone",
+      "country": "Sierra Leone",
+      "iso2": "SL",
+      "area": "Africa",
+      "growingRegions": [
+        "Kailahun",
+        "Kenema"
+      ],
+      "commonProcesses": [
+        "natural"
+      ],
+      "commonVarietals": [
+        "robusta",
+        "stenophylla"
+      ]
+    },
+    {
+      "id": "yemen",
+      "country": "Yemen",
+      "iso2": "YE",
+      "area": "Middle East",
+      "growingRegions": [
+        "Haraz",
+        "Bani Matar",
+        "Hayma",
+        "Sana'a",
+        "Bura'a",
+        "Yafa'a",
+        "Raymah",
+        "Mahweet",
+        "Saada"
+      ],
+      "commonProcesses": [
+        "natural",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "yemeni-landrace",
+        "yemenia",
+        "typica",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "saudi-arabia",
+      "country": "Saudi Arabia",
+      "iso2": "SA",
+      "area": "Middle East",
+      "growingRegions": [
+        "Jazan",
+        "Asir",
+        "Al Baha"
+      ],
+      "commonProcesses": [
+        "natural"
+      ],
+      "commonVarietals": [
+        "yemeni-landrace"
+      ]
+    },
+    {
+      "id": "india",
+      "country": "India",
+      "iso2": "IN",
+      "area": "South Asia",
+      "growingRegions": [
+        "Chikmagalur (Chikkamagaluru)",
+        "Baba Budangiri",
+        "Coorg (Kodagu)",
+        "Hassan (Sakleshpur, Manjarabad)",
+        "Bili Giri Rangana Hills (BR Hills)",
+        "Wayanad",
+        "Nilgiris",
+        "Pulney Hills (Palani)",
+        "Shevaroys (Yercaud)",
+        "Anamalais",
+        "Travancore",
+        "Araku Valley",
+        "Northeast (Brahmaputra)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "monsooned",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "s795",
+        "sln-9",
+        "sln-5b",
+        "chandragiri",
+        "kent",
+        "cauvery",
+        "robusta"
+      ]
+    },
+    {
+      "id": "nepal",
+      "country": "Nepal",
+      "iso2": "NP",
+      "area": "South Asia",
+      "growingRegions": [
+        "Gulmi",
+        "Palpa",
+        "Syangja",
+        "Kaski",
+        "Arghakhanchi",
+        "Lalitpur",
+        "Sindhupalchok"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "bourbon",
+        "typica",
+        "caturra"
+      ]
+    },
+    {
+      "id": "sri-lanka",
+      "country": "Sri Lanka",
+      "iso2": "LK",
+      "area": "South Asia",
+      "growingRegions": [
+        "Kandy",
+        "Matale",
+        "Badulla"
+      ],
+      "commonProcesses": [
+        "natural",
+        "washed"
+      ],
+      "commonVarietals": [
+        "robusta",
+        "typica",
+        "liberica"
+      ]
+    },
+    {
+      "id": "indonesia",
+      "country": "Indonesia",
+      "iso2": "ID",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Sumatra - Aceh (Gayo)",
+        "Sumatra - Lintong",
+        "Sumatra - Mandheling",
+        "Sumatra - Sidikalang",
+        "Java - Ijen",
+        "West Java (Garut, Puntang)",
+        "Sulawesi - Toraja",
+        "Sulawesi - Enrekang (Kalosi)",
+        "Bali - Kintamani",
+        "Flores - Bajawa",
+        "Papua - Wamena"
+      ],
+      "commonProcesses": [
+        "wet-hulled",
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "timor-hybrid",
+        "s795",
+        "jember",
+        "abyssinia",
+        "typica",
+        "sigarar-utang",
+        "andungsari",
+        "robusta"
+      ]
+    },
+    {
+      "id": "vietnam",
+      "country": "Vietnam",
+      "iso2": "VN",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Central Highlands - Dak Lak",
+        "Lam Dong (Da Lat, Cau Dat)",
+        "Gia Lai",
+        "Dak Nong",
+        "Kon Tum",
+        "Son La",
+        "Quang Tri (Khe Sanh)"
+      ],
+      "commonProcesses": [
+        "natural",
+        "washed",
+        "honey"
+      ],
+      "commonVarietals": [
+        "robusta",
+        "catimor",
+        "typica",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "thailand",
+      "country": "Thailand",
+      "iso2": "TH",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Chiang Rai (Doi Chaang, Doi Tung)",
+        "Chiang Mai",
+        "Nan",
+        "Mae Hong Son",
+        "Chumphon"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "typica",
+        "gesha",
+        "robusta"
+      ]
+    },
+    {
+      "id": "laos",
+      "country": "Laos",
+      "iso2": "LA",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Bolaven Plateau (Champasak, Paksong)",
+        "Northern Laos (Phongsaly, Luang Prabang)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "typica",
+        "robusta"
+      ]
+    },
+    {
+      "id": "myanmar",
+      "country": "Myanmar",
+      "iso2": "MM",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Shan State (Ywangan)",
+        "Pyin Oo Lwin",
+        "Chin State"
+      ],
+      "commonProcesses": [
+        "natural",
+        "washed",
+        "honey"
+      ],
+      "commonVarietals": [
+        "catuai",
+        "catimor",
+        "sl34",
+        "s795"
+      ]
+    },
+    {
+      "id": "philippines",
+      "country": "Philippines",
+      "iso2": "PH",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Benguet",
+        "Mountain Province (Sagada)",
+        "Bukidnon",
+        "Mount Apo (Davao)",
+        "Batangas",
+        "Cavite"
+      ],
+      "commonProcesses": [
+        "natural",
+        "washed",
+        "honey"
+      ],
+      "commonVarietals": [
+        "typica",
+        "liberica",
+        "excelsa",
+        "robusta"
+      ]
+    },
+    {
+      "id": "timor-leste",
+      "country": "Timor-Leste",
+      "iso2": "TL",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Ermera",
+        "Aileu",
+        "Liquiçá",
+        "Manufahi (Same)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "timor-hybrid",
+        "typica",
+        "catimor"
+      ]
+    },
+    {
+      "id": "malaysia",
+      "country": "Malaysia",
+      "iso2": "MY",
+      "area": "Southeast Asia",
+      "growingRegions": [
+        "Johor",
+        "Sabah (Tenom)",
+        "Selangor"
+      ],
+      "commonProcesses": [
+        "natural"
+      ],
+      "commonVarietals": [
+        "liberica",
+        "excelsa",
+        "robusta"
+      ]
+    },
+    {
+      "id": "china",
+      "country": "China",
+      "iso2": "CN",
+      "area": "East Asia",
+      "growingRegions": [
+        "Yunnan - Pu'er",
+        "Yunnan - Baoshan",
+        "Yunnan - Dehong",
+        "Yunnan - Lincang",
+        "Yunnan - Xishuangbanna",
+        "Hainan"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "catimor",
+        "typica",
+        "bourbon",
+        "robusta"
+      ]
+    },
+    {
+      "id": "taiwan",
+      "country": "Taiwan",
+      "iso2": "TW",
+      "area": "East Asia",
+      "growingRegions": [
+        "Alishan (Chiayi)",
+        "Pingtung",
+        "Gukeng (Yunlin)",
+        "Nantou",
+        "Hualien"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "gesha",
+        "sl34"
+      ]
+    },
+    {
+      "id": "papua-new-guinea",
+      "country": "Papua New Guinea",
+      "iso2": "PG",
+      "area": "Oceania",
+      "growingRegions": [
+        "Eastern Highlands (Goroka, Kainantu)",
+        "Western Highlands (Mount Hagen)",
+        "Jiwaka (Wahgi Valley)",
+        "Simbu (Chimbu)",
+        "Morobe"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "bourbon",
+        "arusha",
+        "blue-mountain"
+      ]
+    },
+    {
+      "id": "australia",
+      "country": "Australia",
+      "iso2": "AU",
+      "area": "Oceania",
+      "growingRegions": [
+        "Atherton Tablelands (Mareeba)",
+        "Northern Rivers (New South Wales)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "k7",
+        "catuai",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "hawaii",
+      "country": "United States (Hawaii)",
+      "iso2": "US",
+      "area": "Oceania",
+      "growingRegions": [
+        "Kona",
+        "Ka'ū",
+        "Maui",
+        "Kauai",
+        "Molokai",
+        "Puna",
+        "Oahu (Waialua)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "kona-typica",
+        "mokka",
+        "yellow-catuai",
+        "catuai",
+        "red-bourbon",
+        "gesha"
+      ]
+    },
+    {
+      "id": "brazil",
+      "country": "Brazil",
+      "iso2": "BR",
+      "area": "Latin America",
+      "growingRegions": [
+        "Sul de Minas",
+        "Mantiqueira de Minas",
+        "Cerrado Mineiro",
+        "Alta Mogiana",
+        "Matas de Minas",
+        "Chapada Diamantina (Bahia)",
+        "Planalto da Bahia",
+        "Montanhas do Espírito Santo",
+        "Caparaó",
+        "Norte Pioneiro do Paraná",
+        "Rondônia (robusta amazônico)"
+      ],
+      "commonProcesses": [
+        "natural",
+        "pulped-natural",
+        "semi-washed",
+        "washed",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "yellow-bourbon",
+        "red-bourbon",
+        "mundo-novo",
+        "catuai",
+        "yellow-catuai",
+        "acaia",
+        "topazio",
+        "arara",
+        "obata",
+        "icatu",
+        "conilon"
+      ]
+    },
+    {
+      "id": "colombia",
+      "country": "Colombia",
+      "iso2": "CO",
+      "area": "Latin America",
+      "growingRegions": [
+        "Huila",
+        "Nariño",
+        "Cauca",
+        "Tolima",
+        "Antioquia",
+        "Santander",
+        "Norte de Santander",
+        "Quindío",
+        "Caldas",
+        "Risaralda",
+        "Valle del Cauca",
+        "Sierra Nevada de Santa Marta",
+        "Boyacá",
+        "Cundinamarca"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural",
+        "anaerobic-washed",
+        "double-fermentation",
+        "extended-fermentation",
+        "thermal-shock",
+        "co-fermented",
+        "yeast-inoculated",
+        "lactic",
+        "carbonic-maceration"
+      ],
+      "commonVarietals": [
+        "castillo",
+        "colombia",
+        "caturra",
+        "tabi",
+        "cenicafe-1",
+        "pink-bourbon",
+        "chiroso",
+        "gesha",
+        "sidra",
+        "wush-wush",
+        "typica",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "peru",
+      "country": "Peru",
+      "iso2": "PE",
+      "area": "Latin America",
+      "growingRegions": [
+        "Cajamarca (Jaén, San Ignacio)",
+        "Amazonas (Rodríguez de Mendoza)",
+        "San Martín",
+        "Junín (Chanchamayo, Satipo)",
+        "Pasco (Villa Rica, Oxapampa)",
+        "Cusco (La Convención)",
+        "Puno (Sandia)",
+        "Piura"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "caturra",
+        "bourbon",
+        "catimor",
+        "pache",
+        "gesha",
+        "catuai"
+      ]
+    },
+    {
+      "id": "bolivia",
+      "country": "Bolivia",
+      "iso2": "BO",
+      "area": "Latin America",
+      "growingRegions": [
+        "Caranavi (Yungas)",
+        "Coroico",
+        "Samaipata (Santa Cruz)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "caturra",
+        "catuai",
+        "java",
+        "gesha"
+      ]
+    },
+    {
+      "id": "ecuador",
+      "country": "Ecuador",
+      "iso2": "EC",
+      "area": "Latin America",
+      "growingRegions": [
+        "Loja",
+        "Zamora-Chinchipe",
+        "Pichincha (Nanegal, Nanegalito)",
+        "Imbabura (Intag)",
+        "Carchi",
+        "El Oro",
+        "Galápagos (San Cristóbal)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "typica-mejorado",
+        "sidra",
+        "typica",
+        "bourbon",
+        "caturra",
+        "gesha"
+      ]
+    },
+    {
+      "id": "guatemala",
+      "country": "Guatemala",
+      "iso2": "GT",
+      "area": "Latin America",
+      "growingRegions": [
+        "Antigua",
+        "Huehuetenango",
+        "Acatenango",
+        "Atitlán",
+        "Cobán",
+        "Fraijanes",
+        "San Marcos",
+        "Nuevo Oriente"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "bourbon",
+        "caturra",
+        "catuai",
+        "typica",
+        "pache",
+        "maragogype",
+        "gesha",
+        "anacafe-14",
+        "sarchimor"
+      ]
+    },
+    {
+      "id": "honduras",
+      "country": "Honduras",
+      "iso2": "HN",
+      "area": "Latin America",
+      "growingRegions": [
+        "Santa Bárbara",
+        "Marcala (La Paz)",
+        "Copán",
+        "Opalaca",
+        "Montecillos",
+        "Comayagua",
+        "Agalta",
+        "El Paraíso"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "parainema",
+        "ihcafe-90",
+        "lempira",
+        "catuai",
+        "bourbon",
+        "pacas",
+        "caturra",
+        "gesha"
+      ]
+    },
+    {
+      "id": "el-salvador",
+      "country": "El Salvador",
+      "iso2": "SV",
+      "area": "Latin America",
+      "growingRegions": [
+        "Apaneca-Ilamatepec",
+        "Santa Ana Volcano",
+        "Alotepec-Metapán",
+        "El Bálsamo-Quetzaltepec",
+        "Chinchontepec",
+        "Tepeca-Chinameca"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "bourbon",
+        "orange-bourbon",
+        "pacas",
+        "pacamara",
+        "tekisic",
+        "sl28",
+        "gesha"
+      ]
+    },
+    {
+      "id": "nicaragua",
+      "country": "Nicaragua",
+      "iso2": "NI",
+      "area": "Latin America",
+      "growingRegions": [
+        "Jinotega",
+        "Matagalpa",
+        "Nueva Segovia (Dipilto, Mozonte)",
+        "Madriz",
+        "Estelí"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "caturra",
+        "catuai",
+        "maracaturra",
+        "marsellesa",
+        "java",
+        "pacamara",
+        "red-bourbon",
+        "catimor"
+      ]
+    },
+    {
+      "id": "costa-rica",
+      "country": "Costa Rica",
+      "iso2": "CR",
+      "area": "Latin America",
+      "growingRegions": [
+        "Tarrazú",
+        "West Valley (Valle Occidental)",
+        "Central Valley",
+        "Tres Ríos",
+        "Orosi",
+        "Brunca",
+        "Turrialba",
+        "Guanacaste"
+      ],
+      "commonProcesses": [
+        "washed",
+        "honey-white",
+        "honey-yellow",
+        "honey-red",
+        "honey-black",
+        "natural",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "caturra",
+        "catuai",
+        "villa-sarchi",
+        "villalobos",
+        "sl28",
+        "gesha",
+        "costa-rica-95",
+        "obata",
+        "centroamericano"
+      ]
+    },
+    {
+      "id": "panama",
+      "country": "Panama",
+      "iso2": "PA",
+      "area": "Latin America",
+      "growingRegions": [
+        "Boquete",
+        "Volcán",
+        "Renacimiento (Chiriquí)"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "anaerobic-natural",
+        "carbonic-maceration",
+        "honey"
+      ],
+      "commonVarietals": [
+        "gesha",
+        "caturra",
+        "catuai",
+        "typica",
+        "pacamara",
+        "laurina"
+      ]
+    },
+    {
+      "id": "mexico",
+      "country": "Mexico",
+      "iso2": "MX",
+      "area": "Latin America",
+      "growingRegions": [
+        "Chiapas",
+        "Veracruz",
+        "Oaxaca",
+        "Puebla",
+        "Guerrero",
+        "Nayarit",
+        "San Luis Potosí",
+        "Hidalgo"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey",
+        "anaerobic-natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "bourbon",
+        "caturra",
+        "garnica",
+        "oro-azteca",
+        "marsellesa",
+        "mundo-novo"
+      ]
+    },
+    {
+      "id": "jamaica",
+      "country": "Jamaica",
+      "iso2": "JM",
+      "area": "Latin America",
+      "growingRegions": [
+        "Blue Mountains (St. Andrew, Portland, St. Thomas)",
+        "High Mountain (Manchester, Clarendon)"
+      ],
+      "commonProcesses": [
+        "washed"
+      ],
+      "commonVarietals": [
+        "blue-mountain",
+        "typica"
+      ]
+    },
+    {
+      "id": "dominican-republic",
+      "country": "Dominican Republic",
+      "iso2": "DO",
+      "area": "Latin America",
+      "growingRegions": [
+        "Barahona",
+        "Cibao",
+        "Cibao Altura",
+        "Valdesia",
+        "Neyba",
+        "Juncalito"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "typica",
+        "caturra",
+        "bourbon",
+        "catimor"
+      ]
+    },
+    {
+      "id": "haiti",
+      "country": "Haiti",
+      "iso2": "HT",
+      "area": "Latin America",
+      "growingRegions": [
+        "Thiotte",
+        "Dondon",
+        "Baptiste",
+        "Beaumont"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "bourbon"
+      ]
+    },
+    {
+      "id": "cuba",
+      "country": "Cuba",
+      "iso2": "CU",
+      "area": "Latin America",
+      "growingRegions": [
+        "Sierra Maestra",
+        "Escambray"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "caturra",
+        "robusta"
+      ]
+    },
+    {
+      "id": "puerto-rico",
+      "country": "Puerto Rico",
+      "iso2": "PR",
+      "area": "Latin America",
+      "growingRegions": [
+        "Yauco",
+        "Adjuntas",
+        "Jayuya",
+        "Utuado",
+        "Maricao",
+        "Lares"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural",
+        "honey"
+      ],
+      "commonVarietals": [
+        "typica",
+        "bourbon",
+        "caturra"
+      ]
+    },
+    {
+      "id": "venezuela",
+      "country": "Venezuela",
+      "iso2": "VE",
+      "area": "Latin America",
+      "growingRegions": [
+        "Lara",
+        "Táchira",
+        "Mérida",
+        "Portuguesa",
+        "Trujillo"
+      ],
+      "commonProcesses": [
+        "washed",
+        "natural"
+      ],
+      "commonVarietals": [
+        "typica",
+        "bourbon",
+        "caturra"
+      ]
+    }
+  ]
+}

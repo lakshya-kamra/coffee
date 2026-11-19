@@ -1,0 +1,7 @@
+Coffee (web)
+
+This product includes icon path data from Material Symbols (Rounded, weight 400),
+copyright Google LLC, licensed under the Apache License, Version 2.0:
+https://github.com/google/material-design-icons/blob/master/LICENSE
+The path data in src/design/icons.ts is unchanged from the published SVG files,
+except Insights, which is scaled from the 24 px grid to the 960 grid the others use.

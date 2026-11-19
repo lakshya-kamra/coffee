@@ -1,0 +1,1093 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "species": [
+    {
+      "id": "arabica",
+      "label": "Arabica (Coffea arabica)"
+    },
+    {
+      "id": "canephora",
+      "label": "Robusta (Coffea canephora)"
+    },
+    {
+      "id": "liberica",
+      "label": "Liberica (Coffea liberica)"
+    },
+    {
+      "id": "excelsa",
+      "label": "Excelsa (Coffea liberica var. dewevrei)"
+    },
+    {
+      "id": "eugenioides",
+      "label": "Eugenioides (Coffea eugenioides)"
+    },
+    {
+      "id": "stenophylla",
+      "label": "Stenophylla (Coffea stenophylla)"
+    },
+    {
+      "id": "unknown",
+      "label": "Not sure"
+    }
+  ],
+  "processes": [
+    {
+      "id": "washed",
+      "label": "Washed",
+      "group": "classic",
+      "description": "Fruit is removed before drying, so the cup tastes clean and bright with clear acidity."
+    },
+    {
+      "id": "kenyan-washed",
+      "label": "Washed (double soak / Kenyan style)",
+      "group": "classic",
+      "description": "Kenyan-style washed: depulped coffee is fermented and washed, often fermented a second time, then soaked under clean water before drying; known for very clean, juicy cups."
+    },
+    {
+      "id": "natural",
+      "label": "Natural (dry process)",
+      "group": "classic",
+      "description": "Whole cherries dry with the fruit on, giving sweeter, fruitier, heavier cups."
+    },
+    {
+      "id": "semi-washed",
+      "label": "Semi-washed",
+      "group": "classic",
+      "description": "A loose term: in Latin America it usually means partly removed fruit, in Indonesia it often means wet-hulled. Ask the roaster."
+    },
+    {
+      "id": "wet-hulled",
+      "label": "Wet-hulled (giling basah)",
+      "group": "classic",
+      "description": "Indonesian method where the parchment comes off while the bean is still wet; earthy, herbal, heavy-bodied cups."
+    },
+    {
+      "id": "honey",
+      "label": "Honey (unspecified)",
+      "group": "honey",
+      "description": "Skin removed but some sticky fruit (mucilage) left on while drying; sweet and rounded, between washed and natural."
+    },
+    {
+      "id": "honey-white",
+      "label": "White honey",
+      "group": "honey",
+      "description": "Honey with very little fruit left on; closest to washed in taste."
+    },
+    {
+      "id": "honey-yellow",
+      "label": "Yellow honey",
+      "group": "honey",
+      "description": "Honey with a light layer of fruit left on; a little sweeter than white honey."
+    },
+    {
+      "id": "honey-red",
+      "label": "Red honey",
+      "group": "honey",
+      "description": "Honey with most of the fruit left on and slower drying; noticeably sweet and fruity."
+    },
+    {
+      "id": "honey-black",
+      "label": "Black honey",
+      "group": "honey",
+      "description": "Honey with nearly all the fruit left on and the slowest drying; closest to a natural, rich and jammy."
+    },
+    {
+      "id": "pulped-natural",
+      "label": "Pulped natural",
+      "group": "honey",
+      "description": "Brazilian take on honey: skin removed by machine, fruit left on to dry; sweet, nutty, rounded."
+    },
+    {
+      "id": "anaerobic",
+      "label": "Anaerobic (unspecified)",
+      "group": "fermentation",
+      "description": "Fermented in sealed, oxygen-free tanks; the bag does not say whether it was then dried as a natural, honey or washed."
+    },
+    {
+      "id": "anaerobic-natural",
+      "label": "Anaerobic natural",
+      "group": "fermentation",
+      "description": "Whole cherries fermented in sealed, oxygen-free tanks before drying; intense, winey, boozy fruit."
+    },
+    {
+      "id": "anaerobic-washed",
+      "label": "Anaerobic washed",
+      "group": "fermentation",
+      "description": "Depulped beans fermented in sealed tanks, then washed; cleaner than anaerobic natural but still punchy."
+    },
+    {
+      "id": "anaerobic-honey",
+      "label": "Anaerobic honey",
+      "group": "fermentation",
+      "description": "Honey-processed beans fermented in sealed tanks before drying; sweet with extra fermented fruit notes."
+    },
+    {
+      "id": "carbonic-maceration",
+      "label": "Carbonic maceration",
+      "group": "fermentation",
+      "description": "Borrowed from winemaking: cherries ferment in tanks flushed with CO2; bright, candied, wine-like flavours."
+    },
+    {
+      "id": "double-fermentation",
+      "label": "Double fermentation",
+      "group": "fermentation",
+      "description": "Two fermentation stages (often cherry then parchment) to build more complexity and sweetness."
+    },
+    {
+      "id": "extended-fermentation",
+      "label": "Extended fermentation",
+      "group": "fermentation",
+      "description": "Fermentation left much longer than usual (days rather than hours); deeper, funkier fruit."
+    },
+    {
+      "id": "yeast-inoculated",
+      "label": "Yeast-inoculated",
+      "group": "fermentation",
+      "description": "A chosen yeast strain is added to steer fermentation toward specific flavours, like in brewing or wine."
+    },
+    {
+      "id": "lactic",
+      "label": "Lactic fermentation",
+      "group": "fermentation",
+      "description": "Fermentation that favours lactic-acid bacteria; creamy, yoghurt-like or soft-cheese sweetness and round acidity."
+    },
+    {
+      "id": "thermal-shock",
+      "label": "Thermal shock",
+      "group": "fermentation",
+      "description": "After fermentation the coffee is rinsed with hot water, then cold water; producers say this fixes aromatics. Popularised in Colombia and often combined with co-fermentation, so check whether flavour was added."
+    },
+    {
+      "id": "koji",
+      "label": "Koji fermentation",
+      "group": "fermentation",
+      "description": "Beans or cherries inoculated with koji mould (the culture used for sake and soy sauce); savoury-sweet, umami-leaning."
+    },
+    {
+      "id": "co-fermented",
+      "label": "Co-fermented / infused (flavour added)",
+      "group": "fermentation",
+      "description": "INFUSED: fruit, spices, juice or flavourings are added during fermentation, so some flavour comes from the additive, not the coffee itself."
+    },
+    {
+      "id": "monsooned",
+      "label": "Monsooned",
+      "group": "other",
+      "description": "Indian method where dried beans are exposed to monsoon winds for weeks; low acid, heavy, woody and spicy."
+    },
+    {
+      "id": "barrel-aged",
+      "label": "Barrel-aged (flavour added)",
+      "group": "other",
+      "description": "INFUSED: green beans rest in used spirit or wine barrels and take on the barrel's flavour."
+    },
+    {
+      "id": "decaf",
+      "label": "Decaf-processed",
+      "group": "other",
+      "description": "Caffeine removed from the green beans; pick the decaf method separately if the bag names it."
+    },
+    {
+      "id": "experimental",
+      "label": "Experimental / other",
+      "group": "other",
+      "description": "A producer's own method that does not fit the usual names; check the roaster's notes."
+    },
+    {
+      "id": "unknown",
+      "label": "Not listed",
+      "group": "other",
+      "description": "The bag does not say how the coffee was processed."
+    }
+  ],
+  "varietals": [
+    {
+      "id": "gesha",
+      "label": "Gesha",
+      "aliases": [
+        "Geisha",
+        "Panama Gesha",
+        "Gesha 1931"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "ethiopian-landrace",
+      "label": "Ethiopian landrace (heirloom)",
+      "aliases": [
+        "Heirloom",
+        "Ethiopian Heirloom",
+        "Landrace",
+        "Local landrace",
+        "Indigenous landrace"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "74110",
+      "label": "74110 (JARC)",
+      "aliases": [
+        "JARC 74110"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "74112",
+      "label": "74112 (JARC)",
+      "aliases": [
+        "JARC 74112"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "74158",
+      "label": "74158 (JARC)",
+      "aliases": [
+        "JARC 74158"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "kurume",
+      "label": "Kurume",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "wolisho",
+      "label": "Wolisho",
+      "aliases": [
+        "Welicho"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "dega",
+      "label": "Dega",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "wush-wush",
+      "label": "Wush Wush",
+      "aliases": [
+        "Wushwush"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "yemeni-landrace",
+      "label": "Yemeni / Arabian landrace",
+      "aliases": [
+        "Udaini",
+        "Tufahi",
+        "Tuffahi",
+        "Dawairi",
+        "Jaadi",
+        "Khawlani"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "yemenia",
+      "label": "Yemenia",
+      "aliases": [
+        "New-Yemen"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "rume-sudan",
+      "label": "Rume Sudan",
+      "aliases": [
+        "Sudan Rume"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "abyssinia",
+      "label": "Abyssinia",
+      "aliases": [
+        "Abysinia",
+        "Abesinia",
+        "Abyssinian"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "java",
+      "label": "Java",
+      "aliases": [
+        "Javanica"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "typica",
+      "label": "Typica",
+      "aliases": [
+        "Tipica",
+        "Típica",
+        "Criollo",
+        "Arábigo"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "kona-typica",
+      "label": "Kona Typica",
+      "aliases": [
+        "Kona",
+        "Guatemala Typica"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "blue-mountain",
+      "label": "Blue Mountain",
+      "aliases": [
+        "Jamaica Blue Mountain",
+        "Kenya Blue Mountain"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "typica-mejorado",
+      "label": "Typica Mejorado",
+      "aliases": [
+        "Tipica Mejorado"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "maragogype",
+      "label": "Maragogype",
+      "aliases": [
+        "Maragogipe",
+        "Elephant bean"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "pache",
+      "label": "Pache",
+      "aliases": [
+        "Pache Común"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "kent",
+      "label": "Kent",
+      "aliases": [
+        "Kents"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "arusha",
+      "label": "Arusha",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "nyasaland",
+      "label": "Nyasaland",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "mokka",
+      "label": "Mokka",
+      "aliases": [
+        "Moka",
+        "Mocca",
+        "Maui Mokka"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "bourbon",
+      "label": "Bourbon",
+      "aliases": [
+        "Borbón"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "red-bourbon",
+      "label": "Red Bourbon",
+      "aliases": [
+        "Bourbon Rojo",
+        "Bourbon Vermelho"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "yellow-bourbon",
+      "label": "Yellow Bourbon",
+      "aliases": [
+        "Bourbon Amarelo",
+        "Bourbon Amarillo"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "orange-bourbon",
+      "label": "Orange Bourbon",
+      "aliases": [
+        "Bourbon Naranja"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "pink-bourbon",
+      "label": "Pink Bourbon",
+      "aliases": [
+        "Bourbon Rosado",
+        "Rosado"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sidra",
+      "label": "Sidra",
+      "aliases": [
+        "Bourbon Sidra"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "chiroso",
+      "label": "Chiroso",
+      "aliases": [
+        "Caturra Chiroso"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "laurina",
+      "label": "Laurina",
+      "aliases": [
+        "Bourbon Pointu",
+        "Pointu"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "french-mission",
+      "label": "French Mission",
+      "aliases": [
+        "French Mission Bourbon"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "bourbon-mayaguez",
+      "label": "Bourbon Mayaguez",
+      "aliases": [
+        "BM139",
+        "BM71",
+        "BM 139"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "jackson",
+      "label": "Jackson",
+      "aliases": [
+        "Jackson 2/1257"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "mibirizi",
+      "label": "Mibirizi",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "sl28",
+      "label": "SL28",
+      "aliases": [
+        "SL-28",
+        "SL 28"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sl34",
+      "label": "SL34",
+      "aliases": [
+        "SL-34",
+        "SL 34"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sl14",
+      "label": "SL14",
+      "aliases": [
+        "SL-14",
+        "SL 14"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "k7",
+      "label": "K7",
+      "aliases": [
+        "K-7"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "n39",
+      "label": "N39",
+      "aliases": [
+        "N-39"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "tekisic",
+      "label": "Tekisic",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "caturra",
+      "label": "Caturra",
+      "aliases": [
+        "Red Caturra",
+        "Yellow Caturra"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "villa-sarchi",
+      "label": "Villa Sarchi",
+      "aliases": [
+        "Villa Sarchí",
+        "Villasarchi"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "villalobos",
+      "label": "Villalobos",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "pacas",
+      "label": "Pacas",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "pacamara",
+      "label": "Pacamara",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "maracaturra",
+      "label": "Maracaturra",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "mundo-novo",
+      "label": "Mundo Novo",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "catuai",
+      "label": "Catuai",
+      "aliases": [
+        "Red Catuai",
+        "Catuaí Vermelho",
+        "Catuaí"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "yellow-catuai",
+      "label": "Yellow Catuai",
+      "aliases": [
+        "Catuaí Amarelo",
+        "Catuai Amarillo"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "acaia",
+      "label": "Acaiá",
+      "aliases": [
+        "Acaia"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "topazio",
+      "label": "Topázio",
+      "aliases": [
+        "Topazio"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "arara",
+      "label": "Arara",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "garnica",
+      "label": "Garnica",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "timor-hybrid",
+      "label": "Timor Hybrid",
+      "aliases": [
+        "Hibrido de Timor",
+        "HdT",
+        "Tim Tim",
+        "Timtim"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "catimor",
+      "label": "Catimor",
+      "aliases": [
+        "Ateng",
+        "Catimor 129",
+        "Cat129",
+        "Nyika"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sarchimor",
+      "label": "Sarchimor",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "castillo",
+      "label": "Castillo",
+      "aliases": [
+        "Castillo General",
+        "Variedad Castillo"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "colombia",
+      "label": "Colombia (variety)",
+      "aliases": [
+        "Variedad Colombia"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "tabi",
+      "label": "Tabi",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "cenicafe-1",
+      "label": "Cenicafé 1",
+      "aliases": [
+        "Cenicafe 1"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "parainema",
+      "label": "Parainema",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "marsellesa",
+      "label": "Marsellesa",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "obata",
+      "label": "Obatã",
+      "aliases": [
+        "Obata",
+        "Obatã Vermelho"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "icatu",
+      "label": "Icatu",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "lempira",
+      "label": "Lempira",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "ihcafe-90",
+      "label": "IHCAFE 90",
+      "aliases": [
+        "IH90"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "costa-rica-95",
+      "label": "Costa Rica 95",
+      "aliases": [
+        "CR95",
+        "CR 95"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "anacafe-14",
+      "label": "Anacafé 14",
+      "aliases": [
+        "Anacafe 14"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "oro-azteca",
+      "label": "Oro Azteca",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "ruiru-11",
+      "label": "Ruiru 11",
+      "aliases": [
+        "Ruiru"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "batian",
+      "label": "Batian",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "s795",
+      "label": "S795",
+      "aliases": [
+        "S.795",
+        "Selection 3"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "jember",
+      "label": "Jember (S795 in Indonesia)",
+      "aliases": [
+        "S795 Indonesia"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sln-9",
+      "label": "Selection 9",
+      "aliases": [
+        "Sln 9",
+        "Sln.9",
+        "S.9"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sln-5b",
+      "label": "Sln 5B",
+      "aliases": [
+        "Selection 5B",
+        "Sln.5B"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "chandragiri",
+      "label": "Chandragiri",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "cauvery",
+      "label": "Cauvery",
+      "aliases": [
+        "Catimor (India)"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "sigarar-utang",
+      "label": "Sigarar Utang",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "andungsari",
+      "label": "Andungsari",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "centroamericano",
+      "label": "Centroamericano (H1)",
+      "aliases": [
+        "H1",
+        "Centroamericano"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "starmaya",
+      "label": "Starmaya",
+      "aliases": [],
+      "species": "arabica"
+    },
+    {
+      "id": "robusta",
+      "label": "Robusta",
+      "aliases": [
+        "Canephora",
+        "Coffea canephora"
+      ],
+      "species": "canephora"
+    },
+    {
+      "id": "conilon",
+      "label": "Conilon",
+      "aliases": [
+        "Conillon",
+        "Kouillou"
+      ],
+      "species": "canephora"
+    },
+    {
+      "id": "liberica",
+      "label": "Liberica",
+      "aliases": [
+        "Barako",
+        "Kapeng Barako"
+      ],
+      "species": "liberica"
+    },
+    {
+      "id": "excelsa",
+      "label": "Excelsa",
+      "aliases": [
+        "Coffea dewevrei",
+        "Liberica var. dewevrei"
+      ],
+      "species": "excelsa"
+    },
+    {
+      "id": "eugenioides",
+      "label": "Eugenioides",
+      "aliases": [
+        "Coffea eugenioides"
+      ],
+      "species": "eugenioides"
+    },
+    {
+      "id": "stenophylla",
+      "label": "Stenophylla",
+      "aliases": [
+        "Coffea stenophylla",
+        "Highland coffee of Sierra Leone"
+      ],
+      "species": "stenophylla"
+    },
+    {
+      "id": "mixed",
+      "label": "Mixed varieties",
+      "aliases": [
+        "Field blend",
+        "Various",
+        "Mixed"
+      ],
+      "species": "arabica"
+    },
+    {
+      "id": "unknown",
+      "label": "Not listed",
+      "aliases": [
+        "Unknown"
+      ],
+      "species": "unknown"
+    }
+  ],
+  "lotTypes": [
+    {
+      "id": "single-estate",
+      "label": "Single estate / farm",
+      "description": "All from one named farm or estate."
+    },
+    {
+      "id": "single-producer",
+      "label": "Single producer",
+      "description": "From one named grower, who may farm more than one plot."
+    },
+    {
+      "id": "single-origin",
+      "label": "Single origin",
+      "description": "From one country or region, often several farms mixed."
+    },
+    {
+      "id": "single-variety",
+      "label": "Single variety",
+      "description": "Only one coffee variety in the lot."
+    },
+    {
+      "id": "washing-station",
+      "label": "Washing station",
+      "description": "Cherries from many nearby smallholders processed at one mill (common in Ethiopia, Rwanda, Burundi, Kenya)."
+    },
+    {
+      "id": "cooperative",
+      "label": "Cooperative",
+      "description": "Pooled from members of a farmer cooperative."
+    },
+    {
+      "id": "regional",
+      "label": "Regional / community lot",
+      "description": "A blend of growers from one named region or village."
+    },
+    {
+      "id": "micro-lot",
+      "label": "Micro-lot",
+      "description": "A small, separately kept lot, usually one plot, picking or process."
+    },
+    {
+      "id": "nano-lot",
+      "label": "Nano-lot",
+      "description": "An even smaller lot, often only a few bags."
+    },
+    {
+      "id": "competition-lot",
+      "label": "Competition lot",
+      "description": "A lot used in barista or brewers competitions, or prepared for one."
+    },
+    {
+      "id": "auction-lot",
+      "label": "Auction lot",
+      "description": "Sold through a quality auction such as Cup of Excellence or Best of Panama."
+    },
+    {
+      "id": "blend",
+      "label": "Blend",
+      "description": "Coffees from more than one origin or farm mixed together."
+    },
+    {
+      "id": "espresso-blend",
+      "label": "Espresso blend",
+      "description": "A blend built to taste balanced as espresso and with milk."
+    },
+    {
+      "id": "seasonal",
+      "label": "Seasonal / limited",
+      "description": "Available only for part of the year, usually the current harvest."
+    }
+  ],
+  "decafMethods": [
+    {
+      "id": "swiss-water",
+      "label": "Swiss Water (water process)"
+    },
+    {
+      "id": "mountain-water",
+      "label": "Mountain Water (water process, Mexico)"
+    },
+    {
+      "id": "sugarcane-ea",
+      "label": "Sugarcane / ethyl acetate (EA)"
+    },
+    {
+      "id": "co2",
+      "label": "CO2 (supercritical carbon dioxide)"
+    },
+    {
+      "id": "methylene-chloride",
+      "label": "Methylene chloride (European / KVW method)"
+    },
+    {
+      "id": "naturally-low",
+      "label": "Naturally low caffeine (not decaffeinated)"
+    },
+    {
+      "id": "unknown",
+      "label": "Decaf, method not listed"
+    }
+  ],
+  "roastLevels": [
+    {
+      "id": "extra-light",
+      "label": "Extra light (Nordic)",
+      "description": "Very pale, high acidity, tea-like; needs hot water and fine grinding to extract."
+    },
+    {
+      "id": "light",
+      "label": "Light",
+      "description": "Bright, fruity and floral; most specialty filter coffee."
+    },
+    {
+      "id": "medium-light",
+      "label": "Medium-light",
+      "description": "Still bright but sweeter and a bit fuller."
+    },
+    {
+      "id": "medium",
+      "label": "Medium",
+      "description": "Balanced sweetness and acidity, caramel and chocolate notes appear."
+    },
+    {
+      "id": "medium-dark",
+      "label": "Medium-dark",
+      "description": "Low acidity, heavier body, roasty chocolate; some surface oil."
+    },
+    {
+      "id": "dark",
+      "label": "Dark",
+      "description": "Smoky and bitter-sweet, oily beans; brew cooler and coarser."
+    },
+    {
+      "id": "omni",
+      "label": "Omni roast",
+      "description": "Roasted to work for both filter and espresso, usually light to medium."
+    }
+  ],
+  "roastIntents": [
+    {
+      "id": "filter",
+      "label": "Filter"
+    },
+    {
+      "id": "espresso",
+      "label": "Espresso"
+    },
+    {
+      "id": "omni",
+      "label": "Omni (filter and espresso)"
+    }
+  ]
+}

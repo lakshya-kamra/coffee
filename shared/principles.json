@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "updated": "2026-11-18",
+  "principles": [
+    {
+      "id": "perger-compass-extract-more-or-less",
+      "topic": "extraction",
+      "appliesTo": ["pourover", "aeropress", "frenchPress", "siphon"],
+      "text": "On Barista Hustle's Coffee Compass, 'extract more' means a finer grind or a longer brew and 'extract less' a coarser grind or a shorter one. Strength is a separate move, made by changing the brew ratio.",
+      "who": "Matt Perger (Barista Hustle)",
+      "url": "https://www.baristahustle.com/?p=2185",
+      "note": "Barista Hustle's Coffee Compass page; the compass was first drawn up by Matt Perger. The site refuses automated readers (HTTP 402), so the wording was checked through a web search's reading of that page on 2026-11-18, not by opening it."
+    },
+    {
+      "id": "gagne-channelling-uneven",
+      "topic": "extraction",
+      "appliesTo": ["pourover"],
+      "text": "Gagné calls channelling one of the biggest obstacles to an even V60 extraction: dry grounds repel water, so the flow concentrates along one path and the cup mixes over- and under-extracted coffee.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee', the sections on channelling and on uneven grinds."
+    },
+    {
+      "id": "gagne-aeropress-long-steep-gentle-press",
+      "topic": "extraction",
+      "appliesTo": ["aeropress"],
+      "text": "For AeroPress, Gagné recommends steeping for 10 minutes or more and pressing as gently as you can: hard pressing tasted worse, and a slurry pushed unevenly through the bed turns astringent.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2021/09/07/reaching-fuller-flavor-profiles-with-the-aeropress/",
+      "note": "Coffee ad Astra, 'Reaching fuller flavor profiles with the AeroPress'. He presents the cause of astringency as a hypothesis, not a measurement."
+    },
+    {
+      "id": "hedrick-aeropress-slow-press",
+      "topic": "extraction",
+      "appliesTo": ["aeropress"],
+      "text": "Hedrick presses the AeroPress slowly and gently and stops before the hiss: a slow press gives a cleaner cup with better texture, because the coffee bed acts as the filter.",
+      "who": "Lance Hedrick",
+      "url": "https://www.youtube.com/watch?v=CafyJ2p0Bgs",
+      "note": "His video 'A Very Good Aeropress Recipe'. Wording checked against the written summary by Ryan Xu on AeroPrecipe (an aggregator), https://aeroprecipe.com/recipes/lance-hedrick-a-very-good-aeropress-recipe-and-3-simple-tips, not against the video itself."
+    },
+    {
+      "id": "wendelboe-time-and-taste-set-grind",
+      "topic": "grind",
+      "appliesTo": ["pourover"],
+      "text": "Wendelboe: if a brew takes too long and tastes bitter, grind a bit coarser; if it runs short and tastes weak and sour, grind finer. A smaller brew needs a finer grind than a larger one.",
+      "who": "Tim Wendelboe",
+      "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee",
+      "note": "His 'How to brew pourover and filter coffee' page, the paragraphs on brew time and grind."
+    },
+    {
+      "id": "rao-brew-time-window-sets-grind",
+      "topic": "grind",
+      "appliesTo": ["pourover"],
+      "text": "Rao steers by total brew time: when a brew finishes before his target window he grinds finer, and when it runs past it he grinds coarser.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/pulsar-recipe",
+      "note": "His Pulsar recipe post: a 3:30 to 4:30 target for that no-bypass brewer, with the grind rule either side of it."
+    },
+    {
+      "id": "kasuya-46-coarse-grind",
+      "topic": "grind",
+      "appliesTo": ["pourover"],
+      "text": "Kasuya brews the 4:6 method with a coarse grind, which he says gives a clean cup and bright flavours.",
+      "who": "Tetsu Kasuya",
+      "url": "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya",
+      "note": "Kurasu's transcript of his 2016 World Brewers Cup routine (the competition recipe was 20 g, coarse, 92 °C)."
+    },
+    {
+      "id": "rao-stir-the-bloom",
+      "topic": "agitation",
+      "appliesTo": ["pourover"],
+      "text": "Rao argues that judicious stirring reduces channelling, makes extraction more uniform and improves repeatability; without it some grounds stay dry through the whole prewet.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/2017/9/14/v60-video",
+      "note": "His 2017 'V60 video' post."
+    },
+    {
+      "id": "hoffmann-v60-bloom-and-swirl",
+      "topic": "agitation",
+      "appliesTo": ["pourover"],
+      "text": "Hoffmann blooms a V60 with twice the coffee's weight in water for up to 45 seconds and swirls the slurry until it is evenly mixed, so that all the grounds are wet. He finds swirling better than a spoon for this.",
+      "who": "James Hoffmann",
+      "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique",
+      "note": "Hario USA's written version of his Ultimate V60 Technique video (https://www.youtube.com/watch?v=AI4ynXzkSQo)."
+    },
+    {
+      "id": "hoffmann-v60-finish-gently",
+      "topic": "agitation",
+      "appliesTo": ["pourover"],
+      "text": "After the last pour Hoffmann stirs a V60 once clockwise and once anticlockwise, lets it drain a little, then gives one gentle swirl before the drawdown.",
+      "who": "James Hoffmann",
+      "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique",
+      "note": "Hario USA's written version of his Ultimate V60 Technique video, the final steps."
+    },
+    {
+      "id": "gagne-pour-speed-sets-turbulence",
+      "topic": "agitation",
+      "appliesTo": ["pourover"],
+      "text": "Gagné: how fast you pour sets the turbulence in the slurry, and turbulence raises extraction. He avoids up-and-down kettle movements because they are hard to repeat exactly.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee', the section on pouring."
+    },
+    {
+      "id": "gagne-aeropress-no-circular-stir",
+      "topic": "agitation",
+      "appliesTo": ["aeropress"],
+      "text": "Gagné avoids stirring an AeroPress in circles: it builds a domed bed that channels at the edges. He stirs back and forth, then swirls to get a flat bed before pressing.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2021/09/07/reaching-fuller-flavor-profiles-with-the-aeropress/",
+      "note": "Coffee ad Astra, 'Reaching fuller flavor profiles with the AeroPress', the recipe steps and the note on stirring."
+    },
+    {
+      "id": "gagne-fines-clog-the-filter",
+      "topic": "flow",
+      "appliesTo": ["pourover"],
+      "text": "Gagné: coffee fines clog pores in the paper filter and slow the flow. A slower drawdown raises strength and extraction yield, which is why a pour-over reacts so sharply to grind size.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee', the section on grind size."
+    },
+    {
+      "id": "rao-steady-pour-constant-height",
+      "topic": "flow",
+      "appliesTo": ["pourover"],
+      "text": "Rao pours in a steady stream with the kettle at a constant height, moving it so that the whole slurry is wetted as equally as possible.",
+      "who": "Scott Rao",
+      "url": "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao",
+      "note": "His V60 recipe in Hario UK's ambassador interview."
+    },
+    {
+      "id": "hoffmann-hotter-water-faster-drawdown",
+      "topic": "flow",
+      "appliesTo": ["pourover"],
+      "text": "Hoffmann notes that hotter water makes a V60 draw down faster, and that the filter paper changes the drawdown too.",
+      "who": "James Hoffmann",
+      "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique",
+      "note": "Hario USA's written version of his Ultimate V60 Technique video, the notes on drawdown."
+    },
+    {
+      "id": "gagne-brew-time-is-a-consistency-check",
+      "topic": "flow",
+      "appliesTo": ["pourover"],
+      "text": "Gagné treats total brew time as a check on consistency, not a target in itself: it depends on many variables, so compare it between brews made the same way.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee'; he gives 2:30 to 3:30 as typical for his V60 recipe."
+    },
+    {
+      "id": "gagne-flat-bed-and-spin",
+      "topic": "bed",
+      "appliesTo": ["pourover"],
+      "text": "Gagné shakes the dry grounds gently into an even, flat bed and uses the Rao spin during the brew to reduce channelling and grounds stranded high and dry on the filter. He warns against spinning a V60 that is too full.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee', the recipe steps."
+    },
+    {
+      "id": "rao-spin-hard-then-barely",
+      "topic": "bed",
+      "appliesTo": ["pourover"],
+      "text": "In his V60 recipe Rao spins the bloom aggressively, then uses only very gentle spins of under a second after each later pour: just enough to fill in the dripper's ribbed channels.",
+      "who": "Scott Rao",
+      "url": "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao",
+      "note": "His V60 recipe in Hario UK's ambassador interview."
+    },
+    {
+      "id": "rao-deeper-bed-less-astringency",
+      "topic": "bed",
+      "appliesTo": ["pourover"],
+      "text": "Rao recommends at least 20 g of coffee, and prefers 25 to 30 g, in his no-bypass brewer: enough bed depth lowers the risk of astringency.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/pulsar-recipe",
+      "note": "His Pulsar recipe post, the note on dose."
+    },
+    {
+      "id": "hoffmann-hotter-for-light-roasts",
+      "topic": "temperature",
+      "appliesTo": ["pourover"],
+      "text": "For a V60, Hoffmann says the hotter the water the better, especially with lighter roasts.",
+      "who": "James Hoffmann",
+      "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique",
+      "note": "Hario USA's written version of his Ultimate V60 Technique video; no number is given."
+    },
+    {
+      "id": "gagne-slurry-runs-cooler-than-the-kettle",
+      "topic": "temperature",
+      "appliesTo": ["pourover"],
+      "text": "Gagné: while you pour, the slurry easily falls well below the usual 91 to 94 °C target. Pouring in many small batches cools it further, and a plastic V60 holds heat better.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+      "note": "Coffee ad Astra, 'Brewing better coffee', the section on temperature."
+    },
+    {
+      "id": "rao-no-more-than-two-pours",
+      "topic": "temperature",
+      "appliesTo": ["pourover"],
+      "text": "Rao brews a V60 in one pour or two and advises against splitting the water further, because more pours lower the average extraction temperature. Two pours need a slightly coarser grind than one.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/2017/9/14/v60-video",
+      "note": "His 2017 'V60 video' post."
+    },
+    {
+      "id": "gagne-aeropress-boiling-for-light-roasts",
+      "topic": "temperature",
+      "appliesTo": ["aeropress"],
+      "text": "Gagné brews light roasts in the AeroPress with water at 100 °C and lowers the kettle temperature for darker roasts.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2021/09/07/reaching-fuller-flavor-profiles-with-the-aeropress/",
+      "note": "Coffee ad Astra, 'Reaching fuller flavor profiles with the AeroPress'."
+    },
+    {
+      "id": "hedrick-aeropress-temperature-by-roast",
+      "topic": "temperature",
+      "appliesTo": ["aeropress"],
+      "text": "For AeroPress, Hedrick uses water at about 90 to 92 °C for light roasts, about 88 °C for medium and about 82 to 84 °C for dark, and does not go above 95 °C.",
+      "who": "Lance Hedrick",
+      "url": "https://www.youtube.com/watch?v=CafyJ2p0Bgs",
+      "note": "His video 'A Very Good Aeropress Recipe'. Numbers checked against the written summary by Ryan Xu on AeroPrecipe (an aggregator), https://aeroprecipe.com/recipes/lance-hedrick-a-very-good-aeropress-recipe-and-3-simple-tips, not against the video itself."
+    },
+    {
+      "id": "rao-lighter-roasts-need-more-rest",
+      "topic": "freshness",
+      "appliesTo": [],
+      "text": "Rao: the lighter the roast, the more rest it needs after roasting to reach its best, and there is no single right rest. A dark, oily roast he would rest for no more than a day.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/restingbeans",
+      "note": "His post 'Resting roasts: is fresher better?'. He says the roasting machine changes the answer and that the mechanism is not settled."
+    },
+    {
+      "id": "rao-fresh-coffee-and-espresso",
+      "topic": "freshness",
+      "appliesTo": [],
+      "text": "Rao notes that very fresh coffee gives espresso a mass of crema and lower extraction, probably from gas pushing back in the basket; filter brewing lets the gas escape into the air.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/restingbeans",
+      "note": "His post 'Resting roasts: is fresher better?', the part comparing espresso and filter."
+    },
+    {
+      "id": "rao-warm-storage-ages-beans",
+      "topic": "freshness",
+      "appliesTo": [],
+      "text": "Rao: beans stored somewhere warm degrade much faster, while cold storage, such as freezing vacuum-sealed beans, slows ageing.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/restingbeans",
+      "note": "His post 'Resting roasts: is fresher better?', the part on storage."
+    },
+    {
+      "id": "gagne-water-hardness-and-alkalinity",
+      "topic": "water",
+      "appliesTo": [],
+      "text": "Gagné: the calcium and magnesium in brew water do the work of extracting flavour, while too much alkalinity reacts with the coffee's acids and masks them. The SCA target for alkalinity is at or near 40 ppm as CaCO3.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2018/12/16/water-for-coffee-extraction/",
+      "note": "Coffee ad Astra, 'Water for coffee extraction'."
+    },
+    {
+      "id": "rao-water-100-hardness-40-alkalinity",
+      "topic": "water",
+      "appliesTo": [],
+      "text": "Rao suggests brew water of about 100 ppm general hardness and 40 ppm alkalinity for most coffees.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/pulsar-recipe",
+      "note": "His Pulsar recipe post, the line on water."
+    },
+    {
+      "id": "wendelboe-65-grams-per-litre",
+      "topic": "ratio",
+      "appliesTo": ["pourover"],
+      "text": "Wendelboe's ratio for pour-over and filter coffee is 65 g of coffee per litre of water.",
+      "who": "Tim Wendelboe",
+      "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee",
+      "note": "His 'How to brew pourover and filter coffee' page."
+    },
+    {
+      "id": "kasuya-46-first-pours-set-balance",
+      "topic": "recipe",
+      "appliesTo": ["pourover"],
+      "text": "In Kasuya's 4:6 method the first 40% of the water, in two pours, sets the balance of acidity and sweetness: a smaller first pour makes the cup sweeter, a larger one more acidic.",
+      "who": "Tetsu Kasuya",
+      "url": "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya",
+      "note": "Kurasu's transcript of his 2016 World Brewers Cup routine, where he explains the first two pours."
+    },
+    {
+      "id": "kasuya-46-later-pours-set-strength",
+      "topic": "recipe",
+      "appliesTo": ["pourover"],
+      "text": "In Kasuya's 4:6 method the last 60% of the water sets the strength through the number of pours: more pours for a stronger cup, fewer for a lighter one.",
+      "who": "Tetsu Kasuya",
+      "url": "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya",
+      "note": "Kurasu's transcript of his 2016 World Brewers Cup routine, where he explains the remaining pours."
+    },
+    {
+      "id": "rao-bloom-length-shapes-the-cup",
+      "topic": "recipe",
+      "appliesTo": ["pourover"],
+      "text": "Rao observes that short blooms seem to enhance clarity and aroma, and longer blooms body and texture.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/pulsar-recipe",
+      "note": "His Pulsar recipe post; he words it as an observation ('seem to'), with a 45 to 60 second bloom in the recipe."
+    },
+    {
+      "id": "rao-avoid-small-v60-doses",
+      "topic": "recipe",
+      "appliesTo": ["pourover"],
+      "text": "Rao advises against V60 doses below about 20 to 22 g: smaller doses need a finer grind and brew cooler.",
+      "who": "Scott Rao",
+      "url": "https://www.scottrao.com/blog/2017/9/14/v60-video",
+      "note": "His 2017 'V60 video' post."
+    },
+    {
+      "id": "gagne-espresso-flow-sets-grind",
+      "topic": "espresso",
+      "appliesTo": ["espresso"],
+      "text": "Gagné dials in a flow-controlled espresso shot with the grind alone: when it flows a bit faster than your usual goal, grind a bit finer next time, and coarser when it flows slower.",
+      "who": "Jonathan Gagné",
+      "url": "https://coffeeadastra.com/2020/12/31/an-espresso-profile-that-adapts-to-your-grind-size/",
+      "note": "Coffee ad Astra, 'An Espresso Profile that Adapts to your Grind Size'. Written about a profile for the Decent DE1; he says he is early in his espresso experience and calls the profile a prototype."
+    }
+  ]
+}

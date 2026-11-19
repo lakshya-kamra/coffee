@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "water": [
+    {
+      "id": "tap-filtered",
+      "label": "Filtered tap water",
+      "kind": "tap",
+      "description": "Tap water through a jug or under-sink filter. Removes chlorine taste; minerals depend on your city and the filter. Check your supplier's report or a test kit for GH/KH.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "tap-unfiltered",
+      "label": "Unfiltered tap water",
+      "kind": "tap",
+      "description": "Straight from the tap. Chlorine and very hard or very soft water can mute or flatten flavour.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "tap-softened",
+      "label": "Softened tap water",
+      "kind": "tap",
+      "description": "Ion-exchange softeners swap calcium and magnesium for sodium, so hardness drops but alkalinity stays; often tastes flat or salty in coffee.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "bottled-spring",
+      "label": "Bottled spring water",
+      "kind": "bottled",
+      "description": "Low-to-moderate mineral spring water. Read the label: calcium and magnesium give hardness, bicarbonate gives alkalinity (buffer).",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "bottled-mineral",
+      "label": "High-mineral bottled water",
+      "kind": "bottled",
+      "description": "Hard or high-bicarbonate mineral water; tends to flatten acidity and can scale machines. Dilute with distilled water if you use it.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "distilled-ro",
+      "label": "Distilled or RO water (no minerals)",
+      "kind": "other",
+      "description": "Essentially no minerals. Brews thin, sour coffee on its own and is hard on some espresso machine sensors; use it as the base for a recipe or mineral packet.",
+      "ghPpm": 0,
+      "khPpm": 0
+    },
+    {
+      "id": "tww-classic-light-roast",
+      "label": "Third Wave Water - Classic Light Roast",
+      "kind": "drops",
+      "description": "Powder sachet mixed into distilled water (formerly 'Classic'). Magnesium sulfate, calcium citrate and sodium chloride; about 150 mg/L TDS and 36-40 mg/L alkalinity per the maker. For light to medium roasts, pour-over and drip. Hardness not published.",
+      "ghPpm": null,
+      "khPpm": 40
+    },
+    {
+      "id": "tww-medium-roast",
+      "label": "Third Wave Water - Medium Roast",
+      "kind": "drops",
+      "description": "Powder sachet; about double the Classic profile's alkalinity (~80 mg/L per the maker) to soften acidity in medium roasts. Hardness not published.",
+      "ghPpm": null,
+      "khPpm": 80
+    },
+    {
+      "id": "tww-dark-roast",
+      "label": "Third Wave Water - Dark Roast",
+      "kind": "drops",
+      "description": "Powder sachet with the most buffer (~135-140 mg/L alkalinity, ~180 mg/L TDS per the maker) to tame bitterness in dark roasts. Hardness not published.",
+      "ghPpm": null,
+      "khPpm": 140
+    },
+    {
+      "id": "tww-espresso",
+      "label": "Third Wave Water - Espresso Machine",
+      "kind": "drops",
+      "description": "Powder sachet made for espresso machines: magnesium sulfate, calcium citrate and potassium bicarbonate (no chloride salt listed), ~80 mg/L alkalinity and ~150 mg/L TDS per the maker. Hardness not published.",
+      "ghPpm": null,
+      "khPpm": 80
+    },
+    {
+      "id": "lotus-drops",
+      "label": "Lotus Water drops (custom)",
+      "kind": "drops",
+      "description": "Four dropper bottles (calcium, magnesium, sodium bicarbonate, potassium bicarbonate) added to distilled water so you can build almost any recipe. Enter your own GH/KH.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "lotus-light-bright",
+      "label": "Lotus 'Light & Bright' (Lance Hedrick)",
+      "kind": "drops",
+      "description": "Lance Hedrick's Lotus recipe from calcium and potassium bicarbonate drops; highlights acidity and clarity. Filter version 60 GH / 25 KH; espresso version 20 GH / 45 KH.",
+      "ghPpm": 60,
+      "khPpm": 25
+    },
+    {
+      "id": "lotus-simple-sweet",
+      "label": "Lotus 'Simple & Sweet'",
+      "kind": "drops",
+      "description": "Lotus recipe using calcium, magnesium and both bicarbonates for more body and sweetness. Filter version 90 GH / 40 KH; espresso version 20 GH / 55 KH.",
+      "ghPpm": 90,
+      "khPpm": 40
+    },
+    {
+      "id": "apax-tonik",
+      "label": "Apax Lab Tonik",
+      "kind": "drops",
+      "description": "Mineral concentrate (sodium and magnesium) meant to make acidity brighter. Dose into soft or distilled water, or add drops to the cup. The concentrates contain chlorides, so do not put them in espresso machine water; add them to the cup instead. GH/KH not published.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "apax-jamm",
+      "label": "Apax Lab Jamm",
+      "kind": "drops",
+      "description": "Mineral concentrate (calcium, potassium, sodium) aimed at sweetness and a creamier mouthfeel. Not for espresso machine water (chlorides); add to the cup instead. GH/KH not published.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "apax-lylac",
+      "label": "Apax Lab Lylac",
+      "kind": "drops",
+      "description": "Calcium-free concentrate using sulfates and potassium, aimed at floral notes and a silky texture. Not for espresso machine water; add to the cup instead. GH/KH not published.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "aquacode",
+      "label": "Aquacode",
+      "kind": "drops",
+      "description": "Liquid deep-sea mineral concentrate from Taiwan (calcium to magnesium about 1:2.7). One 7 L 'Barista' sachet in 7 L of distilled water gives about 85 ppm TDS; the retailer says it adds no bicarbonate. GH/KH not published.",
+      "ghPpm": null,
+      "khPpm": null
+    },
+    {
+      "id": "sca-target",
+      "label": "SCA brewing water target",
+      "kind": "recipe",
+      "description": "Specialty Coffee Association (heritage SCAA) target: calcium hardness 68 ppm as CaCO3 (17-85 acceptable), alkalinity at or near 40 ppm, TDS about 150 ppm, pH near 7. The 68 is calcium hardness only, stored here as GH. A sensible all-round goal for filter coffee.",
+      "ghPpm": 68,
+      "khPpm": 40
+    },
+    {
+      "id": "rao-perger",
+      "label": "Rao / Perger",
+      "kind": "recipe",
+      "description": "Popular filter recipe associated with Scott Rao and Matt Perger. Rao's Lotus-drops version is 90 GH / 42 KH (he credits it to Dan Eils of Litmus Coffee Labs); Jonathan Gagné's mineral weights work out to about 87 / 40, and Barista Hustle's 'Rao Water' is about 75 / 50.",
+      "ghPpm": 90,
+      "khPpm": 42
+    },
+    {
+      "id": "barista-hustle",
+      "label": "Barista Hustle Water",
+      "kind": "recipe",
+      "description": "Barista Hustle's two-concentrate recipe (Epsom salt for hardness, baking soda for buffer): about 80 GH / 40 KH. Magnesium-only hardness, good clarity for filter.",
+      "ghPpm": 80,
+      "khPpm": 40
+    },
+    {
+      "id": "hendon",
+      "label": "Hendon Water",
+      "kind": "recipe",
+      "description": "Barista Hustle's simplified version of Christopher Hendon's water (Hendon co-wrote Water for Coffee), made with Epsom salt and baking soda: about 99 GH / 31 KH. High magnesium, low buffer.",
+      "ghPpm": 99,
+      "khPpm": 31
+    },
+    {
+      "id": "bh-pretty-hard",
+      "label": "Barista Hustle 'Pretty Hard'",
+      "kind": "recipe",
+      "description": "A harder Barista Hustle recipe (Epsom salt and baking soda), about 126 GH / 35 KH; Barista Hustle suggests it for short filter brew times.",
+      "ghPpm": 126,
+      "khPpm": 35
+    },
+    {
+      "id": "custom",
+      "label": "Custom",
+      "kind": "other",
+      "description": "Your own water or recipe. Enter GH and KH if you know them (ppm as CaCO3).",
+      "ghPpm": null,
+      "khPpm": null
+    }
+  ]
+}

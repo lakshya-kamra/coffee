@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`brew report > matches the snapshot (date line aside) 1`] = `
+"
+I brewed this and I want help working out what to change next time.
+Please read the bed analysis and the taste notes together before answering,
+and give me **one** change to make on the next brew, not five.
+
+## Recipe
+- Following: **The Ultimate V60 Technique** (James Hoffmann)
+- Brewer: V60 02 (pour-over)
+- Dose: 15 g
+- Water: 250 g (1:16.7)
+- Temperature: 94 C
+- Recipe target time: 3:30
+
+## Coffee
+- Tim Wendelboe — Kayon Mountain
+- Origin: Ethiopia Guji
+- Process: Natural (dry process)
+- Roast level: Light
+- Days off roast: 12
+- Roaster's notes: Peach
+
+## Grind
+- Grinder: 1Zpresso K-Ultra
+- Burrs: Unknown
+- Setting used: **75 clicks** out from zero (burrs touching)
+- Dial: 100 clicks per full turn; 75 reads 7.5 on the dial
+- Direction: FEWER clicks is finer
+- Roughly 1500 micron burr gap (20.0 per click)
+- Usual pour-over starting range on this grinder: 75–90 (1Zpresso, AD Cafe via 1Zpresso, Who Cafe Roasting via 1Zpresso, P. Coffee Roaster via 1Zpresso)
+- Recipe calls for: Medium-fine
+
+## What happened
+- Total time: 3:25
+- Drawdown (last pour to exposed bed): 40s
+
+## Bed analysis
+- Shape: Flat and even
+- 2 photos of this brew are in the app (not attached)
+
+## Taste
+| Axis | 0-10 |
+| --- | --- |
+| Acidity | 7 |
+| Sweetness | 5 |
+| Bitterness | 5 |
+| Body | 5 |
+| Balance | 5 |
+| Aftertaste | 5 |
+| Clarity | 5 |
+
+- Overall: 7/10
+- Tasted like: Citrus
+- Problems: Thin
+
+> Bright
+
+**My own plan for next time:** Finer
+
+## What I want back
+1. What most likely explains this cup?
+2. The single change to make next brew. If it is a grind change, give it in this grinder's units, the way the dial reads, and say which way to turn, not just "finer" or "coarser".
+3. What I should expect to taste if that change worked.
+"
+`;

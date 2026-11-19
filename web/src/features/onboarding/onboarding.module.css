@@ -1,0 +1,49 @@
+/* Onboarding (A§7.3): five steps over the brew screen's mesh, progress dots, Skip and Back. */
+
+.screen { position: relative; min-height: 100%; display: flex; flex-direction: column; }
+.mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding-top: calc(8px + env(safe-area-inset-top));
+}
+.dots { display: flex; gap: 8px; align-items: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--outline-strong); transition: transform 160ms var(--ease-emphasized), background-color 160ms linear; }
+.dot[data-on="true"] { background: var(--ink-high); transform: scale(1.25); }
+.dot[data-done="true"] { background: var(--ink-mid); }
+
+.step { display: flex; flex-direction: column; gap: 16px; padding-top: 12px; flex: 1; }
+.step[hidden] { display: none; }
+.lede { color: var(--ink-mid); }
+.group { display: flex; flex-direction: column; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.described { color: var(--ink-mid); }
+.note { color: var(--ink-low); font-size: 0.75rem; line-height: 1rem; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.summary { display: flex; flex-direction: column; gap: 10px; }
+.summaryTop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pickerBox {
+  max-height: min(56vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--gutter) 8px;
+  background: var(--surface1);
+  border-radius: var(--r-card);
+}
+
+.footer {
+  /* In the flow, not sticky: steps grow to push it to the bottom, and nothing scrolls under it. */
+  padding: 24px 0 calc(8px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Two fields side by side must shrink with the column, never push past it. */
+.row2 > * { min-width: 0; }
+.row2 input { min-width: 0; width: 100%; }

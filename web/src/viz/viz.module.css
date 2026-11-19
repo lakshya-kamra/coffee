@@ -1,0 +1,170 @@
+/* Composite drawings (ports of RecipeCard.kt, JourneyLine.kt, Timeline.kt, BrewRing.kt, MeshGradient.kt). */
+
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.grow { flex: 1; }
+.clamp { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.clamp2 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.clamp3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+
+/* ---------------------------------------------------------------- journey line */
+.journey { position: relative; width: 100%; }
+.journeySvg { position: absolute; left: 0; top: 0; overflow: visible; }
+.track { stroke: var(--ink-faint); }
+.track.j_compact { stroke: var(--ink-low); }
+.elapsed { stroke: var(--ink-high); }
+.elapsed.j_live { stroke: var(--crema-stroke); }
+.dash { stroke: var(--ink-faint); }
+.tick { stroke: var(--ink-low); }
+.nodeRing { stroke: var(--ink-faint); }
+.nodeRing.j_compact { stroke: var(--ink-low); }
+.nodeLit { fill: var(--ink-high); }
+.nodeLit.j_live { fill: var(--crema); }
+.drop { fill: var(--ink-mid); }
+.dropDone { fill: var(--ink-high); }
+.drop.j_live, .dropDone.j_live { fill: var(--crema); }
+.endpoint, .nodeLabel { position: absolute; white-space: nowrap; pointer-events: none; }
+.endpoint { font-size: 1.0625rem; line-height: 1.25rem; }
+
+/* ---------------------------------------------------------------- route row */
+.route { display: flex; align-items: flex-end; width: 100%; }
+.routeEnd { display: flex; flex-direction: column; flex: none; }
+.routeEndRight { align-items: flex-end; }
+.routeMid { flex: 1; min-width: 0; padding: 0 12px; display: flex; flex-direction: column; align-items: center; }
+.routeMid[data-centered="true"] { align-self: center; }
+.routeMidLabel { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; max-width: 100%; }
+
+/* ---------------------------------------------------------------- recipe card + header */
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  background: var(--surface1);
+  border-radius: var(--r-card);
+  /* Not overflow: hidden. On the way back from the detail the header flies in from outside the
+     card, and a clipping card would hide it until it lands. The header carries its own top
+     radii, and nothing else in the card reaches the corners. */
+  transition: transform var(--press-ms) var(--ease-emphasized);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.card:active { transform: scale(0.97); }
+.card[data-compact="true"] { width: 232px; flex: none; scroll-snap-align: start; }
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface1);
+}
+.headerCard { padding: 18px 18px 0; }
+.headerDetail { padding: 18px 18px 0; }
+.headerMeta { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.headerName { color: var(--ink-high); }
+.nameCompact { font-size: 1.0625rem; line-height: 1.375rem; font-weight: 700; letter-spacing: -0.1px; }
+.accentDot { flex: none; border-radius: 50%; }
+/* The body is 49 of a card's 58 elements, and Today and Recipes each hold one card per recipe.
+   Bodies that are off screen skip style, layout and paint, so showing or hiding a tab layer
+   (an inherited visibility change) restyles what is on screen instead of ~2,500 elements;
+   measured: the tab-switch frame at 4× CPU throttle went from 50–75 ms to under 50. The header
+   stays outside: it is the shared element and Motion has to measure it. Heights are the
+   rendered ones, remembered per card after its first paint (`auto`). */
+.cardBody { display: flex; flex-direction: column; padding: 14px 18px 16px; content-visibility: auto; contain-intrinsic-block-size: auto 149px; }
+.card[data-compact="true"] .cardBody { contain-intrinsic-block-size: auto 104px; }
+.cardMeta { margin-top: 10px; }
+.cardGrid { display: block; margin-top: 14px; padding-top: 4px; border-top: 1px solid var(--hairline); }
+
+/* ---------------------------------------------------------------- info grid */
+.grid { display: flex; flex-direction: column; width: 100%; }
+.gridRow { display: grid; }
+.gridRow + .gridRow { border-top: 1px solid var(--hairline); }
+.gridCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 0 12px 14px;
+  border-left: 1px solid var(--hairline);
+}
+.gridCell:first-child { padding-left: 0; border-left: 0; }
+.grid[data-compact="true"] .gridCell { padding-top: 8px; padding-bottom: 8px; }
+.compactNum { font-size: 1.0625rem; line-height: 1.25rem; font-weight: 700; letter-spacing: -0.3px; }
+.nwuCompact { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.compactUnit { font-size: 0.8125rem; color: var(--ink-mid); }
+.gridSub { font-size: 0.75rem; line-height: 1rem; color: var(--ink-low); margin-top: -2px; }
+.gridSubChip { display: flex; }
+
+/* ---------------------------------------------------------------- timeline */
+.timeline { display: flex; flex-direction: column; }
+.tlRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px 20px minmax(0, 1fr) auto;
+  padding: 10px 0;
+}
+.tlRow[data-highlight="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 -8px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+}
+.tlRail { position: absolute; left: 52px; top: 0; bottom: 0; width: 20px; }
+.tlSeg { position: absolute; left: 9px; width: 2px; background: var(--ink-faint); }
+.tlNode { position: absolute; left: 10px; border-radius: 50%; }
+.tlNode[data-kind="planned"] { background: var(--ink-mid); }
+.tlNode[data-kind="terminal"] { border: 1.5px solid var(--ink-mid); }
+.tlTime { position: relative; grid-column: 1; display: flex; flex-direction: column; }
+.tlPlanned { font-size: 0.8125rem; color: var(--ink-low); }
+.tlBody { position: relative; grid-column: 3; display: flex; flex-direction: column; gap: 1px; padding-left: 6px; min-width: 0; }
+.tlTrail { position: relative; grid-column: 4; align-self: start; padding-left: 8px; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- brew ring */
+.ring { position: relative; width: 100%; height: 100%; }
+.ringCanvas { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; }
+.ringContent { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+/* ---------------------------------------------------------------- mesh */
+.mesh { position: absolute; inset: 0; overflow: hidden; background: var(--bg); pointer-events: none; contain: strict; }
+.meshBlobs { position: absolute; inset: 0; }
+.meshLayer { position: absolute; inset: 0; background: var(--m-base); }
+.meshLayer[data-mood="idle"] { --m-a: var(--mood-idle-a); --m-b: var(--mood-idle-b); --m-base: var(--mood-idle-base); }
+.meshLayer[data-mood="bloom"] { --m-a: var(--mood-bloom-a); --m-b: var(--mood-bloom-b); --m-base: var(--mood-bloom-base); }
+.meshLayer[data-mood="pouring"] { --m-a: var(--mood-pouring-a); --m-b: var(--mood-pouring-b); --m-base: var(--mood-pouring-base); }
+.meshLayer[data-mood="steeping"] { --m-a: var(--mood-steeping-a); --m-b: var(--mood-steeping-b); --m-base: var(--mood-steeping-base); }
+.meshLayer[data-mood="drawdown"] { --m-a: var(--mood-drawdown-a); --m-b: var(--mood-drawdown-b); --m-base: var(--mood-drawdown-base); }
+.meshLayer[data-mood="done"] { --m-a: var(--mood-done-a); --m-b: var(--mood-done-b); --m-base: var(--mood-done-base); }
+/* Lissajous drift: x and y on separate elements with their own periods (sine-like alternate). */
+.blobX { position: absolute; left: 50%; top: 42%; width: 0; height: 0; animation: mesh-x 12s ease-in-out infinite alternate; }
+.blobY { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: mesh-y 17s ease-in-out infinite alternate; }
+.blobXB { animation-duration: 20s; animation-delay: -13.4s; }
+.blobYB { animation-duration: 10.9s; animation-delay: -9.5s; }
+.blobXC { animation-duration: 8.6s; animation-delay: -11.5s; }
+.blobYC { animation-duration: 30s; animation-delay: -52s; }
+.blob { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); }
+.blobA { width: 170vmax; height: 170vmax; background: radial-gradient(closest-side, var(--m-a), transparent); opacity: 0.85; }
+.blobB { width: 140vmax; height: 140vmax; background: radial-gradient(closest-side, var(--m-b), transparent); opacity: 0.75; }
+.blobC { width: 110vmax; height: 110vmax; background: radial-gradient(closest-side, var(--m-a), transparent); opacity: 0.45; }
+@keyframes mesh-x {
+  from { transform: translateX(-34vw); }
+  to { transform: translateX(34vw); }
+}
+@keyframes mesh-y {
+  from { transform: translateY(-30vh); }
+  to { transform: translateY(30vh); }
+}
+/* A vignette keeps text legible over the bright middle of the mesh; light mode barely needs one. */
+.meshVignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.18) 0%, transparent 45%, rgb(0 0 0 / 0.3) 100%);
+}
+:root[data-theme="light"] .meshVignette {
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.027) 0%, transparent 45%, rgb(0 0 0 / 0.045) 100%);
+}
+.meshFloor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent, var(--bg) 50%);
+}

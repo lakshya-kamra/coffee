@@ -1,0 +1,84 @@
+/* Review (port of ReviewScreen.kt). */
+.form { min-height: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+.grow { flex: 1; min-width: 0; }
+.gap8 { height: 8px; flex: none; }
+.gap12 { height: 12px; flex: none; }
+.gap16 { height: 16px; flex: none; }
+
+.missing { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding-top: 28vh; }
+.missingArt { display: inline-flex; }
+
+.headTop { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
+.title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.gridCard { margin-top: 12px; padding: 6px 18px; border-radius: var(--r-card); background: var(--surface1); }
+.editBox { display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px; }
+.fieldRow { display: flex; gap: 12px; align-items: flex-start; }
+.quietLeft { align-self: flex-start; margin-left: -12px; }
+.timeRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.warning { color: var(--attention); padding-left: 2px; }
+
+.overallTop { display: flex; align-items: center; }
+.nwu { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.unitXL { font-size: 1.68rem; color: var(--ink-mid); }
+.sliders { display: flex; flex-direction: column; gap: 12px; }
+.chipLabel { display: block; margin: 16px 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.bedGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.bedTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 76px;
+  padding: 8px 4px;
+  border-radius: var(--r-well);
+  border: 1.5px solid transparent;
+  transition: background-color 180ms var(--ease-emphasized), border-color 180ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
+}
+.bedTile[data-selected="true"] { transform: scale(1.03); }
+.bedTile:active { transform: scale(0.96); }
+.bedLabel {
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: var(--ink-mid);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.bedTile[data-selected="true"] .bedLabel { color: var(--ink-high); }
+/* The reading appears in its own space instantly; only its content fades (rule 1). */
+.reading {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  animation: fade-in 200ms var(--ease-decel) both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.photoPlaceholder { height: 76px; }
+.read { padding: 8px 0; font-size: 0.875rem; line-height: 1.25rem; color: var(--ink-high); }
+.readFoot { font-size: 0.75rem; padding-bottom: 4px; }
+.after { display: flex; justify-content: flex-end; margin-top: 16px; }
+.sticky {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg) 40px);
+  pointer-events: none;
+}
+.sticky > * { pointer-events: auto; }
+/* ReviewScreen.kt's StickyCtaBar weights: Save 0.36, Save & analyse 0.64. */
+.stickyRow { display: flex; gap: 10px; }
+.stickySave { flex: 36 1 0; width: auto; min-width: 0; border-radius: var(--r-primary); }
+.stickyAnalyse { flex: 64 1 0; width: auto; min-width: 0; }

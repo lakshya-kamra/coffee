@@ -1,0 +1,111 @@
+/* Gear: Beans / Grinders / App, and the bean and grinder editors (A§7.4, §7.6, §7.8). */
+
+.tabs { margin-top: 4px; }
+.pane { display: flex; flex-direction: column; gap: var(--card-gap); padding-top: 16px; }
+.pane[hidden] { display: none; }
+
+/* Cards */
+.cardTop { display: flex; align-items: center; gap: 8px; }
+.cardTop > :first-child { flex: 1; min-width: 0; }
+.cardName { margin-top: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cardMeta { margin-top: 4px; color: var(--ink-mid); }
+.cardRule { margin: 14px 0 0; }
+.cardBody { text-align: left; width: 100%; }
+.finished { opacity: 0.55; }
+.rangeLine { margin-top: 10px; }
+
+.empty { display: flex; align-items: center; gap: 14px; }
+.emptyArt { width: 72px; height: 72px; flex: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.emptyText { color: var(--ink-mid); }
+
+/* Scale notice on a grinder card */
+.notice { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-well); background: var(--attention-container); display: flex; flex-direction: column; gap: 10px; }
+.noticeActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.noticeNote { color: var(--ink-mid); }
+
+/* Sheets and forms */
+.sheetContent { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+.sheetTitle { padding: 4px 0; }
+.section { display: flex; flex-direction: column; gap: 12px; }
+.sectionHead { margin-top: 12px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chipGroup { display: flex; flex-direction: column; gap: 8px; }
+.chipRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.chipSub { margin-top: 4px; }
+.note { font-size: 0.75rem; line-height: 1rem; color: var(--ink-low); }
+.described { color: var(--ink-mid); }
+.actions { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 8px; }
+.actions > :first-child { align-self: stretch; }
+
+/* "Which grinder?" / "Roaster" rows that open a picker */
+.pickRow {
+  width: 100%;
+  min-height: var(--field-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  text-align: left;
+  transition: transform 120ms var(--ease-emphasized);
+}
+.pickRow:active { transform: scale(0.98); }
+.pickText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pickValue[data-empty="true"] { color: var(--ink-low); }
+.chev { color: var(--ink-low); transform: rotate(180deg); }
+
+/* Disclosure: the space opens at once, the content fades in (rule 1: no animated height). */
+.reveal { display: flex; flex-direction: column; gap: 12px; animation: reveal-in 220ms var(--ease-decel) both; }
+@keyframes reveal-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.disclosure { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ink-high); }
+.disclosure[aria-expanded="true"] .disclosureChev { transform: rotate(90deg); }
+.disclosureChev { transform: rotate(-90deg); transition: transform 160ms var(--ease-emphasized); color: var(--ink-mid); }
+
+/* Native date input dressed as a FieldWell */
+.dateWell {
+  height: var(--field-h);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  border: 1px solid transparent;
+}
+.dateWell:focus-within { border-color: var(--ink-high); }
+.dateInput { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink-high); padding: 0; }
+.dateInput:focus { outline: none; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+/* App tab */
+.group { padding-top: 4px; padding-bottom: 4px; }
+.prefCard { display: flex; flex-direction: column; gap: 14px; }
+.prefLabel { display: flex; flex-direction: column; gap: 8px; }
+.unsupported { color: var(--ink-low); }
+.aboutText { color: var(--ink-mid); font-size: 0.875rem; line-height: 1.25rem; }
+.linkRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-high);
+  text-decoration: none;
+}
+.version { color: var(--ink-low); }
+.devRow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* A card that opens its editor: one full-size hit button under the content, so the content
+   keeps real headings and the notice's own buttons sit above it. */
+.cardWrap { position: relative; border-radius: var(--r-card); transition: transform 120ms var(--ease-emphasized); }
+.cardWrap:has(> .cardHit:active) { transform: scale(0.98); }
+.cardHit { position: absolute; inset: 0; z-index: 1; border-radius: var(--r-card); }
+.cardWrap .notice { position: relative; z-index: 2; }
+
+.screen { padding-bottom: var(--list-bottom-pad); min-height: 100%; }
+
+/* Two fields side by side must shrink with the column, never push past it. */
+.row2 > * { min-width: 0; }
+.row2 input { min-width: 0; width: 100%; }

@@ -1,0 +1,82 @@
+/* Today (port of HomeScreen.kt). */
+
+/* Light ceramic vanishes on paper, so light mode draws the shell one step deeper. */
+.mug { --mug-body: var(--art-shell); display: inline-flex; flex: none; }
+:root[data-theme="light"] .mug, :root[data-theme="light"] .empty { --mug-body: var(--outline-strong); }
+.empty { --mug-body: var(--art-shell); display: flex; align-items: center; gap: 14px; }
+.emptyArt { flex: none; display: inline-flex; }
+
+.block { margin-top: var(--card-gap); gap: 8px; }
+.actions { display: flex; justify-content: flex-end; gap: 4px; margin-right: -8px; }
+
+.banner {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin-top: var(--card-gap);
+  border-radius: var(--r-card);
+  background: var(--crema-container);
+}
+.bannerOpen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: inherit;
+  text-align: left;
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.bannerOpen:active { transform: scale(0.98); }
+/* Only on a brew that was left: the way out without opening it. */
+.bannerDiscard {
+  min-width: 44px;
+  padding: 0 18px 0 6px;
+  border-radius: inherit;
+  color: var(--ink-mid);
+}
+.bannerText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* ---------------------------------------------------------------- next brew pass */
+.pass {
+  margin-top: var(--card-gap);
+  border-radius: var(--r-card);
+  background: var(--surface1);
+  overflow: hidden;
+}
+.passOpen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.passOpen:active { transform: scale(0.985); }
+.passEyebrow { display: block; margin-bottom: 2px; }
+.passBody { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 0; }
+.passGrid { display: block; }
+.passCta { padding: 16px 18px 18px; }
+button.inverse { background: var(--inverse); color: var(--on-inverse); }
+
+/* ---------------------------------------------------------------- stats, recent, carousel */
+.stats {
+  margin-top: var(--card-gap);
+  padding: 6px 18px;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+}
+.recent { display: flex; flex-direction: column; }
+.carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 4px;
+  scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar { display: none; }
+.carouselItem { flex: none; display: flex; scroll-snap-align: start; }

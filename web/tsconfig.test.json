@@ -1,0 +1,11 @@
+{
+  // Tests run in Node (Vitest) and may read repo files (parity with Color.kt / Motion.kt), so
+  // they get Node types; browser code (tsconfig.app.json) never does.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    "types": ["vite/client", "vite-plugin-pwa/react", "node"]
+  },
+  "include": ["src", "scripts/*.d.mts"],
+  "exclude": ["src/**/*.worker.ts"]
+}

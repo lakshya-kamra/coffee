@@ -1,0 +1,95 @@
+/*
+ * Hand-written tokens converted from the Android theme (Type.kt, Dimens.kt, Motion.kt easings).
+ * Colours live in tokens.gen.css (generated from Color.kt). sp/dp map to CSS px; type sizes are
+ * rem (px / 16) so the browser's text-size setting still scales them.
+ */
+:root {
+  /* Roboto is what Android draws with; no web font is shipped (CSP, offline, speed), so other
+     platforms fall back to their own sans. Numerals are tabular everywhere (see base.css). */
+  --font-sans: Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  /* Dimens.kt */
+  --gutter: 16px;
+  --card-padding: 18px;
+  --card-gap: 12px;
+  --section-gap: 24px;
+  --eyebrow-gap: 10px;
+  --cell-pad-v: 12px;
+  --cell-pad-h: 14px;
+  --primary-h: 56px;
+  --primary-in-card: 52px;
+  --secondary-h: 48px;
+  --quiet-h: 40px;
+  --icon-well: 40px;
+  --stepper-well: 44px;
+  --play-button: 64px;
+  --chip-h: 34px;
+  --status-chip-h: 22px;
+  --field-h: 52px;
+  --field-multiline-h: 88px;
+  --settings-row-h: 56px;
+  --log-row-h: 68px;
+  --bottom-bar-h: 60px;
+  --bottom-bar-item: 52px;
+  --list-bottom-pad: calc(112px + env(safe-area-inset-bottom));
+  --column-max: 640px;
+
+  /* Radii */
+  --r-bar: 6px;
+  --r-skeleton: 10px;
+  --r-well: 14px;
+  --r-button: 16px;
+  --r-primary: 18px;
+  --r-card: 22px;
+  --r-nav: 26px;
+  --r-sheet: 28px;
+  --r-pill: 999px;
+
+  /* Motion.kt easings (CSS and choreographed tweens only; springs live in motion.ts) */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --press-ms: 120ms;
+
+  /* z-order: tabs 0 < bar 10 < details 20 < sheets/toasts (top layer) */
+  --z-tabs: 0;
+  --z-bar: 10;
+  --z-details: 20;
+  --z-toast: 30;
+}
+
+/* Type.kt: size/line in rem, tracking in px. */
+.t-display-l { font-size: 3.25rem; line-height: 3.5rem; font-weight: 700; letter-spacing: -1.6px; }
+.t-display-m { font-size: 2.5rem; line-height: 2.75rem; font-weight: 700; letter-spacing: -1.2px; }
+.t-display-s { font-size: 2rem; line-height: 2.375rem; font-weight: 700; letter-spacing: -0.8px; }
+.t-headline-l { font-size: 1.625rem; line-height: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+.t-headline-m { font-size: 1.375rem; line-height: 1.75rem; font-weight: 700; letter-spacing: -0.3px; }
+.t-headline-s { font-size: 1.1875rem; line-height: 1.5625rem; font-weight: 700; letter-spacing: -0.2px; }
+.t-title-l { font-size: 1.0625rem; line-height: 1.375rem; font-weight: 500; letter-spacing: -0.1px; }
+.t-title-m { font-size: 0.9375rem; line-height: 1.25rem; font-weight: 500; letter-spacing: 0; }
+.t-title-s { font-size: 0.8125rem; line-height: 1.125rem; font-weight: 500; letter-spacing: 0.1px; }
+.t-body-l { font-size: 1rem; line-height: 1.4375rem; font-weight: 400; letter-spacing: 0; }
+.t-body-m { font-size: 0.9375rem; line-height: 1.3125rem; font-weight: 400; letter-spacing: 0; }
+.t-body-s { font-size: 0.8125rem; line-height: 1.125rem; font-weight: 400; letter-spacing: 0.1px; }
+.t-label-l { font-size: 0.9375rem; line-height: 1.25rem; font-weight: 500; letter-spacing: 0.1px; }
+.t-label-m { font-size: 0.75rem; line-height: 1rem; font-weight: 500; letter-spacing: 0.4px; }
+.t-label-s { font-size: 0.6875rem; line-height: 0.875rem; font-weight: 500; letter-spacing: 1.2px; }
+
+.num-clock { font-size: 5.5rem; line-height: 5.5rem; font-weight: 500; letter-spacing: -2.5px; }
+.num-clock-compact { font-size: 4.5rem; line-height: 4.5rem; font-weight: 500; letter-spacing: -2px; }
+.num-display { font-size: 4rem; line-height: 4rem; font-weight: 700; letter-spacing: -2px; }
+.num-large { font-size: 2.5rem; line-height: 2.75rem; font-weight: 700; letter-spacing: -1px; }
+.num-medium { font-size: 1.625rem; line-height: 1.875rem; font-weight: 700; letter-spacing: -0.5px; }
+.num-small { font-size: 1.25rem; line-height: 1.5rem; font-weight: 700; letter-spacing: -0.3px; }
+.num-inline { font-size: 0.9375rem; line-height: 1.25rem; font-weight: 500; letter-spacing: 0; }
+.num-unit { font-weight: 500; letter-spacing: 0; }
+
+.eyebrow { font-size: 0.6875rem; line-height: 0.875rem; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-low); }
+.micro { font-size: 0.625rem; line-height: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.primary-label { font-size: 1rem; line-height: 1.25rem; font-weight: 700; letter-spacing: 0; }
+.step-title { font-size: 1.5rem; line-height: 1.875rem; font-weight: 700; letter-spacing: -0.3px; }
+.verdict { font-size: 1.1875rem; line-height: 1.625rem; font-weight: 500; letter-spacing: -0.1px; }
+
+.ink-high { color: var(--ink-high); }
+.ink-mid { color: var(--ink-mid); }
+.ink-low { color: var(--ink-low); }

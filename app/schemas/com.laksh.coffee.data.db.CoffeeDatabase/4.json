@@ -1,0 +1,1049 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "c02ba9450596dade4e7ef02911a9f993",
+    "entities": [
+      {
+        "tableName": "beans",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `roaster` TEXT NOT NULL, `origin` TEXT NOT NULL, `region` TEXT NOT NULL, `varietal` TEXT NOT NULL, `process` TEXT NOT NULL, `roastLevel` TEXT NOT NULL, `roastedOnEpochDay` INTEGER, `openedOnEpochDay` INTEGER, `bagSizeG` REAL, `price` TEXT NOT NULL, `altitudeMasl` TEXT NOT NULL, `tastingNotes` TEXT NOT NULL, `notes` TEXT NOT NULL, `isArchived` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `uid` TEXT NOT NULL DEFAULT '', `updatedAt` INTEGER NOT NULL DEFAULT 0, `roasterId` TEXT, `originId` TEXT, `farm` TEXT NOT NULL DEFAULT '', `producer` TEXT NOT NULL DEFAULT '', `washingStation` TEXT NOT NULL DEFAULT '', `lotTypeId` TEXT, `speciesId` TEXT, `varietalIds` TEXT NOT NULL DEFAULT '', `isDecaf` INTEGER NOT NULL DEFAULT 0, `decafMethodId` TEXT, `roastIntentId` TEXT, `harvest` TEXT NOT NULL DEFAULT '', `restDays` INTEGER, `priceAmount` REAL, `currency` TEXT NOT NULL DEFAULT '')",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roaster",
+            "columnName": "roaster",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "varietal",
+            "columnName": "varietal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "processId",
+            "columnName": "process",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roastLevelId",
+            "columnName": "roastLevel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roastedOnEpochDay",
+            "columnName": "roastedOnEpochDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "openedOnEpochDay",
+            "columnName": "openedOnEpochDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "bagSizeG",
+            "columnName": "bagSizeG",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitudeMasl",
+            "columnName": "altitudeMasl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tastingNotes",
+            "columnName": "tastingNotes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "isArchived",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "roasterId",
+            "columnName": "roasterId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "originId",
+            "columnName": "originId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "farm",
+            "columnName": "farm",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "producer",
+            "columnName": "producer",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "washingStation",
+            "columnName": "washingStation",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "lotTypeId",
+            "columnName": "lotTypeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "speciesId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "varietalIds",
+            "columnName": "varietalIds",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isDecaf",
+            "columnName": "isDecaf",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "decafMethodId",
+            "columnName": "decafMethodId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "roastIntentId",
+            "columnName": "roastIntentId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "harvest",
+            "columnName": "harvest",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "restDays",
+            "columnName": "restDays",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "priceAmount",
+            "columnName": "priceAmount",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "currency",
+            "columnName": "currency",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_beans_uid",
+            "unique": true,
+            "columnNames": [
+              "uid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_beans_uid` ON `${TABLE_NAME}` (`uid`)"
+          }
+        ]
+      },
+      {
+        "tableName": "grinders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `brand` TEXT NOT NULL, `model` TEXT NOT NULL, `burrType` TEXT NOT NULL, `burrSizeMm` TEXT NOT NULL, `settingStyle` TEXT NOT NULL, `clicksPerRotation` INTEGER NOT NULL, `micronsPerClick` REAL, `lowerIsFiner` INTEGER NOT NULL, `minSetting` REAL NOT NULL, `maxSetting` REAL NOT NULL, `step` REAL NOT NULL, `defaultFilterSetting` REAL, `defaultEspressoSetting` REAL, `notes` TEXT NOT NULL, `isDefault` INTEGER NOT NULL, `isArchived` INTEGER NOT NULL, `uid` TEXT NOT NULL DEFAULT '', `updatedAt` INTEGER NOT NULL DEFAULT 0, `catalogId` TEXT, `dialFormat` TEXT NOT NULL DEFAULT '')",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brand",
+            "columnName": "brand",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "burrType",
+            "columnName": "burrType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "burrSizeMm",
+            "columnName": "burrSizeMm",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "settingStyle",
+            "columnName": "settingStyle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clicksPerRotation",
+            "columnName": "clicksPerRotation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "micronsPerClick",
+            "columnName": "micronsPerClick",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "lowerIsFiner",
+            "columnName": "lowerIsFiner",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minSetting",
+            "columnName": "minSetting",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxSetting",
+            "columnName": "maxSetting",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "step",
+            "columnName": "step",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "defaultFilterSetting",
+            "columnName": "defaultFilterSetting",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "defaultEspressoSetting",
+            "columnName": "defaultEspressoSetting",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDefault",
+            "columnName": "isDefault",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "isArchived",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "catalogId",
+            "columnName": "catalogId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dialFormat",
+            "columnName": "dialFormat",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_grinders_uid",
+            "unique": true,
+            "columnNames": [
+              "uid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_grinders_uid` ON `${TABLE_NAME}` (`uid`)"
+          }
+        ]
+      },
+      {
+        "tableName": "brew_logs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startedAt` INTEGER NOT NULL, `recipeId` TEXT NOT NULL, `recipeName` TEXT NOT NULL, `recipeAuthor` TEXT NOT NULL, `brewer` TEXT NOT NULL, `beanId` INTEGER, `beanLabel` TEXT NOT NULL, `daysOffRoast` INTEGER, `grinderId` INTEGER, `grinderLabel` TEXT NOT NULL, `grindSetting` TEXT NOT NULL, `grindClicks` INTEGER, `doseG` REAL NOT NULL, `waterG` REAL NOT NULL, `tempC` INTEGER NOT NULL, `totalTimeSec` INTEGER NOT NULL, `drawdownSec` INTEGER, `beverageG` REAL, `tdsPercent` REAL, `extractionYield` REAL, `flowFeel` TEXT NOT NULL, `bedShape` TEXT NOT NULL, `sludge` TEXT NOT NULL, `channeling` TEXT NOT NULL, `bedNotes` TEXT NOT NULL, `overall` INTEGER NOT NULL, `descriptors` TEXT NOT NULL, `faults` TEXT NOT NULL, `notes` TEXT NOT NULL, `nextTime` TEXT NOT NULL, `isFavourite` INTEGER NOT NULL, `sharedAt` INTEGER, `uid` TEXT NOT NULL DEFAULT '', `updatedAt` INTEGER NOT NULL DEFAULT 0, `brewerId` TEXT, `grindValue` REAL, `waterId` TEXT, `taste_acidity` INTEGER NOT NULL, `taste_sweetness` INTEGER NOT NULL, `taste_bitterness` INTEGER NOT NULL, `taste_body` INTEGER NOT NULL, `taste_balance` INTEGER NOT NULL, `taste_aftertaste` INTEGER NOT NULL, `taste_clarity` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAt",
+            "columnName": "startedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recipeId",
+            "columnName": "recipeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recipeName",
+            "columnName": "recipeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recipeAuthor",
+            "columnName": "recipeAuthor",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brewer",
+            "columnName": "brewer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "beanId",
+            "columnName": "beanId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "beanLabel",
+            "columnName": "beanLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "daysOffRoast",
+            "columnName": "daysOffRoast",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "grinderId",
+            "columnName": "grinderId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "grinderLabel",
+            "columnName": "grinderLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grindSetting",
+            "columnName": "grindSetting",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grindClicks",
+            "columnName": "grindClicks",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "doseG",
+            "columnName": "doseG",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "waterG",
+            "columnName": "waterG",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tempC",
+            "columnName": "tempC",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalTimeSec",
+            "columnName": "totalTimeSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drawdownSec",
+            "columnName": "drawdownSec",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "beverageG",
+            "columnName": "beverageG",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "tdsPercent",
+            "columnName": "tdsPercent",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "extractionYield",
+            "columnName": "extractionYield",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "flowFeel",
+            "columnName": "flowFeel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bedShape",
+            "columnName": "bedShape",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sludge",
+            "columnName": "sludge",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "channeling",
+            "columnName": "channeling",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bedNotes",
+            "columnName": "bedNotes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "overall",
+            "columnName": "overall",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptors",
+            "columnName": "descriptors",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "faults",
+            "columnName": "faults",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextTime",
+            "columnName": "nextTime",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavourite",
+            "columnName": "isFavourite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sharedAt",
+            "columnName": "sharedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "brewerId",
+            "columnName": "brewerId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "grindValue",
+            "columnName": "grindValue",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "waterId",
+            "columnName": "waterId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "taste.acidity",
+            "columnName": "taste_acidity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.sweetness",
+            "columnName": "taste_sweetness",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.bitterness",
+            "columnName": "taste_bitterness",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.body",
+            "columnName": "taste_body",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.balance",
+            "columnName": "taste_balance",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.aftertaste",
+            "columnName": "taste_aftertaste",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taste.clarity",
+            "columnName": "taste_clarity",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_brew_logs_startedAt",
+            "unique": false,
+            "columnNames": [
+              "startedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_brew_logs_startedAt` ON `${TABLE_NAME}` (`startedAt`)"
+          },
+          {
+            "name": "index_brew_logs_beanId",
+            "unique": false,
+            "columnNames": [
+              "beanId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_brew_logs_beanId` ON `${TABLE_NAME}` (`beanId`)"
+          },
+          {
+            "name": "index_brew_logs_recipeId",
+            "unique": false,
+            "columnNames": [
+              "recipeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_brew_logs_recipeId` ON `${TABLE_NAME}` (`recipeId`)"
+          },
+          {
+            "name": "index_brew_logs_uid",
+            "unique": true,
+            "columnNames": [
+              "uid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_brew_logs_uid` ON `${TABLE_NAME}` (`uid`)"
+          }
+        ]
+      },
+      {
+        "tableName": "saved_recipes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `json` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "json",
+            "columnName": "json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "analyses",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `kind` TEXT NOT NULL, `brewLogId` INTEGER, `createdAt` INTEGER NOT NULL, `promptVersion` INTEGER NOT NULL, `inputHash` TEXT NOT NULL, `brewCount` INTEGER NOT NULL, `newestBrewAt` INTEGER NOT NULL, `model` TEXT NOT NULL, `host` TEXT NOT NULL, `rawText` TEXT NOT NULL, `resultJson` TEXT, `flagsJson` TEXT NOT NULL, `promptTokens` INTEGER, `completionTokens` INTEGER, `costMicroUsd` INTEGER, `latencyMs` INTEGER NOT NULL, `uid` TEXT NOT NULL DEFAULT '', `providerId` TEXT NOT NULL DEFAULT '', `photoCount` INTEGER NOT NULL DEFAULT 0, `origin` TEXT NOT NULL DEFAULT 'android', FOREIGN KEY(`brewLogId`) REFERENCES `brew_logs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brewLogId",
+            "columnName": "brewLogId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "promptVersion",
+            "columnName": "promptVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inputHash",
+            "columnName": "inputHash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brewCount",
+            "columnName": "brewCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newestBrewAt",
+            "columnName": "newestBrewAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "host",
+            "columnName": "host",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawText",
+            "columnName": "rawText",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultJson",
+            "columnName": "resultJson",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "flagsJson",
+            "columnName": "flagsJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "promptTokens",
+            "columnName": "promptTokens",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "completionTokens",
+            "columnName": "completionTokens",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "costMicroUsd",
+            "columnName": "costMicroUsd",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "latencyMs",
+            "columnName": "latencyMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "providerId",
+            "columnName": "providerId",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "photoCount",
+            "columnName": "photoCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'android'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_analyses_brewLogId",
+            "unique": false,
+            "columnNames": [
+              "brewLogId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_analyses_brewLogId` ON `${TABLE_NAME}` (`brewLogId`)"
+          },
+          {
+            "name": "index_analyses_kind_createdAt",
+            "unique": false,
+            "columnNames": [
+              "kind",
+              "createdAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_analyses_kind_createdAt` ON `${TABLE_NAME}` (`kind`, `createdAt`)"
+          },
+          {
+            "name": "index_analyses_uid",
+            "unique": true,
+            "columnNames": [
+              "uid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_analyses_uid` ON `${TABLE_NAME}` (`uid`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "brew_logs",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "brewLogId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "photos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `uid` TEXT NOT NULL, `brewLogId` INTEGER, `beanId` INTEGER, `kind` TEXT NOT NULL, `fileName` TEXT NOT NULL, `widthPx` INTEGER NOT NULL, `heightPx` INTEGER NOT NULL, `bytes` INTEGER NOT NULL, `takenAt` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `caption` TEXT NOT NULL DEFAULT '', `sendToAi` INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(`brewLogId`) REFERENCES `brew_logs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`beanId`) REFERENCES `beans`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brewLogId",
+            "columnName": "brewLogId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "beanId",
+            "columnName": "beanId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "widthPx",
+            "columnName": "widthPx",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heightPx",
+            "columnName": "heightPx",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytes",
+            "columnName": "bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "takenAt",
+            "columnName": "takenAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "caption",
+            "columnName": "caption",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "sendToAi",
+            "columnName": "sendToAi",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_photos_uid",
+            "unique": true,
+            "columnNames": [
+              "uid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_photos_uid` ON `${TABLE_NAME}` (`uid`)"
+          },
+          {
+            "name": "index_photos_brewLogId",
+            "unique": false,
+            "columnNames": [
+              "brewLogId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_photos_brewLogId` ON `${TABLE_NAME}` (`brewLogId`)"
+          },
+          {
+            "name": "index_photos_beanId",
+            "unique": false,
+            "columnNames": [
+              "beanId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_photos_beanId` ON `${TABLE_NAME}` (`beanId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "brew_logs",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "brewLogId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "beans",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "beanId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c02ba9450596dade4e7ef02911a9f993')"
+    ]
+  }
+}

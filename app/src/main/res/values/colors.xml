@@ -1,0 +1,7 @@
+<resources>
+    <!-- The launch window matches the app canvas (CoffeeColors.bg), so there is no flash
+         between the system splash and the first frame. -->
+    <color name="window_bg">#FFF3EEE7</color>
+    <color name="window_bg_dark">#FF0D0B09</color>
+    <color name="ic_launcher_background">#FF2A1C12</color>
+</resources>

@@ -1,0 +1,173 @@
+/* Brew screen (port of BrewScreen.kt). The screen owns the whole detail layer: the mesh sits
+   behind, each pane is its own layer (setup scrolls; running fits the viewport). */
+
+.screen { position: absolute; inset: 0; overflow: hidden; }
+.pane { position: absolute; inset: 0; }
+.grow { flex: 1; }
+.center { text-align: center; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.clamp2 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.clamp3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.gap8 { margin-top: 8px; }
+.gap12 { height: 12px; flex: none; }
+
+.minus {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  color: var(--ink-high);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.minus:active { transform: scale(0.97); }
+
+.missing { position: absolute; inset: 0; padding: 0 var(--gutter); }
+.missingBody { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 25vh; }
+
+/* ---------------------------------------------------------------- setup */
+.setupScroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+.setupColumn { padding-top: env(safe-area-inset-top); min-height: 100%; display: flex; flex-direction: column; }
+.setupTop { position: relative; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.setupTop > :nth-child(2) { position: absolute; left: 50%; transform: translateX(-50%); }
+.brewerPill {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  max-width: 45%;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero { display: flex; justify-content: center; margin-bottom: 8px; }
+.cards { display: flex; flex-direction: column; gap: var(--card-gap); margin-top: 20px; }
+.prep { display: flex; flex-direction: column; margin-top: 8px; }
+.prep li { display: flex; gap: 0; padding: 5px 0; }
+.prep li > :first-child { width: 24px; flex: none; }
+.prepText { font-size: 0.875rem; line-height: 1.25rem; color: var(--ink-high); }
+/* Lets the last card scroll clear of the bar: sticky inside the scroller, canvas fade above. */
+.sticky {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg) 40px);
+}
+button.inverse { background: var(--inverse); color: var(--on-inverse); }
+
+.stepRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.stepMid { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stepSide { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.nwu { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.unitL { font-size: 1.05rem; color: var(--ink-mid); }
+.unitXL { font-size: 1.68rem; color: var(--ink-mid); }
+.cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.chipRow { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding: 2px 0; scrollbar-width: none; }
+.chipRow > * { flex: none; }
+.dial { display: flex; flex-direction: column; }
+.pills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.pill { width: 100%; }
+.quietLeft { align-self: flex-start; margin: 4px 0 0 -12px; }
+.recipeSays { margin-top: 8px; }
+.tempRow { display: flex; align-items: center; gap: 8px; }
+
+/* ---------------------------------------------------------------- running */
+.run {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.runTop { display: flex; align-items: center; gap: 12px; height: 48px; flex: none; }
+.runTitle { flex: 1; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.statusRow { display: flex; align-items: flex-start; min-width: 0; }
+.statusRow > :first-child { min-width: 0; }
+/* The dial gives way on short screens so the step card keeps room for its words. */
+.ringBox {
+  flex: none;
+  align-self: center;
+  width: clamp(176px, calc(100dvh - 630px), 264px);
+  aspect-ratio: 1;
+  margin: 12px 0 20px;
+}
+.ringInner { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.clock { color: var(--ink-high); white-space: nowrap; }
+@media (max-height: 870px) {
+  .clock { font-size: 4.5rem; line-height: 4.5rem; letter-spacing: -2px; }
+}
+.water {
+  display: inline-flex;
+  align-items: baseline;
+  margin-top: 8px;
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  background: rgb(from var(--surface1) r g b / 0.72);
+  white-space: nowrap;
+}
+@supports not (color: rgb(from red r g b)) {
+  .water { background: var(--surface1); }
+}
+.countdown { margin-left: 0.3em; white-space: nowrap; flex: none; }
+.waterTarget { margin-left: 0.3em; }
+.overrun { align-self: flex-end; min-height: 12px; color: var(--attention); }
+.stepCard {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 168px;
+  margin-top: 8px;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+  overflow: hidden;
+}
+.stepLayer { position: absolute; inset: 0; padding: var(--card-padding); }
+.stepBody { display: flex; flex-direction: column; height: 100%; gap: 6px; }
+.stepHead { display: flex; align-items: center; margin-bottom: 4px; }
+.kindPill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-mid);
+}
+.next { display: flex; flex-direction: column; gap: 2px; }
+.next > :first-child { margin-bottom: 8px; }
+.nextTap {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  background: var(--inverse);
+  color: var(--on-inverse);
+}
+.bedRow { display: flex; align-items: center; min-height: 48px; margin-top: 12px; }
+.bedRow > * { width: 100%; }
+.transport { display: flex; align-items: center; gap: 12px; height: 64px; margin: 12px 0; flex: none; }
+.seek { min-height: 44px; }
+.play {
+  flex: none;
+  position: relative;
+  width: var(--play-button);
+  height: var(--play-button);
+  border-radius: 50%;
+  background: var(--inverse);
+  color: var(--on-inverse);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.play:active { transform: scale(0.92); }
+.playIcon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+button.finishEarly { background: var(--surface1); color: var(--ink-high); transition: background-color 400ms var(--ease-emphasized), color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+button.finishDone { background: var(--crema); color: var(--on-crema); transition: background-color 400ms var(--ease-emphasized), color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }

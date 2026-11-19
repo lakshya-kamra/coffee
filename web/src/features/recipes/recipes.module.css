@@ -1,0 +1,103 @@
+/* Recipes list and detail (ports of RecipeListScreen.kt and RecipeDetailScreen.kt). */
+
+/* ---------------------------------------------------------------- list */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 6px 0 14px;
+  border-radius: var(--r-well);
+  background: var(--surface1);
+  border: 1.5px solid transparent;
+}
+.search:focus-within { border-color: var(--ink-high); }
+.searchIcon { flex: none; color: var(--ink-low); }
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 12px 0;
+}
+.searchInput::placeholder { color: var(--ink-low); }
+.searchInput::-webkit-search-cancel-button { display: none; }
+.clear {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  color: var(--ink-mid);
+}
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin: 12px calc(-1 * var(--gutter)) 4px;
+  padding: 6px var(--gutter);
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chips > * { flex: none; }
+.list { display: flex; flex-direction: column; gap: var(--card-gap); margin-top: 8px; }
+.empty { padding: 16px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.clearAll { margin-left: -12px; }
+
+/* ---------------------------------------------------------------- detail */
+.detail { min-height: 100%; display: flex; flex-direction: column; }
+.gone { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 24px; }
+.placeholder { height: 900px; flex: none; }
+/* The lower half of the detail: skipped until it nears the viewport. The side padding (taken
+   back by the margin) keeps focus rings inside the box that paint containment clips to. */
+.below { content-visibility: auto; contain-intrinsic-block-size: auto 1200px; margin: 0 -6px; padding: 0 6px 6px; }
+.headerFoot {
+  padding: 16px 18px 18px;
+  background: var(--surface1);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+}
+.gap12 { margin-top: 12px; }
+.gridCard { padding: 6px 18px; border-radius: var(--r-card); background: var(--surface1); }
+.fidelity { display: flex; margin-top: 16px; }
+.blurb { margin-top: 10px; }
+.scaler { display: flex; align-items: center; gap: 12px; }
+.scalerMid { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
+.unit { font-size: 0.95rem; color: var(--ink-mid); font-weight: 500; letter-spacing: 0; }
+.step {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  color: var(--ink-high);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.step:active { transform: scale(0.97); }
+.quietLeft { align-self: center; margin-top: 4px; }
+.numbered { display: flex; flex-direction: column; }
+.numbered li { display: flex; align-items: baseline; padding: 6px 0; }
+.numbered li > :first-child { width: 24px; flex: none; }
+.rowText { font-size: 0.875rem; line-height: 1.25rem; color: var(--ink-high); }
+.tip { padding: 8px 0; }
+.source { display: flex; flex-direction: column; gap: 4px; margin-top: var(--section-gap); }
+.sourceNote { font-size: 0.75rem; line-height: 1.0625rem; }
+.sources { display: flex; flex-direction: column; gap: 4px; }
+.link { color: var(--ink-high); text-decoration: underline; text-underline-offset: 2px; }
+.sticky {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg) 40px);
+  pointer-events: none;
+}
+.sticky > * { pointer-events: auto; }
+button.inverse { background: var(--inverse); color: var(--on-inverse); }

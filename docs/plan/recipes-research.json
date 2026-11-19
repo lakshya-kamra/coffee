@@ -1,0 +1,2443 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "audit": [
+    {
+      "id": "hoffmann-v60",
+      "issues": [
+        "Numbers match the published technique (Hario USA write-up of the video): 30 g / 500 g, medium-fine, as hot as possible, 60 g bloom with swirl, wait up to 0:45, 300 g by 1:15, 500 g by 1:45, one stir each way, let it drain a little, gentle swirl, aim to finish by 3:30.",
+        "Minor: prep leaves out the small well Hoffmann digs in the centre of the bed before blooming.",
+        "Minor: the video description itself has no written recipe; cite https://www.youtube.com/watch?v=AI4ynXzkSQo plus the Hario USA page https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique as sourceUrl."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "kasuya-46",
+      "issues": [
+        "First pour is 60 g in the app; Kasuya's own numbers use 50 g then 70 g (50 + 70 = 120 g, the 40%). Kurasu's breakdown of his 2016 WBrC routine and Hario's interview with him both say 50 / 70. Source: https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya",
+        "The 2016 competition schedule is 0:00, 0:45, 1:30, 2:15, 3:00 with the dripper lifted at 3:30. Hario UK's interview gives a later variant with the last two pours at 2:10 and 2:40, still lifted at 3:30 (https://hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-tetsu-kasuya). The app's 45-second rhythm matches the competition version.",
+        "The final step says 'should finish around 3:30'. Kasuya lifts the dripper off at 3:30 whatever is left in it.",
+        "Each pour starts only once the previous one has drained through (Kasuya, per Kurasu transcript). Worth saying in the step text.",
+        "Kurasu's write-up lists the Hario V60 Tetsu Kasuya Model (whose ribs hold water longer), but notes it came out in 2018, after the 2016 win. Wikipedia lists a ceramic V60 for 2016. Do not claim he won on his own model.",
+        "Dose, water, 92 C, coarse grind, and the sweetness/acidity and strength tips are all correct."
+      ],
+      "corrected": {
+        "id": "kasuya-46",
+        "name": "The 4:6 Method",
+        "author": "Tetsu Kasuya",
+        "brewer": "v60",
+        "doseG": 20.0,
+        "waterG": 300.0,
+        "grind": "Coarse, a step coarser than your usual paper-filter setting",
+        "grindMicrons": null,
+        "tempC": 92,
+        "blurb": "Five pours, forty-five seconds apart. The first 40% sets the balance of sweetness and acidity, the last 60% sets strength. Won the 2016 World Brewers Cup.",
+        "sourceNote": "Kasuya's own numbers as published by Hario and in the Kurasu breakdown of his 2016 World Brewers Cup routine (50 / 70 split, pours every 45 s, lift at 3:30). Wording is ours.",
+        "sourceUrl": "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya",
+        "prep": [
+          "Rinse the paper, add the grounds and level the bed.",
+          "Decide your split before you start. See the tips.",
+          "Coarse is not a typo. Go coarser than you normally would."
+        ],
+        "tips": [
+          "The first two pours set the flavour. A smaller first pour (50 then 70) is sweeter. A bigger first pour (70 then 50) is brighter and more acidic.",
+          "The last 180 g sets strength. Split it into more pours for a stronger cup, fewer for a lighter one.",
+          "Wait for each pour to drain through before the next one.",
+          "Hario's later write-up times the last two pours at 2:10 and 2:40. Either rhythm works if you still lift at 3:30."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "Pour 1 to 50 g",
+            "detail": "First flavour pour. Wet everything, then let it drain through.",
+            "startSec": 0,
+            "endSec": 45,
+            "targetWaterG": 50
+          },
+          {
+            "kind": "Pour",
+            "title": "Pour 2 to 120 g",
+            "detail": "70 g more. That is your 40% done. Everything after this is strength.",
+            "startSec": 45,
+            "endSec": 90,
+            "targetWaterG": 120
+          },
+          {
+            "kind": "Pour",
+            "title": "Pour 3 to 180 g",
+            "detail": "60 g, steady and central, once the bed has drained.",
+            "startSec": 90,
+            "endSec": 135,
+            "targetWaterG": 180
+          },
+          {
+            "kind": "Pour",
+            "title": "Pour 4 to 240 g",
+            "detail": "60 g more. Keep the 45-second rhythm.",
+            "startSec": 135,
+            "endSec": 180,
+            "targetWaterG": 240
+          },
+          {
+            "kind": "Pour",
+            "title": "Pour 5 to 300 g",
+            "detail": "Last 60 g. Finish the water.",
+            "startSec": 180,
+            "endSec": 195,
+            "targetWaterG": 300
+          },
+          {
+            "kind": "Drawdown",
+            "title": "Lift at 3:30",
+            "detail": "Let it drip, then lift the dripper off at 3:30 even if it has not finished.",
+            "startSec": 195,
+            "endSec": 210,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "hoffmann-french-press",
+      "issues": [
+        "Numbers agree with the commonly cited write-up of the video: 30 g / 500 g of boiling water, steep about 4 minutes, break the crust, skim with two spoons, wait at least 5 more minutes (up to about 8), then lower the plunger only to the surface and pour gently. Source used: https://honestcoffeeguide.com/brew-recipes/james-hoffmann-french-press/ (aggregator). The video description (https://www.youtube.com/watch?v=st571DYYTR8) has no written recipe.",
+        "Minor: Hoffmann does not plunge into the coffee at all. The plunger goes down just to the surface and acts as a strainer. The app's 'just below the surface' is close enough but could say 'just to the surface'.",
+        "Minor: he simply stirs to break the crust; 'three gentle stirs' is our detail.",
+        "Minor: pouring 500 g takes about 10 s in the write-up; the app allows 30 s, which is fine for a timer."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "hoffmann-aeropress",
+      "issues": [
+        "Prep says rinse the paper. Hoffmann's written summary says do NOT rinse the filter or preheat the brewer because it makes no difference. Source: description of https://www.youtube.com/watch?v=j6VlT_jUVPc",
+        "Swirl step says take the plunger out. Hoffmann swirls while holding the brewer and the plunger together, plunger still in.",
+        "Press step says stop at the hiss. Hoffmann says press gently all the way.",
+        "He starts the timer after pouring and inserts the plunger about 1 cm straight away. The app's timeline is fine, but the step text should say 'about 1 cm'.",
+        "Grind wording: he says the finer end of medium for light roasts, and coarser grind plus a higher dose as roasts get darker. The app's 'fine-medium' is close; worth adding the dark-roast note.",
+        "Dose 11 g, 200 g of just-boiled water, 2 min steep, swirl, 30 s wait, gentle press: all correct.",
+        "Fact-check: every point above matches the written summary in the video description (checked 2026-11-17)."
+      ],
+      "corrected": {
+        "id": "hoffmann-aeropress",
+        "name": "The Ultimate AeroPress",
+        "author": "James Hoffmann",
+        "brewer": "aeropress",
+        "doseG": 11.0,
+        "waterG": 200.0,
+        "grind": "The finer end of medium (for light roasts). Darker roasts: coarser, and a slightly higher dose.",
+        "grindMicrons": null,
+        "tempC": 100,
+        "blurb": "Standard orientation, no stirring, one swirl. Deliberately unfussy and very hard to beat.",
+        "sourceNote": "From the written summary in Hoffmann's Ultimate AeroPress Technique video description. Wording is ours.",
+        "sourceUrl": "https://www.youtube.com/watch?v=j6VlT_jUVPc",
+        "prep": [
+          "Put a paper filter in the cap. No rinsing, no preheating. Hoffmann tested it and it makes no difference.",
+          "Stand the AeroPress on the mug, add the coffee, put it all on the scale and zero it.",
+          "Bring the water to the boil and use it straight away."
+        ],
+        "tips": [
+          "The plunger only goes in early to stop the drip. That is its whole job here.",
+          "If pressing is a fight, grind coarser rather than pushing harder.",
+          "Darker roast? Use a little more coffee and grind coarser."
+        ],
+        "steps": [
+          {
+            "kind": "Pour",
+            "title": "All 200 g",
+            "detail": "Pour the water so it wets all the coffee as you go. No stirring.",
+            "startSec": 0,
+            "endSec": 15,
+            "targetWaterG": 200
+          },
+          {
+            "kind": "Steep",
+            "title": "Plunger in, wait",
+            "detail": "Straight away, set the plunger about 1 cm into the top to stop the drip. Wait two minutes.",
+            "startSec": 15,
+            "endSec": 135,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Swirl",
+            "title": "Swirl",
+            "detail": "Hold the brewer and plunger together and give it a gentle swirl.",
+            "startSec": 135,
+            "endSec": 145,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Steep",
+            "title": "Settle",
+            "detail": "Wait 30 seconds for the grounds to drop.",
+            "startSec": 145,
+            "endSec": 175,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Press",
+            "title": "Press gently, all the way",
+            "detail": "Steady, gentle pressure right to the bottom. The hiss at the end is fine.",
+            "startSec": 175,
+            "endSec": 205,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "hoffmann-moka",
+      "issues": [
+        "Could not verify the details against Hoffmann's Ultimate Moka Pot Technique (Episode #3, https://www.youtube.com/watch?v=BfDLoIvb0w4). The description has chapters but no written recipe, and no transcript could be read.",
+        "The 17 g / 150 g figures are not Hoffmann's. In the moka pot series the dose is set by the basket (filled level, not tamped), not by grams. The sourceNote already hedges this; it should say plainly that the grams are ours.",
+        "Pre-boiled water, low heat, lid open and cooling the base when it sputters are widely attributed to the series but are unverified here. Keep the recipe marked as approximate."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "hedrick-aeropress",
+      "issues": [
+        "The app's numbers (18 g / 250 g, 95 C, near-espresso grind, hard 10 s stir, 45 s slow press) are not from a single Hedrick recipe.",
+        "His 'A Very Good Aeropress Recipe, Maybe the Best' video (https://www.youtube.com/watch?v=CafyJ2p0Bgs), as transcribed by AeroPrecipe (aggregator, https://aeroprecipe.com/recipes/lance-hedrick-a-very-good-aeropress-recipe-and-3-simple-tips), uses 15 g (16 g medium roast, 17 g dark) to 250 g at 92 C, medium-fine. Gentle bloom just to saturate, swirl, 45 s bloom, rest of the water at 0:45, plunger on, swirl off the scale, press gently at 2:00 and stop before the hiss.",
+        "He swirls rather than stirring hard, and says he never goes above 95 C (90-92 C light, about 88 C medium, 82-84 C dark).",
+        "The bloom amount is not given in the transcription, so the corrected bloom step has no water target.",
+        "Fact-check: the video description has no written recipe (checked); the AeroPrecipe transcription matches the corrected recipe."
+      ],
+      "corrected": {
+        "id": "hedrick-aeropress",
+        "name": "A Very Good AeroPress",
+        "author": "Lance Hedrick",
+        "brewer": "aeropress",
+        "doseG": 15.0,
+        "waterG": 250.0,
+        "grind": "Medium-fine, finer than pour-over. Start coarser and step finer.",
+        "grindMicrons": null,
+        "tempC": 92,
+        "blurb": "Gentle bloom, a swirl instead of a stir, and a slow press that stops before the hiss. Clean and sweet without fuss.",
+        "sourceNote": "From Hedrick's 'A Very Good Aeropress Recipe, Maybe the Best' as transcribed by AeroPrecipe (an aggregator). We could not read the video itself. The bloom amount is not given, so pour just enough to wet the bed.",
+        "sourceUrl": "https://www.youtube.com/watch?v=CafyJ2p0Bgs",
+        "prep": [
+          "Paper filter in the cap. Standard orientation, brewer on the mug.",
+          "Add the coffee and level the bed. Zero the scale.",
+          "Light roast: 15 g. Medium: 16 g. Dark: 17 g."
+        ],
+        "tips": [
+          "Hedrick never brews above 95 C: about 90-92 C for light roasts, 88 C for medium, 82-84 C for dark.",
+          "A slow press gives a cleaner cup with better texture.",
+          "Coarser grind? Just let it sit longer before pressing.",
+          "Do not reheat the kettle between pours."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "Gentle bloom",
+            "detail": "Pour slowly, just enough to wet all the coffee without driving water deep into the bed. Swirl, then wait.",
+            "startSec": 0,
+            "endSec": 45,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 250 g",
+            "detail": "Pour the rest of the water normally.",
+            "startSec": 45,
+            "endSec": 60,
+            "targetWaterG": 250
+          },
+          {
+            "kind": "Steep",
+            "title": "Plunger on",
+            "detail": "Set the plunger on top to stop the drip.",
+            "startSec": 60,
+            "endSec": 70,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Swirl",
+            "title": "Swirl",
+            "detail": "Lift it off the scale and give it a swirl.",
+            "startSec": 70,
+            "endSec": 80,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Steep",
+            "title": "Wait until 2:00",
+            "detail": "Longer extracts a bit more, with diminishing returns.",
+            "startSec": 80,
+            "endSec": 120,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Press",
+            "title": "Press gently",
+            "detail": "Slow and gentle. Stop before you press through the hiss.",
+            "startSec": 120,
+            "endSec": 150,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "medium"
+      }
+    },
+    {
+      "id": "hedrick-espresso",
+      "issues": [
+        "Not a published Hedrick recipe, and the sourceNote says so. No single source found with 18 g in, 45 g out at 94 C.",
+        "The pre-infusion step carries targetWaterG 2, which is arbitrary. Use null.",
+        "Suggest renaming to something like 'Light-Roast Espresso (after Lance Hedrick)', or leaving it as a house recipe with Hedrick credited as inspiration."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "rao-v60",
+      "issues": [
+        "The app's 22 g / 360 g at 99 C with one continuous pour is not a published Rao recipe. His 2017 blog post shows a one-pour 22 g brew but gives no water weight or temperature (https://www.scottrao.com/blog/2017/9/14/v60-video).",
+        "Rao's recipe as published in Hario UK's ambassador interview: plastic V60, 20 g / 330 g at 97 C. Pour 60 g into a shallow well and spin hard straight away, wait 40 s, pour to 200 g, give a very gentle spin, then at about 70% drained pour to 330 g and spin gently again. Source: https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao",
+        "That interview gives a 4:00-4:30 total time. That is long for a 20 g V60, but it is what the page says.",
+        "Rao times the second pour by eye (70% drained), not by clock. The timer marks for that pour in the corrected recipe are our estimate.",
+        "Rao himself says he did not invent the spin and credits Hoffmann as probably the first (https://www.scottrao.com/blog/2019/1/8/why-spin-the-slurry). Worth a tip."
+      ],
+      "corrected": {
+        "id": "rao-v60",
+        "name": "V60 with the Rao Spin",
+        "author": "Scott Rao",
+        "brewer": "v60",
+        "doseG": 20.0,
+        "waterG": 330.0,
+        "grind": "Not specified by Rao. Start at your usual V60 setting and adjust to the time.",
+        "grindMicrons": null,
+        "tempC": 97,
+        "blurb": "Bloom with a hard spin, two pours, gentle spins in between. Judge the whole brew by how flat the bed ends up.",
+        "sourceNote": "From Rao's recipe in Hario UK's ambassador interview. Rao cues the second pour by eye (about 70% drained), so those timer marks are our estimate.",
+        "sourceUrl": "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao",
+        "prep": [
+          "Rao uses a plastic V60 because it holds heat better.",
+          "Rinse the paper, add the coffee and make a shallow well with your finger.",
+          "Zero the scale."
+        ],
+        "tips": [
+          "Pour low, in a steady, nearly vertical stream, moving the kettle so the whole bed gets wet evenly.",
+          "The first spin is aggressive. The later ones are tiny, under a second, just enough to fill the ribs.",
+          "Rao says he did not invent the spin. He credits Hoffmann."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "Bloom to 60 g, spin hard",
+            "detail": "Pour 60 g into the well and spin the dripper hard straight away. Wait 40 seconds.",
+            "startSec": 0,
+            "endSec": 40,
+            "targetWaterG": 60
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 200 g",
+            "detail": "Low, steady pour over the whole bed.",
+            "startSec": 40,
+            "endSec": 75,
+            "targetWaterG": 200
+          },
+          {
+            "kind": "Swirl",
+            "title": "Tiny spin",
+            "detail": "A very gentle spin, under a second.",
+            "startSec": 75,
+            "endSec": 80,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Steep",
+            "title": "Let it drop",
+            "detail": "Wait until the slurry is about 70% drained. Watch the level, not the clock.",
+            "startSec": 80,
+            "endSec": 110,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 330 g",
+            "detail": "Pour to 330 g.",
+            "startSec": 110,
+            "endSec": 145,
+            "targetWaterG": 330
+          },
+          {
+            "kind": "Swirl",
+            "title": "Gentle spin",
+            "detail": "One more gentle spin to settle the bed flat.",
+            "startSec": 145,
+            "endSec": 150,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Drawdown",
+            "title": "Drawdown",
+            "detail": "Rao's published total is 4:00 to 4:30. Then look at the bed.",
+            "startSec": 150,
+            "endSec": 255,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "medium"
+      }
+    },
+    {
+      "id": "perger-v60",
+      "issues": [
+        "No published Perger numbers found. His 2012 Hario V60 video (https://www.youtube.com/watch?v=MPDfn--vxK8) has no written recipe in its description, and no reliable transcription turned up.",
+        "The sourceNote already says this is his philosophy, not his recipe. Keep it marked ADAPTED, or drop it if the library should hold only verified recipes."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "gagne-v60",
+      "issues": [
+        "Gagné publishes his own V60 recipe on Coffee ad Astra ('Brewing Better Coffee', https://coffeeadastra.com/2018/11/30/brewing-better-coffee/): 22 g / 352 g (1:16), as hot as the kettle goes, 66 g bloom with a Rao spin, first pour at 0:30 to about 200 g, spin when the water is about two-thirds up the cone, second pour to 352 g before the bed shows, final spin, 2:30-3:30 total.",
+        "The app describes Melodrip-style pulses with no swirl. That contradicts him: he spins three times, and he wrote that using a Melodrip without changing his recipe gave a sour cup.",
+        "The app uses 95 C, a 55 g bloom, 360 g and three pulses. None of these are his numbers.",
+        "His grinder is a Lido 3 at setting 9. His Pulsar post puts his V60 grind at about 600-700 microns (https://coffeeadastra.com/2023/09/13/the-pulsar-dripper/).",
+        "After 0:30 he works by water level, not clock. The timer marks after the first pour are our estimate."
+      ],
+      "corrected": {
+        "id": "gagne-v60",
+        "name": "Gagné's V60",
+        "author": "Jonathan Gagné",
+        "brewer": "v60",
+        "doseG": 22.0,
+        "waterG": 352.0,
+        "grind": "Medium-fine. Gagné uses a Lido 3 at setting 9, roughly 600-700 microns.",
+        "grindMicrons": {
+          "from": 600,
+          "to": 700
+        },
+        "tempC": 100,
+        "blurb": "Hot water, a spun bloom, two pours and three spins. A physicist's V60, tuned for even extraction.",
+        "sourceNote": "From Gagné's own recipe on Coffee ad Astra. After the first pour he works by water level, not the clock, so those timer marks are our estimate.",
+        "sourceUrl": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+        "prep": [
+          "Fold and rinse a white Hario paper with boiling water. Plastic V60.",
+          "Add the coffee, level it, and dig a small trench in the centre.",
+          "Reheat the kettle right before you start. As hot as it goes, because you lose heat while pouring."
+        ],
+        "tips": [
+          "Pour into dry spots first.",
+          "Never let the bed show between pours.",
+          "Swirl the carafe before you pour a cup."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "Bloom to 66 g",
+            "detail": "Fairly fast stream into the trench, dry areas first, then a Rao spin. The bloom should be done in 15-20 s.",
+            "startSec": 0,
+            "endSec": 30,
+            "targetWaterG": 66
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to about 200 g",
+            "detail": "Gentle spirals, favouring dry areas. Stop near 200 g or when the water nears the top.",
+            "startSec": 30,
+            "endSec": 60,
+            "targetWaterG": 200
+          },
+          {
+            "kind": "Swirl",
+            "title": "Spin",
+            "detail": "When the water is about two-thirds of the way up, give it a Rao spin.",
+            "startSec": 60,
+            "endSec": 75,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 352 g",
+            "detail": "As the water nears the bed, pour to 352 g without letting the bed show.",
+            "startSec": 75,
+            "endSec": 110,
+            "targetWaterG": 352
+          },
+          {
+            "kind": "Swirl",
+            "title": "Final spin",
+            "detail": "One last Rao spin as the level drops.",
+            "startSec": 110,
+            "endSec": 120,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Drawdown",
+            "title": "Drawdown",
+            "detail": "Typical total is 2:30 to 3:30.",
+            "startSec": 120,
+            "endSec": 180,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "wendelboe-chemex",
+      "issues": [
+        "Wendelboe publishes no Chemex recipe. His site has one pour-over / filter guide for any dripper (https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee).",
+        "His ratio is 65 g per litre (32.5 g to 500 g), not the 'around 60 g/L' in the app.",
+        "His method: about 60 g with a teaspoon stir, at about 0:30 pour to about 200 g, then keep pouring in circles to 500 g, with pouring done in 2-2.5 min and about 1 min of dripping (3-3.5 min total). Stir the brew before serving.",
+        "He gives no brew temperature for pour-over. His AeroPress and French press guides use boiling water. The 96 C in the corrected recipe is kept from the app and is not his.",
+        "Corrected recipe keeps the id for stability but states that it is his general pour-over method applied to a Chemex. A Chemex will drip slower than his 3-3.5 min target."
+      ],
+      "corrected": {
+        "id": "wendelboe-chemex",
+        "name": "Wendelboe Pour-Over, on a Chemex",
+        "author": "Tim Wendelboe",
+        "brewer": "chemex",
+        "doseG": 32.5,
+        "waterG": 500.0,
+        "grind": "Filter grind. Grind finer for small batches and coarser for big ones, and adjust by time.",
+        "grindMicrons": null,
+        "tempC": 96,
+        "blurb": "Sixty-five grams per litre, one bloom, then a long steady pour. Clean and transparent, made for light roasts.",
+        "sourceNote": "Wendelboe's published pour-over method (65 g/L) applied to a Chemex. He does not publish a Chemex-specific recipe or a pour-over temperature. 96 C is our choice.",
+        "sourceUrl": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee",
+        "prep": [
+          "Rinse the paper well with hot water to get rid of paper taste. Dump the rinse water.",
+          "Add the coffee, shake it level, zero the scale.",
+          "Clean gear matters to him: dirty brewers make bitter, harsh coffee."
+        ],
+        "tips": [
+          "Too slow and bitter? Grind coarser. Too fast, weak and sour? Grind finer.",
+          "The thick Chemex paper runs slower than his 3 to 3.5 minute target. Judge it by taste."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "About 60 g, stir",
+            "detail": "Pour about 60 g and stir with a teaspoon so every ground is wet.",
+            "startSec": 0,
+            "endSec": 30,
+            "targetWaterG": 60
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to about 200 g",
+            "detail": "Pour more, keeping all the grounds wet.",
+            "startSec": 30,
+            "endSec": 60,
+            "targetWaterG": 200
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 500 g",
+            "detail": "Keep pouring in slow circles. All the water should be in by 2:00 to 2:30.",
+            "startSec": 60,
+            "endSec": 150,
+            "targetWaterG": 500
+          },
+          {
+            "kind": "Drawdown",
+            "title": "Drip through",
+            "detail": "About a minute on his dripper. Longer on a Chemex.",
+            "startSec": 150,
+            "endSec": 240,
+            "targetWaterG": null
+          },
+          {
+            "kind": "Stir",
+            "title": "Stir and serve",
+            "detail": "Give the brew a stir before you pour it.",
+            "startSec": 240,
+            "endSec": 250,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "medium"
+      }
+    },
+    {
+      "id": "onyx-kalita",
+      "issues": [
+        "Onyx's current Kalita Wave guides (https://onyxcoffeelab.com/pages/brew-guides) do not include 22 g / 360 g at 96 C with three pours.",
+        "Their everyday blend guide (Monarch, Kalita Wave) is 25 g / 400 g at 200 F (93 C), about 600 microns, pours at 0:00 to 50 g, 0:30 to 160 g, 0:45 to 220 g, 1:05 to 280 g, 1:30 to 340 g, 2:00 to 400 g, done by 3:30.",
+        "Onyx publishes a micron number for every guide, which suits grindMicrons.",
+        "Onyx guides are per coffee and change as coffees rotate. Cite the product page (https://onyxcoffeelab.com/products/monarch) and the date checked."
+      ],
+      "corrected": {
+        "id": "onyx-kalita",
+        "name": "Kalita Wave, Onyx Style",
+        "author": "Onyx Coffee Lab",
+        "brewer": "kalita-wave",
+        "doseG": 25.0,
+        "waterG": 400.0,
+        "grind": "Medium, about 600 microns",
+        "grindMicrons": {
+          "from": 600,
+          "to": 600
+        },
+        "tempC": 93,
+        "blurb": "Six quick pours into a flat bed. Repeatable, sweet, and the same cup twice.",
+        "sourceNote": "Onyx Coffee Lab's published Kalita Wave guide for their Monarch blend, checked 2026-11-17. Onyx guides are per coffee, so expect them to change.",
+        "sourceUrl": "https://onyxcoffeelab.com/products/monarch",
+        "prep": [
+          "Rinse the Wave filter and seat it flat.",
+          "Add the coffee, tap it level, zero the scale."
+        ],
+        "tips": [
+          "Pour into the centre in small circles and let the flat bottom do the work.",
+          "The times are when each pour starts. Hit the target weight a few seconds later."
+        ],
+        "steps": [
+          {
+            "kind": "Bloom",
+            "title": "Bloom to 50 g",
+            "detail": "Wet everything.",
+            "startSec": 0,
+            "endSec": 30,
+            "targetWaterG": 50
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 160 g",
+            "detail": "Centre pour, small circles.",
+            "startSec": 30,
+            "endSec": 45,
+            "targetWaterG": 160
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 220 g",
+            "detail": "Keep it steady.",
+            "startSec": 45,
+            "endSec": 65,
+            "targetWaterG": 220
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 280 g",
+            "detail": "Same again.",
+            "startSec": 65,
+            "endSec": 90,
+            "targetWaterG": 280
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 340 g",
+            "detail": "Keep the level steady.",
+            "startSec": 90,
+            "endSec": 120,
+            "targetWaterG": 340
+          },
+          {
+            "kind": "Pour",
+            "title": "Up to 400 g",
+            "detail": "Last pour. Finish the water.",
+            "startSec": 120,
+            "endSec": 135,
+            "targetWaterG": 400
+          },
+          {
+            "kind": "Drawdown",
+            "title": "Drawdown",
+            "detail": "Onyx's target is done by 3:30, with a flat bed.",
+            "startSec": 135,
+            "endSec": 210,
+            "targetWaterG": null
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "eckroth-v60",
+      "issues": [
+        "No published Eckroth pour-over numbers found. The first page of her recipe blog (https://morgandrinkscoffee.com/blogs/recipes) lists only drinks such as lattes; pages 2-3 were not checked. Her 'How I ACTUALLY Make Coffee At Home' video has a pour-over chapter at 6:32 (https://www.youtube.com/watch?v=oiHdMqQ9UV0) but no written recipe, and no reliable transcription turned up.",
+        "Credentials in the note are correct: 2022 US Barista Champion, @morgandrinkscoffee.",
+        "Keep it marked ADAPTED, or drop it until her numbers can be read from the video or her book 'Coffee, For Here'."
+      ],
+      "corrected": null
+    },
+    {
+      "id": "switch-hybrid",
+      "issues": [
+        "Correctly labelled as a community pattern, not one person's recipe.",
+        "The note credits Hoffmann's Switch coverage. His 'Daily Driver: Hario Switch + Sibarist' video has no written recipe, so drop that attribution or link https://www.youtube.com/watch?v=QjIvN8mlK9Y without implying these numbers are his.",
+        "Now that named Switch recipes exist (Kasuya, Fukahori, Bøen in the new list), this entry could be retired or kept as the generic version."
+      ],
+      "corrected": null
+    }
+  ],
+  "new": [
+    {
+      "id": "hoffmann-v60-1cup",
+      "name": "A Better 1-Cup V60",
+      "author": "James Hoffmann",
+      "brewer": "v60",
+      "doseG": 15.0,
+      "waterG": 250.0,
+      "grind": "Medium-fine",
+      "grindMicrons": null,
+      "tempC": 100,
+      "blurb": "Five small, even pours instead of two big ones. Hoffmann's fix for the single cup, where a small bed drains too fast for the classic method.",
+      "sourceNote": "Dose, water, grind and every timing come from the written recipe in Hoffmann's video description. Wording is ours.",
+      "sourceUrl": "https://www.youtube.com/watch?v=1oB1oDrDkHM",
+      "prep": [
+        "Use soft, filtered water, freshly boiled for lighter roasts.",
+        "Rinse the paper, add the coffee and level the bed.",
+        "Zero the scale."
+      ],
+      "tips": [
+        "Each pour is 50 g, a fifth of the brew. Small and even is the whole idea.",
+        "Expect to finish around 3:00, but taste beats the clock.",
+        "There is a follow-up video answering common questions: https://youtu.be/v5WQ1sZzW4o"
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Bloom with 50 g",
+          "detail": "Pour 50 g. At about 0:10 give it a gentle swirl, then leave it until 0:45.",
+          "startSec": 0,
+          "endSec": 45,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 100 g",
+          "detail": "Pour to 100 g by 1:00, then pause.",
+          "startSec": 45,
+          "endSec": 70,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 150 g",
+          "detail": "At 1:10 pour to 150 g by 1:20, then pause.",
+          "startSec": 70,
+          "endSec": 90,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 200 g",
+          "detail": "At 1:30 pour to 200 g by 1:40, then pause.",
+          "startSec": 90,
+          "endSec": 110,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 250 g",
+          "detail": "At 1:50 pour the last 50 g, finishing by 2:00.",
+          "startSec": 110,
+          "endSec": 120,
+          "targetWaterG": 250
+        },
+        {
+          "kind": "Swirl",
+          "title": "Gentle swirl",
+          "detail": "One gentle swirl to flatten the bed.",
+          "startSec": 120,
+          "endSec": 125,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Should finish around 3:00. Some variance is normal.",
+          "startSec": 125,
+          "endSec": 180,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "hoffmann-iced-immersion",
+      "name": "Immersion Iced Coffee",
+      "author": "James Hoffmann",
+      "brewer": "clever-dripper",
+      "doseG": 37.5,
+      "waterG": 330.0,
+      "grind": "Finer than your pour-over setting, but nowhere near espresso",
+      "grindMicrons": null,
+      "tempC": 100,
+      "blurb": "Steep hot and strong, then strain straight onto ice. Easier than iced pour-over, and the long steep keeps it sweet.",
+      "sourceNote": "From the step-by-step and ratio table in Hoffmann's video description. 330 g is the hot water. 170 g of ice comes on top, for 75 g per litre (about 1:13) overall. Any immersion brewer works; a Clever-style dripper is used here.",
+      "sourceUrl": "https://www.youtube.com/watch?v=8uGGeV8A-BM",
+      "prep": [
+        "Preheat the brewer.",
+        "Put 170 g of ice, straight from the freezer, in the carafe.",
+        "One cup instead: 19 g coffee, 165 g hot water, 85 g ice."
+      ],
+      "tips": [
+        "Depending on the brewer, add coffee then water, or water then coffee. Both work.",
+        "The amounts are flexible. Ice cubes are never a neat size.",
+        "Darker roasts can steep 4 minutes instead of 5."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "330 g of hot water",
+          "detail": "Add the coffee and 330 g of freshly boiled, clean, soft water (or water first, then coffee).",
+          "startSec": 0,
+          "endSec": 20,
+          "targetWaterG": 330
+        },
+        {
+          "kind": "Stir",
+          "title": "No dry pockets",
+          "detail": "Make sure everything is mixed and no dry clumps remain.",
+          "startSec": 20,
+          "endSec": 35,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Steep 5 minutes",
+          "detail": "At least 5 minutes, or 4 for darker roasts.",
+          "startSec": 35,
+          "endSec": 300,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Strain onto the ice",
+          "detail": "Set the brewer on the carafe of ice and let it drain.",
+          "startSec": 300,
+          "endSec": 390,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Stir and serve",
+          "detail": "Stir in any ice that is left, then serve over fresh ice.",
+          "startSec": 390,
+          "endSec": 410,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "hoffmann-cold-brew",
+      "name": "Cold Brew, No Filtering",
+      "author": "James Hoffmann",
+      "brewer": "cold-brew",
+      "doseG": 75.0,
+      "waterG": 1000.0,
+      "grind": "Fine, like a moka pot or AeroPress setting (about a 250 micron burr gap). If unsure, err finer.",
+      "grindMicrons": null,
+      "tempC": 20,
+      "blurb": "Fine grind, hard stir, twelve hours in the fridge, then just pour it off. No filter, no sludge, no fuss.",
+      "sourceNote": "From the written recipe in Hoffmann's 'Everything I Learned About Cold Brew' video description. He gives 'room temperature' water; 20 C is our stand-in. The 250 micron figure is a burr gap, not a particle size, so grindMicrons is left empty.",
+      "sourceUrl": "https://www.youtube.com/watch?v=AB0QLjroFss",
+      "prep": [
+        "Use water you would happily brew filter coffee with, at room temperature.",
+        "Optional: 10 drops of a beer fining agent (he used Mangrove Jack's Liquid Beer Finings) to help the grounds settle.",
+        "You need a container with a lid that fits in the fridge."
+      ],
+      "tips": [
+        "This is a ready-to-drink strength, not a concentrate.",
+        "Be heavy-handed with the stir. Everything needs to be wet.",
+        "Stop pouring as you get close to the sediment."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "All the water",
+          "detail": "Add 1 litre of room-temperature water to the grounds.",
+          "startSec": 0,
+          "endSec": 60,
+          "targetWaterG": 1000
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir hard",
+          "detail": "Stir until everything is completely mixed. Add the fining agent now if using it.",
+          "startSec": 60,
+          "endSec": 120,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "12 hours in the fridge",
+          "detail": "Lid on, into the fridge, and leave it so the grounds settle.",
+          "startSec": 120,
+          "endSec": 43320,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Pour it off",
+          "detail": "Gently pour the liquid into a carafe, stopping before the sediment.",
+          "startSec": 43320,
+          "endSec": 43500,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "kasuya-switch-hybrid",
+      "name": "Switch Hybrid (the 'Devil' Recipe)",
+      "author": "Tetsu Kasuya",
+      "brewer": "hario-switch",
+      "doseG": 20.0,
+      "waterG": 280.0,
+      "grind": "Medium-fine, a touch finer than your pour-over setting. Adjust so the brew takes 3:00.",
+      "grindMicrons": null,
+      "tempC": 93,
+      "blurb": "Percolate with hot water first, then close the valve and steep the rest in 70 C water. Sweet and round, with the bitterness kept out.",
+      "sourceNote": "Kasuya's Switch recipe as reported by two aggregators, neither of which links to Kasuya's own source: Outpost Coffee (the sourceUrl) and Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/tetsu-kasuya-hybrid-method). Both give 20 g / 280 g, two 60 g open-valve pours, then 160 g of 70 C water with the valve closed, about 3:00 total. Outpost gives 90-95 C for the first pours and a 30 s steep; Honest Coffee Guide gives 93 C and a 10 s steep. The steps follow Outpost. We could not read Kasuya's own video.",
+      "sourceUrl": "https://outpostcoffee.com/blogs/brew-at-home/tetsu-kasuyas-hario-switch-recipe-for-perfect-coffee",
+      "prep": [
+        "Rinse the paper, then add the coffee and shake it flat.",
+        "Valve OPEN to start.",
+        "Plan how you will get to 70 C quickly: a second kettle, or a splash of cold water into the first."
+      ],
+      "tips": [
+        "Two temperatures are the trick: hot for the first 120 g, 70 C for the immersion.",
+        "Adjust the grind so the whole thing lands at about 3:00.",
+        "Too strong? Add a little hot water to the cup at the end.",
+        "Honest Coffee Guide's version steeps only 10 s and closes the valve again at about 3:00, even if it has not finished draining."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Valve open, 60 g",
+          "detail": "Pour 60 g of hot water, wet everything evenly, and let it drain for 30 seconds.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 60
+        },
+        {
+          "kind": "Pour",
+          "title": "Valve open, up to 120 g",
+          "detail": "Another 60 g. Let it drain for about 45 seconds while you cool the kettle to 70 C.",
+          "startSec": 30,
+          "endSec": 75,
+          "targetWaterG": 120
+        },
+        {
+          "kind": "Pour",
+          "title": "CLOSE, 160 g at 70 C",
+          "detail": "Close the valve and pour 160 g of 70 C water.",
+          "startSec": 75,
+          "endSec": 90,
+          "targetWaterG": 280
+        },
+        {
+          "kind": "Steep",
+          "title": "Steep 30 s",
+          "detail": "Valve closed. Leave it for about 30 seconds.",
+          "startSec": 90,
+          "endSec": 120,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Drawdown",
+          "title": "OPEN and drain",
+          "detail": "Open the valve and let it drain. About 3:00 total.",
+          "startSec": 120,
+          "endSec": 180,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "fukahori-switch",
+      "name": "Easy Hario Switch",
+      "author": "Emi Fukahori",
+      "brewer": "hario-switch",
+      "doseG": 14.0,
+      "waterG": 200.0,
+      "grind": "25 clicks on a Comandante C40. She gives no other grind measure.",
+      "grindMicrons": null,
+      "tempC": 93,
+      "blurb": "A closed-valve bloom, then one continuous centre pour. The house Switch recipe at MAME, from the 2018 World Brewers Cup champion.",
+      "sourceNote": "From Fukahori's recipe as written in the European Coffee Trip video description, filmed with her: 14 g, 200 g at 93 C, 25 clicks on a Comandante, 50 g closed-valve bloom, open at 0:30, one 150 g centre pour finished by 1:10, 2:20 total. Wording is ours.",
+      "sourceUrl": "https://www.youtube.com/watch?v=3euEkTBxtEk",
+      "prep": [
+        "Rinse a V60 02 paper in the Switch.",
+        "Add the coffee, level it, zero the scale.",
+        "Valve CLOSED to start."
+      ],
+      "tips": [
+        "One single, continuous pour into the centre. No pulses.",
+        "This is the recipe used across MAME's shops in Switzerland."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Valve closed, 50 g",
+          "detail": "Pour 50 g with the valve closed. Let it bloom.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "OPEN, 150 g centre pour",
+          "detail": "Open the valve at 0:30 and pour 150 g in one steady stream into the centre. Done by 1:10.",
+          "startSec": 30,
+          "endSec": 70,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Let it drain. About 2:20 total.",
+          "startSec": 70,
+          "endSec": 140,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "boen-switch",
+      "name": "Switch, Closed-Open-Closed",
+      "author": "Ole Kristian Bøen",
+      "brewer": "hario-switch",
+      "doseG": 16.5,
+      "waterG": 240.0,
+      "grind": "Medium-fine",
+      "grindMicrons": null,
+      "tempC": 96,
+      "blurb": "Bloom closed, pour open, steep closed, release. The recipe the 2020 Norwegian Brewers Cup champion took to the 2021 World Brewers Cup.",
+      "sourceNote": "From Bøen's recipe published by Hario Europe. Wording is ours.",
+      "sourceUrl": "https://www.hario-europe.com/blogs/hario-community/ole-kristian-boens-switch-recipe",
+      "prep": [
+        "Rinse a paper in a Switch 02.",
+        "Add the coffee, level it, zero the scale.",
+        "Valve CLOSED to start."
+      ],
+      "tips": [
+        "The valve flips three times. Say each move out loud the first time.",
+        "He brewed a natural Geisha from Hacienda La Esmeralda with it in Milan."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Closed, 50 g",
+          "detail": "Valve closed. Pour 50 g and bloom until 0:40.",
+          "startSec": 0,
+          "endSec": 40,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "OPEN, 100 g centre",
+          "detail": "Open the valve and pour 100 g into the centre.",
+          "startSec": 40,
+          "endSec": 90,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "CLOSE, 90 g circles",
+          "detail": "At 1:30 close the valve and pour 90 g in circles.",
+          "startSec": 90,
+          "endSec": 130,
+          "targetWaterG": 240
+        },
+        {
+          "kind": "Drawdown",
+          "title": "OPEN and drain",
+          "detail": "At 2:10 open the valve and let it run. 3:00 to 3:15 total.",
+          "startSec": 130,
+          "endSec": 190,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "winton-five-pour",
+      "name": "Five-Pour V60",
+      "author": "Matt Winton",
+      "brewer": "v60",
+      "doseG": 20.0,
+      "waterG": 300.0,
+      "grind": "Coarse. Winton says he ground quite coarse, around 3.6 on his Kinu M47.",
+      "grindMicrons": null,
+      "tempC": 93,
+      "blurb": "Five equal pours, thirty seconds apart, no stirring. The 2021 World Brewers Cup winner, about as simple as a championship recipe gets.",
+      "sourceNote": "Hario's video with Winton has no written recipe and could not be read. 20 g / 300 g, 93 C then 88 C, a metal V60, a Kinu M47, five pours and a 2:40 finish come from Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup, an aggregator citing the SCA rankings and a Barista Hustle interview with him). Five equal pours with about 30 s between them come from Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/matt-winton-v60-five-pour, an aggregator). 60 g per pour is 300 / 5.",
+      "sourceUrl": "https://www.youtube.com/watch?v=YIC-2nFQ7vM",
+      "prep": [
+        "Fold the paper seam, rinse and preheat. Winton used a metal V60 02.",
+        "Add the coffee, shake it level, zero the scale."
+      ],
+      "tips": [
+        "His competition brew dropped to 88 C for the later pours. Leaving the kettle off its base between pours does it.",
+        "Every pour is the same circular motion. Consistency is the recipe.",
+        "Start the next pour once the bed has nearly drained, even if 30 seconds have not passed."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Pour 1 to 60 g",
+          "detail": "Wet the grounds evenly in circles.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 60
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 2 to 120 g",
+          "detail": "Same circular motion, once the bed has nearly drained.",
+          "startSec": 30,
+          "endSec": 60,
+          "targetWaterG": 120
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 3 to 180 g",
+          "detail": "Same circular motion, once the bed has nearly drained.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": 180
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 4 to 240 g",
+          "detail": "Same circular motion, once the bed has nearly drained.",
+          "startSec": 90,
+          "endSec": 120,
+          "targetWaterG": 240
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 5 to 300 g",
+          "detail": "Last one, same motion.",
+          "startSec": 120,
+          "endSec": 150,
+          "targetWaterG": 300
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "His competition brew finished at 2:40. Much slower than that? Grind coarser.",
+          "startSec": 150,
+          "endSec": 160,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "medina-origami",
+      "name": "Five Fifties on the Origami",
+      "author": "Carlos Medina",
+      "brewer": "origami",
+      "doseG": 15.5,
+      "waterG": 250.0,
+      "grind": "Not in the recap. Wikipedia lists a 1Zpresso ZP6 Special at 5.2. Aim for a 2:40 finish.",
+      "grindMicrons": null,
+      "tempC": 91,
+      "blurb": "Five pours of 50 g with thirty quiet seconds between them. The 2023 World Brewers Cup winning recipe, on an Origami Air S.",
+      "sourceNote": "From Slow Pour Supply's recap of Medina's World Brewers Cup routine (an aggregator, and Origami's US seller): 15.5 g / 250 g, 91 C, five 50 g pours with 30 s of silent time, 2:40 total, 65 ppm water. Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup) agrees and adds the grinder (1Zpresso ZP6 Special at 5.2, citing 1Zpresso's Instagram).",
+      "sourceUrl": "https://www.slowpoursupply.co/blogs/brew-recipes/recipe-recap-carlos-medina-s-representing-chile-world-brewers-cup-champion-recipe",
+      "prep": [
+        "Origami Air S with a conical paper filter.",
+        "He used water at about 65 ppm, equal parts calcium and magnesium.",
+        "Rinse the paper, add the coffee, level it, zero the scale."
+      ],
+      "tips": [
+        "Spiral out and back in on every pour.",
+        "The 30 seconds between pours is silent time: hands off."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Pour 1 to 50 g",
+          "detail": "Spiral out and back in.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 2 to 100 g",
+          "detail": "Same spiral.",
+          "startSec": 30,
+          "endSec": 60,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 3 to 150 g",
+          "detail": "Same spiral.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 4 to 200 g",
+          "detail": "Same spiral.",
+          "startSec": 90,
+          "endSec": 120,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 5 to 250 g",
+          "detail": "Last one.",
+          "startSec": 120,
+          "endSec": 150,
+          "targetWaterG": 250
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Done around 2:40.",
+          "startSec": 150,
+          "endSec": 160,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "hsu-orea",
+      "name": "Cool Bloom, Hot Pours",
+      "author": "Sherry Hsu",
+      "brewer": "orea",
+      "doseG": 14.0,
+      "waterG": 200.0,
+      "grind": "A blend: 75% ground at about 1000 microns and 25% at about 800 microns, on a 1Zpresso K-Pro.",
+      "grindMicrons": {
+        "from": 800,
+        "to": 1000
+      },
+      "tempC": 95,
+      "blurb": "First pour at 70 C, the rest at 95 C, four even pours. The 2022 World Brewers Cup winner, on an Orea V3 with a Kalita 185 paper.",
+      "sourceNote": "Only source is Wikipedia's World Brewers Cup table (an aggregator), which cites her 2022 World Brewers Cup finals routine (https://www.youtube.com/watch?v=sTroaHo5zsk) and Sprudge: 14 g / 200 mL, 70 C first pour then 95 C, four 50 g pours every 30 s, 75% at 1000 and 25% at 800 microns on a 1Zpresso K-Pro. Finish time is not published; the drawdown end is our estimate.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/World_Brewers_Cup",
+      "prep": [
+        "Orea V3 with a Kalita 185 wave paper.",
+        "Two kettles, or one you can cool fast: 70 C for the first pour, 95 C for the rest.",
+        "If you can, grind three quarters of the dose coarse (about 1000 microns) and a quarter a little finer (about 800)."
+      ],
+      "tips": [
+        "The cool first pour is the signature. It keeps the start gentle."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Pour 1 to 50 g at 70 C",
+          "detail": "Cool water for the first pour.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 2 to 100 g at 95 C",
+          "detail": "Switch to hot water.",
+          "startSec": 30,
+          "endSec": 60,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 3 to 150 g",
+          "detail": "Same again.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "Pour 4 to 200 g",
+          "detail": "Last one.",
+          "startSec": 90,
+          "endSec": 120,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Finish time is not published. Judge it by taste.",
+          "startSec": 120,
+          "endSec": 180,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "rolf-april",
+      "name": "April Brewer, Competition Style",
+      "author": "Patrik Rolf",
+      "brewer": "april-brewer",
+      "doseG": 12.0,
+      "waterG": 200.0,
+      "grind": "Coarse",
+      "grindMicrons": null,
+      "tempC": 92,
+      "blurb": "Twelve grams, three pours, done by about 2:40. Rolf's World Brewers Cup final recipe, on his own April Brewer.",
+      "sourceNote": "From Patrik Rolf's World Brewers Cup final-round recipe as listed by Gota (an aggregator), which credits it to Rolf but links no original and gives no competition year. April's own write-up could not be found. Pour times and weights are Gota's.",
+      "sourceUrl": "https://gota.cafe/en/recipes/april-brewer/patrik-rolf-april",
+      "prep": [
+        "Rinse the paper in the April Brewer.",
+        "Add the coffee, level it, zero the scale."
+      ],
+      "tips": [
+        "Let each pour drain through before the next one."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Spiral to 50 g",
+          "detail": "Quick spiral pour, about 9 seconds.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Centre pour to 150 g",
+          "detail": "At 0:30, pour 100 g into the centre, done by about 0:47.",
+          "startSec": 30,
+          "endSec": 80,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "Spiral to 200 g",
+          "detail": "At 1:20, spiral pour the last 50 g.",
+          "startSec": 80,
+          "endSec": 90,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Finish when it stops dripping, about 2:40.",
+          "startSec": 90,
+          "endSec": 160,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "rao-pulsar",
+      "name": "Pulsar, Rao's Way",
+      "author": "Scott Rao",
+      "brewer": "pulsar",
+      "doseG": 25.0,
+      "waterG": 425.0,
+      "grind": "Coarser than for hand pour-over, finer than batch brew. About an 800 micron peak for 25 g.",
+      "grindMicrons": {
+        "from": 800,
+        "to": 800
+      },
+      "tempC": 100,
+      "blurb": "Closed-valve bloom with a wet WDT stir, then short bursts that keep a shallow layer of water over the bed.",
+      "sourceNote": "From Rao's own Pulsar post. He states the ratio as 17:1; 425 g is that ratio at 25 g. He sets the pulse pours by slurry height, not time, so the pour and finish marks here are our estimate within his 3:30-4:30 target.",
+      "sourceUrl": "https://www.scottrao.com/blog/pulsar-recipe",
+      "prep": [
+        "Wet the filter in the base with the valve open, then drain.",
+        "Screw the barrel on firmly, add the coffee, and level it by shaking or with a WDT tool.",
+        "Fit the dispersion cap. Aim for water around 100 ppm hardness and 40 ppm alkalinity."
+      ],
+      "tips": [
+        "Use at least 20 g. Rao prefers 25 to 30 g to keep astringency away.",
+        "Under 3:30? Grind finer. Over 4:30? Grind coarser.",
+        "Short blooms lean towards clarity and aroma, longer ones towards body."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "75 g, then CLOSE",
+          "detail": "Valve open, pour 75 g just off the boil, then close the valve straight away. Stir the wet bed with a WDT tool.",
+          "startSec": 0,
+          "endSec": 50,
+          "targetWaterG": 75
+        },
+        {
+          "kind": "Pour",
+          "title": "OPEN, pulse to 425 g",
+          "detail": "Top the slurry to 1 cm above the grounds, open the valve, then pour in short bursts that keep 1-2 cm of water on top.",
+          "startSec": 50,
+          "endSec": 180,
+          "targetWaterG": 425
+        },
+        {
+          "kind": "Swirl",
+          "title": "Gentle swirl",
+          "detail": "Swirl gently right after the last pour.",
+          "startSec": 180,
+          "endSec": 190,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Rao's target is 3:30 to 4:30 total.",
+          "startSec": 190,
+          "endSec": 240,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "gagne-pulsar",
+      "name": "Steeped-Bloom Pulsar",
+      "author": "Jonathan Gagné",
+      "brewer": "pulsar",
+      "doseG": 20.0,
+      "waterG": 340.0,
+      "grind": "About 800 microns, coarser than his V60 grind",
+      "grindMicrons": {
+        "from": 800,
+        "to": 800
+      },
+      "tempC": 99,
+      "blurb": "A short closed-valve bloom, then small pulses that keep a centimetre of water over the bed. Gagné's daily driver.",
+      "sourceNote": "From Gagné's own Pulsar post on Coffee ad Astra. He does not give pulse sizes or a time for the end of pouring; the pour end is our estimate within his 3:30-4:30 target.",
+      "sourceUrl": "https://coffeeadastra.com/2023/09/13/the-pulsar-dripper/",
+      "prep": [
+        "Close the valve and fill the base with water just above the ridges.",
+        "Lay a dry paper on top, open the valve over the sink so the paper seats on the ridges, then close it.",
+        "Attach the barrel, add the coffee, level it, fit the dispersion cap and zero the scale."
+      ],
+      "tips": [
+        "Bloom water is about 3 times the dose.",
+        "Swirl by the base, never by the walls. Hard agitation clogs the filter and slows the brew.",
+        "1:16 instead of 1:17 if you want it stronger.",
+        "Blooms as short as 15 s work. Shorter is more tea-like, longer is sweeter."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "60 g, then close",
+          "detail": "Valve open, pour 60 g. Close the valve gently once it starts to drip. Optional gentle swirl.",
+          "startSec": 0,
+          "endSec": 60,
+          "targetWaterG": 60
+        },
+        {
+          "kind": "Pour",
+          "title": "OPEN, pulse to 340 g",
+          "detail": "At 1:00 open the valve and pour in small pulses, keeping about 1 cm of slurry over the bed.",
+          "startSec": 60,
+          "endSec": 180,
+          "targetWaterG": 340
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Total 3:30 to 4:30.",
+          "startSec": 180,
+          "endSec": 240,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "gagne-aeropress",
+      "name": "Fuller-Flavour AeroPress",
+      "author": "Jonathan Gagné",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 260.0,
+      "grind": "Not given. Go as fine as you can before the cup turns astringent.",
+      "grindMicrons": null,
+      "tempC": 100,
+      "blurb": "Full chamber, boiling water, a nine-minute steep and a slow press. Built for body and depth, not speed.",
+      "sourceNote": "From Gagné's own AeroPress post on Coffee ad Astra. About 260 g fills the chamber with a Prismo cap; without one, use a little more because some drips through. Orientation is not stated; the steps describe standard (on the mug).",
+      "sourceUrl": "https://coffeeadastra.com/2021/09/07/reaching-fuller-flavor-profiles-with-the-aeropress/",
+      "prep": [
+        "Pick a sturdy mug the AeroPress sits on well.",
+        "Dry paper filter in the cap. With a Prismo, the paper goes on top of the metal disc.",
+        "With a Prismo: pour about half the water first, then add the coffee and shake it level."
+      ],
+      "tips": [
+        "Stir back and forth from bottom to top. No circular stirs.",
+        "Long steeps are forgiving. Later than 9:00 is fine.",
+        "Pressing takes a bit over a minute. Do not rush it."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Fill the chamber",
+          "detail": "Pour 100 C water until the chamber is full, about 260 g.",
+          "startSec": 0,
+          "endSec": 20,
+          "targetWaterG": 260
+        },
+        {
+          "kind": "Stir",
+          "title": "Back-and-forth stir",
+          "detail": "Stir from the bottom to the top and back. Not in circles.",
+          "startSec": 20,
+          "endSec": 30,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Swirl",
+          "title": "Plunger in, swirl",
+          "detail": "Set the plunger a few millimetres in, lift it off the scale and swirl to level the bed.",
+          "startSec": 30,
+          "endSec": 40,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait until 5:00",
+          "detail": "Leave it.",
+          "startSec": 40,
+          "endSec": 300,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Swirl",
+          "title": "Swirl again",
+          "detail": "A thorough swirl.",
+          "startSec": 300,
+          "endSec": 310,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait until 9:00",
+          "detail": "Or later.",
+          "startSec": 310,
+          "endSec": 540,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Slow press",
+          "detail": "Press gently. It usually takes just over a minute.",
+          "startSec": 540,
+          "endSec": 610,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wendelboe-aeropress",
+      "name": "AeroPress, Oslo Style",
+      "author": "Tim Wendelboe",
+      "brewer": "aeropress",
+      "doseG": 14.0,
+      "waterG": 200.0,
+      "grind": "Fine filter grind",
+      "grindMicrons": null,
+      "tempC": 100,
+      "blurb": "Boiling water, three stirs, a minute's steep, three more stirs, press. Light and clean, like a small filter cup.",
+      "sourceNote": "From Wendelboe's own AeroPress guide. He does not give a press time; 30 s is our placeholder.",
+      "sourceUrl": "https://timwendelboe.no/pages/how-to-brew-with-an-aeropress",
+      "prep": [
+        "Rinse a paper filter with tap water for a few seconds.",
+        "Light-roast coffee, freshly ground.",
+        "AeroPress on a large cup or jug, on the scale."
+      ],
+      "tips": [
+        "Press with your body weight but not too hard.",
+        "He also lists a strong 'moka-style' version: 20 g of finely ground espresso roast, 100-150 g of boiling water, 3 hard stirs, press."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "200 g boiling",
+          "detail": "Pour boiling water over the coffee.",
+          "startSec": 0,
+          "endSec": 10,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir 3 times",
+          "detail": "Three stirs.",
+          "startSec": 10,
+          "endSec": 15,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Plunger on, 60 s",
+          "detail": "Set the plunger on to stop the drip. Steep for 60 seconds.",
+          "startSec": 15,
+          "endSec": 75,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir 3 more times",
+          "detail": "Take the plunger out and stir 3 times, back to front.",
+          "startSec": 75,
+          "endSec": 85,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Press",
+          "detail": "Plunger back in and press into the cup.",
+          "startSec": 85,
+          "endSec": 115,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wendelboe-french-press",
+      "name": "French Press, Light Roast",
+      "author": "Tim Wendelboe",
+      "brewer": "french-press",
+      "doseG": 33.0,
+      "waterG": 500.0,
+      "grind": "Filter grind, or slightly finer. Coarser tends to taste sour and weak.",
+      "grindMicrons": null,
+      "tempC": 100,
+      "blurb": "Filter-fine grind, a gentle stir, skim the foam, plunge slowly, then let it rest. A French press that tastes like a light roast should.",
+      "sourceNote": "Wendelboe's own French press guide gives 65-70 g per litre of boiling water. 33 g for 500 g is that ratio scaled to a small press; for a 1 litre press use 65-70 g.",
+      "sourceUrl": "https://timwendelboe.no/pages/how-to-brew-french-press-coffee",
+      "prep": [
+        "Preheat the press with hot water and dump it just before brewing.",
+        "Weigh the coffee. Press on the scale, zeroed.",
+        "Light roast, to keep bitter roasty notes out."
+      ],
+      "tips": [
+        "The plunger should move easily. If it fights you, grind coarser.",
+        "Wait 1-5 minutes after plunging so the sediment drops.",
+        "Clean the press properly every time."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Half the water",
+          "detail": "Pour about half the boiling water.",
+          "startSec": 0,
+          "endSec": 15,
+          "targetWaterG": 250
+        },
+        {
+          "kind": "Stir",
+          "title": "Gentle stir",
+          "detail": "Stir gently so every ground is wet.",
+          "startSec": 15,
+          "endSec": 25,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Pour",
+          "title": "The rest",
+          "detail": "Pour the rest of the water. Lid and plunger off.",
+          "startSec": 25,
+          "endSec": 40,
+          "targetWaterG": 500
+        },
+        {
+          "kind": "Steep",
+          "title": "Steep",
+          "detail": "4 to 5 minutes in total.",
+          "startSec": 40,
+          "endSec": 270,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Push down and skim",
+          "detail": "Push the crust under with a spoon, stir 3-5 times, and skim off the pale foam.",
+          "startSec": 270,
+          "endSec": 290,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Plunge slowly",
+          "detail": "Lid and plunger on, press down slowly.",
+          "startSec": 290,
+          "endSec": 310,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Rest",
+          "detail": "Wait 1 to 5 minutes for the sediment to settle.",
+          "startSec": 310,
+          "endSec": 430,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Pour",
+          "detail": "Pour, stopping when grounds start to come through.",
+          "startSec": 430,
+          "endSec": 450,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "onyx-cone-1cup",
+      "name": "Onyx 1-Cup Cone",
+      "author": "Onyx Coffee Lab",
+      "brewer": "v60",
+      "doseG": 15.0,
+      "waterG": 250.0,
+      "grind": "Medium-fine, about 530 microns",
+      "grindMicrons": {
+        "from": 530,
+        "to": 530
+      },
+      "tempC": 93,
+      "blurb": "Bloom, one big pour, one finishing pour. Onyx's simplest single-cup cone recipe.",
+      "sourceNote": "Onyx Coffee Lab's published cone guide for their Tropical Weather blend (listed for a Hario cone or Origami), checked 2026-11-17. Times are when each pour starts.",
+      "sourceUrl": "https://onyxcoffeelab.com/products/tropical-weather",
+      "prep": [
+        "Rinse the paper, add the coffee, level it, zero the scale.",
+        "Water at 200 F (93 C)."
+      ],
+      "tips": [
+        "Onyx publishes a micron grind for every coffee. Use their grind calculator to translate it to your grinder: https://onyxcoffeelab.com/pages/grind-size-calculator"
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Bloom to 50 g",
+          "detail": "Wet everything.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 150 g",
+          "detail": "At 0:30 pour to 150 g.",
+          "startSec": 30,
+          "endSec": 90,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 250 g",
+          "detail": "At 1:30 pour the rest.",
+          "startSec": 90,
+          "endSec": 110,
+          "targetWaterG": 250
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Drawdown",
+          "detail": "Done by about 3:00.",
+          "startSec": 110,
+          "endSec": 180,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "onyx-french-press",
+      "name": "Two-Stir French Press",
+      "author": "Onyx Coffee Lab",
+      "brewer": "french-press",
+      "doseG": 25.0,
+      "waterG": 400.0,
+      "grind": "Coarse, about 800 microns",
+      "grindMicrons": {
+        "from": 800,
+        "to": 800
+      },
+      "tempC": 96,
+      "blurb": "Spiral pour, two stirs, plunge at 2:30. A quick French press that still tastes clean.",
+      "sourceNote": "Onyx Coffee Lab's published French press guide for their Eclipse blend, checked 2026-11-17.",
+      "sourceUrl": "https://onyxcoffeelab.com/products/eclipse",
+      "prep": [
+        "Coffee in first, press on the scale, zeroed.",
+        "Water at 205 F (96 C)."
+      ],
+      "tips": [
+        "Short steep, so the grind does the work. Do not go coarser than about 800 microns."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Spiral to 400 g",
+          "detail": "Spiral pour all the water.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 400
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir",
+          "detail": "Stir at 0:30.",
+          "startSec": 30,
+          "endSec": 40,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Steep",
+          "detail": "Leave it.",
+          "startSec": 40,
+          "endSec": 90,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir again",
+          "detail": "Stir at 1:30.",
+          "startSec": 90,
+          "endSec": 100,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Steep",
+          "detail": "Leave it.",
+          "startSec": 100,
+          "endSec": 150,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Plunge",
+          "detail": "Plunge at 2:30 and pour.",
+          "startSec": 150,
+          "endSec": 170,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2025-pop",
+      "name": "WAC 2025 Winner",
+      "author": "Némo Pop",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 170.0,
+      "grind": "Comandante Trailmaster, 31 clicks, sifted at 200 microns to remove fines, chaff blown off",
+      "grindMicrons": null,
+      "tempC": 84,
+      "blurb": "Upright, 100 g of 84 C water, one cross-stir, a gentle press onto warm bypass water. Winner of the 2025 World AeroPress Championship (Australia).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. waterG is 100 g brew water plus the 70 g bypass poured into the carafe first, so the last step's 170 g counts water used, not a new pour.",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Pour 70 g of 50 C water into the carafe first. That is your bypass.",
+        "Upright AeroPress with a Flow Control cap and two paper filters.",
+        "Grind slowly, blow out the chaff and sift out fines below 200 microns.",
+        "He used 125 ppm water."
+      ],
+      "tips": [
+        "The sifting is a competition step. Skip it if you have no sieve; the cup will be a little heavier."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "100 g at 84 C",
+          "detail": "AeroPress on the carafe, coffee in. Pour 100 g to wet all the grounds.",
+          "startSec": 0,
+          "endSec": 10,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 0:25.",
+          "startSec": 10,
+          "endSec": 25,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Cross stir",
+          "detail": "Stir north-south, north-south, then west-east, west-east.",
+          "startSec": 25,
+          "endSec": 35,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 0:50.",
+          "startSec": 35,
+          "endSec": 50,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Gentle press",
+          "detail": "Press gently for about 20 seconds onto the bypass water.",
+          "startSec": 50,
+          "endSec": 70,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Swirl and serve",
+          "detail": "No more water to pour. With the 70 g bypass already in the carafe, that is 170 g of water in all. Swirl and serve.",
+          "startSec": 70,
+          "endSec": 80,
+          "targetWaterG": 170
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2024-stanica",
+      "name": "WAC 2024 Winner",
+      "author": "George Stanica",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 180.0,
+      "grind": "Comandante C40 MK4 with Red Clix, 58 clicks (about 870 microns)",
+      "grindMicrons": {
+        "from": 870,
+        "to": 870
+      },
+      "tempC": 96,
+      "blurb": "Inverted, two Melodrip pours, a gentle stir, then a slow press and a two-temperature dilution. Winner of the 2024 World AeroPress Championship (Romania).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. waterG is about 100 g brew water plus about 80 g dilution (kettle water to 130-135 g, then 20-30 g room-temperature water); the exact dilution is to taste.",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress set around the 4 mark.",
+        "One Aesir filter, rinsed.",
+        "Brew water about 85-90 ppm at 96 C. A little 0 ppm room-temperature water for the final dilution.",
+        "A Melodrip helps for the two pours."
+      ],
+      "tips": [
+        "Turn the kettle off after the second pour so you can dilute with slightly cooler water."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "About 50 g",
+          "detail": "Pour about 50 g through a Melodrip in 5-6 seconds. Bloom about 30 seconds.",
+          "startSec": 0,
+          "endSec": 35,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 100 g",
+          "detail": "Second 50 g, again 5-6 seconds.",
+          "startSec": 35,
+          "endSec": 41,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Stir",
+          "title": "Gentle stir",
+          "detail": "Stir gently north-south-east-west for 10 seconds.",
+          "startSec": 41,
+          "endSec": 51,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Rinse the filter and turn off the kettle while you wait.",
+          "startSec": 51,
+          "endSec": 80,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Cap on, air out",
+          "detail": "At 1:20 fit the cap and gently push out the air, about 10 seconds.",
+          "startSec": 80,
+          "endSec": 90,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Swirl",
+          "title": "Flip and swirl",
+          "detail": "Swirl, then set it on the server.",
+          "startSec": 90,
+          "endSec": 95,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Slow press",
+          "detail": "Start at 1:35. Press gently for 30-40 s to about 76-79 g.",
+          "startSec": 95,
+          "endSec": 130,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Dilute",
+          "detail": "Add kettle water until the cup weighs 130-135 g, then 20-30 g of room-temperature 0 ppm water. About 80 g of water, 180 g in all.",
+          "startSec": 130,
+          "endSec": 150,
+          "targetWaterG": 180
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2023-wipvasutt",
+      "name": "WAC 2023 Winner",
+      "author": "Tay Wipvasutt",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 180.0,
+      "grind": "1Zpresso ZP6, 65 clicks",
+      "grindMicrons": null,
+      "tempC": 89,
+      "blurb": "Inverted, with a clever twist: 2 g of extra coffee added mid-brew. Winner of the 2023 World AeroPress Championship (Thailand).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. waterG is 100 g brew water plus about 80 g bypass (room temperature to 115 g, then hot to about 155 g).",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, one paper filter, rinsed.",
+        "Weigh the dose as 16 g plus a separate 2 g.",
+        "He used Perfect Coffee Water at 81.5% strength."
+      ],
+      "tips": [
+        "Stir with one side of a chopstick, 5 seconds each time."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "16 g coffee, 100 g water",
+          "detail": "Add 16 g of coffee and pour to 100 g.",
+          "startSec": 0,
+          "endSec": 10,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 0:30.",
+          "startSec": 10,
+          "endSec": 30,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir 5 s",
+          "detail": "Stir for 5 seconds.",
+          "startSec": 30,
+          "endSec": 35,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 0:45.",
+          "startSec": 35,
+          "endSec": 45,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Prep",
+          "title": "Add 2 g more coffee",
+          "detail": "Add the extra 2 g of coffee.",
+          "startSec": 45,
+          "endSec": 55,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir 5 s",
+          "detail": "Stir for 5 seconds again.",
+          "startSec": 55,
+          "endSec": 60,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Air out, cap on",
+          "detail": "Push the plunger up to remove excess air and fit the cap.",
+          "startSec": 60,
+          "endSec": 95,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Flip and press",
+          "detail": "At 1:35 flip carefully and press for about 30 s. Yield about 75 g.",
+          "startSec": 95,
+          "endSec": 125,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Bypass",
+          "detail": "Add room-temperature water until the cup weighs 115 g, then hot water to about 155 g. About 80 g of water, 180 g in all. Taste.",
+          "startSec": 125,
+          "endSec": 150,
+          "targetWaterG": 180
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2022-little",
+      "name": "WAC 2022 Winner",
+      "author": "Jibbi Little",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 185.0,
+      "grind": "Very coarse on a Timemore, then reground on a Kinu at 4. Fines (100-200 microns) sifted out.",
+      "grindMicrons": null,
+      "tempC": 90,
+      "blurb": "Inverted, 35 gentle stirs, a concentrate, then topped up to 150 g. Winner of the 2022 World AeroPress Championship (Australia).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. waterG is 94 g brew water plus about 90 g bypass to reach 150 g in the cup; the bypass depends on how much concentrate you get.",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, one AeroPress paper, rinsed.",
+        "Perfect Coffee Water at 90 C.",
+        "Two-step grind and sift if you can. If not, a medium grind with as few fines as possible."
+      ],
+      "tips": [
+        "Target strength was 1.30-1.35% TDS.",
+        "She optionally added chilled coffee-extract ice balls to the cup for texture."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "94 g",
+          "detail": "Coffee in, then pour 94 g of water.",
+          "startSec": 0,
+          "endSec": 15,
+          "targetWaterG": 94
+        },
+        {
+          "kind": "Stir",
+          "title": "35 gentle stirs",
+          "detail": "Stir gently, 35 times.",
+          "startSec": 15,
+          "endSec": 50,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 1:20.",
+          "startSec": 50,
+          "endSec": 80,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Cap on",
+          "detail": "At 1:20 screw on the cap and press out the air.",
+          "startSec": 80,
+          "endSec": 90,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Swirl",
+          "title": "Flip",
+          "detail": "Flip at 1:30.",
+          "startSec": 90,
+          "endSec": 100,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Press 30 s",
+          "detail": "Press from 1:40 to 2:10. Expect 58-64 g of concentrate.",
+          "startSec": 100,
+          "endSec": 130,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Bypass to 150 g",
+          "detail": "Top up with 90 C water until the cup weighs 150 g. About 90 g of water, 185 g in all.",
+          "startSec": 130,
+          "endSec": 150,
+          "targetWaterG": 185
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2021-merikanto",
+      "name": "WAC 2021 Winner",
+      "author": "Tuomas Merikanto",
+      "brewer": "aeropress",
+      "doseG": 18.0,
+      "waterG": 200.0,
+      "grind": "Macap Labo 70D at 7.0 (medium)",
+      "grindMicrons": null,
+      "tempC": 80,
+      "blurb": "Inverted, 80 C water, two sets of gentle stirs, no bypass. Winner of the 2021 World AeroPress Championship (Finland).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive.",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, two paper filters, rinsed.",
+        "He used Third Wave Water espresso formula at 80 C."
+      ],
+      "tips": [
+        "No dilution. All 200 g goes through the coffee.",
+        "Pouring from a height into a second pitcher at the end helps it cool and open up."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "50 g",
+          "detail": "Pour 50 g at 80 C.",
+          "startSec": 0,
+          "endSec": 10,
+          "targetWaterG": 50
+        },
+        {
+          "kind": "Stir",
+          "title": "3 gentle stirs",
+          "detail": "Three gentle back-and-forth stirs.",
+          "startSec": 10,
+          "endSec": 15,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Pour",
+          "title": "Up to 200 g",
+          "detail": "Pour to 200 g.",
+          "startSec": 15,
+          "endSec": 30,
+          "targetWaterG": 200
+        },
+        {
+          "kind": "Steep",
+          "title": "Wait",
+          "detail": "Leave it until 0:50.",
+          "startSec": 30,
+          "endSec": 50,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "3 more stirs",
+          "detail": "Three more gentle stirs.",
+          "startSec": 50,
+          "endSec": 55,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Cap on, wait",
+          "detail": "At 1:00 push out the air, fit the cap, and wait until 1:40.",
+          "startSec": 55,
+          "endSec": 100,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Flip and press",
+          "detail": "Flip at 1:40 and press straight away, done by 2:00.",
+          "startSec": 100,
+          "endSec": 120,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Swirl",
+          "title": "Swirl and pour",
+          "detail": "Swirl until 2:30, then pour from a height into another pitcher.",
+          "startSec": 120,
+          "endSec": 150,
+          "targetWaterG": null
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2019-van-bunnik",
+      "name": "WAC 2019 Winner",
+      "author": "Wendelien van Bunnik",
+      "brewer": "aeropress",
+      "doseG": 30.0,
+      "waterG": 220.0,
+      "grind": "Mahlkönig EK43S. The archive rates the grind 7 on a 1-10 scale (1 very fine, 10 very coarse).",
+      "grindMicrons": null,
+      "tempC": 92,
+      "blurb": "A big 30 g dose, firm stirs, a fast concentrate, then diluted to taste. Winner of the 2019 World AeroPress Championship (Netherlands).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. waterG is 100 g brew water plus 120 g dilution (her final amount).",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, Aesir filter, rinsed.",
+        "Soft water: she used Spa Blauw at about 30 ppm."
+      ],
+      "tips": [
+        "She cooled the cup to about 60 C by stirring and decanting before serving.",
+        "Dilute to taste. 100 g is the starting point, 120 g was her final."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "100 g in 10 s",
+          "detail": "Pour 100 g over the coffee in 10 seconds.",
+          "startSec": 0,
+          "endSec": 10,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Stir",
+          "title": "20 firm stirs",
+          "detail": "Stir firmly 20 times in 10 seconds.",
+          "startSec": 10,
+          "endSec": 20,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Cap on",
+          "detail": "Fit the cap with the rinsed filter and gently press out the air.",
+          "startSec": 20,
+          "endSec": 40,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Flip and press",
+          "detail": "At 0:40 flip and press out all the coffee. About 60 g of extract.",
+          "startSec": 40,
+          "endSec": 60,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Dilute",
+          "detail": "Add 100 g of water, then more to taste. She used 120 g, 220 g of water in all. Cool to about 60 C by stirring and decanting.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": 220
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2018-garay",
+      "name": "WAC 2018 Winner",
+      "author": "Carolina Ibarra Garay",
+      "brewer": "aeropress",
+      "doseG": 34.9,
+      "waterG": 200.0,
+      "grind": "Mahlkönig EK43S. The archive rates the grind 8 on a 1-10 scale (1 very fine, 10 very coarse).",
+      "grindMicrons": null,
+      "tempC": 85,
+      "blurb": "A huge dose, a 30-second chopstick stir and a concentrate topped with hot and cool water. Winner of the 2018 World AeroPress Championship (USA).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive, where she is listed as Carolina Garay (USA).",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, paper filter rinsed with hot water.",
+        "Brita-filtered water at 85 C.",
+        "Do not preheat the server."
+      ],
+      "tips": [
+        "Wooden chopsticks for the stir: vigorous but careful."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "100 g over 30 s",
+          "detail": "Pour 100 g of 85 C water over 30 seconds.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Stir",
+          "title": "Chopstick stir",
+          "detail": "Stir vigorously but carefully for 30 seconds.",
+          "startSec": 30,
+          "endSec": 60,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Cap, flip, press",
+          "detail": "Fit the cap, flip, and press into a glass server for 30 seconds.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Top up",
+          "detail": "Add 60 g of 85 C water and 40 g of room-temperature water.",
+          "startSec": 90,
+          "endSec": 110,
+          "targetWaterG": 200
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "wac-2017-miczka",
+      "name": "WAC 2017 Winner",
+      "author": "Paulina Miczka",
+      "brewer": "aeropress",
+      "doseG": 35.0,
+      "waterG": 350.0,
+      "grind": "Grinder not named. The archive rates the grind 8 on a 1-10 scale (1 very fine, 10 very coarse).",
+      "grindMicrons": null,
+      "tempC": 84,
+      "blurb": "A 35 g dose, 150 g of water, continuous stirring, then a strong concentrate opened up with hot water. Winner of the 2017 World AeroPress Championship (England).",
+      "sourceNote": "From the official World AeroPress Championship recipe archive. The archive lists 370 g of water in total; the steps add up to 150 g brew water plus 160-200 g hot water, so waterG uses 150 + 200.",
+      "sourceUrl": "https://worldaeropresschampionship.com/pages/recipes",
+      "prep": [
+        "Inverted AeroPress, paper filter, pre-wet.",
+        "Water at 84 C."
+      ],
+      "tips": [
+        "The concentrate is about 4.5% TDS. Dilute to taste within 160-200 g.",
+        "Hoffmann links her technique in his Ultimate AeroPress video description."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "150 g",
+          "detail": "Pour 150 g in 15 seconds.",
+          "startSec": 0,
+          "endSec": 15,
+          "targetWaterG": 150
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir continuously",
+          "detail": "Keep stirring until 0:35.",
+          "startSec": 15,
+          "endSec": 35,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Steep",
+          "title": "Cap on",
+          "detail": "Fit the pre-wet cap at 0:35 and wait.",
+          "startSec": 35,
+          "endSec": 65,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Press",
+          "title": "Flip and press",
+          "detail": "Flip at 1:05 and press until 1:35. About 90 ml of concentrate.",
+          "startSec": 65,
+          "endSec": 95,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Serve",
+          "title": "Dilute",
+          "detail": "Add 160-200 g of hot water to taste. 200 g makes 350 g of water in all.",
+          "startSec": 95,
+          "endSec": 115,
+          "targetWaterG": 350
+        }
+      ],
+      "confidence": "high"
+    }
+  ]
+}

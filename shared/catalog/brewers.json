@@ -1,0 +1,465 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "brewers": [
+    {
+      "id": "hario-v60-01",
+      "name": "V60 01",
+      "brand": "Hario",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "60-degree cone with spiral ribs and one large hole; flow depends mostly on grind and pouring. 01 size is sold for 1 to 2 cups. Comes in plastic, ceramic, glass, metal and copper; material mainly changes heat retention (preheat ceramic and glass)."
+    },
+    {
+      "id": "hario-v60-02",
+      "name": "V60 02",
+      "brand": "Hario",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "The most common V60 size, 1 to 4 cups. Same spiral ribs and single large hole as the 01. Plastic, ceramic, glass, metal and copper versions; preheat ceramic and glass well."
+    },
+    {
+      "id": "hario-v60-03",
+      "name": "V60 03",
+      "brand": "Hario",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Large V60 for batches of up to about 6 cups; same geometry as the 01 and 02."
+    },
+    {
+      "id": "hario-v60-mugen",
+      "name": "V60 Mugen",
+      "brand": "Hario",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "V60 variant with a single continuous rib, designed for slower, one-pour style brewing."
+    },
+    {
+      "id": "hario-switch",
+      "name": "Switch",
+      "brand": "Hario",
+      "category": "hybrid",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "A V60 cone on a base with a valve: close it to steep like an immersion brewer, open it to drain. Lets you mix immersion and percolation in one brew."
+    },
+    {
+      "id": "kalita-102",
+      "name": "102 dripper",
+      "brand": "Kalita",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Wedge (trapezoid) dripper with three small holes; slower, more forgiving drawdown than a V60."
+    },
+    {
+      "id": "melitta",
+      "name": "Pour-over cone",
+      "brand": "Melitta",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Classic wedge-shaped dripper with a small outlet; slow, forgiving and cheap. Uses Melitta #2 or #4 filters."
+    },
+    {
+      "id": "chemex",
+      "name": "Chemex",
+      "brand": "Chemex",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Glass carafe and cone in one. Thick bonded paper gives a very clean, light-bodied cup; usually brewed a little coarser than a V60. 3, 6, 8 and 10 cup sizes."
+    },
+    {
+      "id": "origami",
+      "name": "Origami Dripper",
+      "brand": "Origami",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Japanese porcelain cone with 20 deep folds; takes cone filters for a fast V60-like flow or Wave-style flat filters for a flat-bed brew."
+    },
+    {
+      "id": "kono-meimon",
+      "name": "Meimon dripper",
+      "brand": "Kono",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Cone with ribs only near the bottom, so the paper seals higher up; slower flow and more body than a V60."
+    },
+    {
+      "id": "cafec-flower",
+      "name": "Flower Dripper",
+      "brand": "Cafec",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Cone with petal-shaped ribs that keep the paper off the wall for a quick, even drawdown. Cup1 and Cup4 sizes."
+    },
+    {
+      "id": "cafec-deep",
+      "name": "Deep Dripper",
+      "brand": "Cafec",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Taller, narrower cone for a deeper coffee bed; sold in Deep 27 and Deep 45 versions."
+    },
+    {
+      "id": "timemore-crystal-eye",
+      "name": "Crystal Eye dripper",
+      "brand": "Timemore",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Clear plastic V60-style cone with ribs; takes standard 01/02 cone filters."
+    },
+    {
+      "id": "graycano",
+      "name": "Graycano Dripper",
+      "brand": "Graycano",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "German double-walled cone of ceramic-coated cast aluminium, from Leipzig. Broken V-shaped 'Lava Ribs' are meant to break up air and water channels for an even bed; holds heat well."
+    },
+    {
+      "id": "ufo-dripper",
+      "name": "UFO Dripper",
+      "brand": "UFO",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Very wide, shallow ceramic cone (80-degree walls) made in South Korea from Korean clay; aims for a cone's flavour with a flat bed's consistency. Takes UFO 80-degree papers, or folded cone filters."
+    },
+    {
+      "id": "nel-drip",
+      "name": "Nel drip / Woodneck",
+      "brand": "Hario and others",
+      "category": "cone",
+      "method": "pourover",
+      "filter": "cloth",
+      "notes": "Traditional Japanese cloth-filter pour-over; rich, round body. Keep the cloth wet and refrigerated between uses."
+    },
+    {
+      "id": "kalita-wave-155",
+      "name": "Wave 155",
+      "brand": "Kalita",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Flat bed with three small holes and fluted filters; very consistent. 155 size suits roughly 1 to 2 cups."
+    },
+    {
+      "id": "kalita-wave-185",
+      "name": "Wave 185",
+      "brand": "Kalita",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Larger Wave for 2 to 4 cups; same three-hole flat bed and fluted 185 filters."
+    },
+    {
+      "id": "april-brewer",
+      "name": "April Brewer",
+      "brand": "April",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Flat-bottom brewer designed by Patrik Rolf (April Coffee, Copenhagen); he used it at the 2019 World Brewers Cup, where it earned the highest cup score in the open service round. Three ridges hold a flat-bottom (Kalita-style) filter over a conical drain hole."
+    },
+    {
+      "id": "orea-v4",
+      "name": "Orea V4",
+      "brand": "Orea",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "UK brewer with four swappable bases: Classic (flat, a little restriction), Open (focuses flow to the centre), Fast (very open, suits finer grinds; the base Martin Wölfl used to win the 2024 World Brewers Cup) and APEX (between cone and flat). Narrow (to about 28 g) and Wide (to about 36 g) versions; both take 185-size filters."
+    },
+    {
+      "id": "fellow-stagg-x",
+      "name": "Stagg [X]",
+      "brand": "Fellow",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Double-walled stainless flat-bottom dripper for single cups; holds temperature well."
+    },
+    {
+      "id": "fellow-stagg-xf",
+      "name": "Stagg [XF]",
+      "brand": "Fellow",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Larger version of the Stagg [X] for bigger doses or 2 cups."
+    },
+    {
+      "id": "tricolate",
+      "name": "Tricolate",
+      "brand": "Tricolate",
+      "category": "flat-bottom",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Flat-bed brewer with a shower screen and no bypass, built for high extraction with a grind between pour-over and espresso. Scott Rao's recipe: 20 g coffee, 400 g water at 100 C poured as 60 g, 170 g and 170 g, 7 to 10 minutes total."
+    },
+    {
+      "id": "nextlevel-pulsar",
+      "name": "Pulsar",
+      "brand": "NextLevel",
+      "category": "hybrid",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "No-bypass flat-bed brewer with an adjustable flow valve, designed with Jonathan Gagné. Close the valve for a full-immersion bloom or steep, open it to drain."
+    },
+    {
+      "id": "clever-dripper",
+      "name": "Clever Dripper",
+      "brand": "Clever",
+      "category": "immersion",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Cone that steeps with a valve that opens when set on a cup. Very forgiving; most people grind a touch coarser than for a V60."
+    },
+    {
+      "id": "bonavita-immersion",
+      "name": "Immersion Dripper",
+      "brand": "Bonavita",
+      "category": "immersion",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Porcelain cone with a lever-operated valve; steep, then release. Takes cone filters."
+    },
+    {
+      "id": "french-press",
+      "name": "French press",
+      "brand": "Bodum and others",
+      "category": "immersion",
+      "method": "frenchPress",
+      "filter": "metal",
+      "notes": "Full immersion with a metal mesh plunger; heavy body with some fines and oils. Coarse grind, steep about 4 minutes or longer."
+    },
+    {
+      "id": "espro-press",
+      "name": "Espro Press",
+      "brand": "Espro",
+      "category": "immersion",
+      "method": "frenchPress",
+      "filter": "metal",
+      "notes": "French press with a double micro-filter basket for a much cleaner cup; Espro also sells paper inserts for the coffee model."
+    },
+    {
+      "id": "weber-bird",
+      "name": "BIRD",
+      "brand": "Weber Workshops",
+      "category": "hybrid",
+      "method": "pourover",
+      "filter": "metal",
+      "notes": "'Brewed In Reverse Direction': coffee and water steep together, then turning a wing nut lifts the filter pod up through the slurry and the vacuum draws the brew through the bed, with no bypass. Ships with a stainless-steel filter pod; Cafec abaca papers are an option. Grind in the pour-over range is a starting point."
+    },
+    {
+      "id": "aeropress",
+      "name": "AeroPress (original)",
+      "brand": "AeroPress",
+      "category": "hybrid",
+      "method": "aeropress",
+      "filter": "paper",
+      "notes": "Steep then press. Works with paper or metal discs, standard or inverted, and a very wide grind range. Accessories like a flow-control cap change how it drips."
+    },
+    {
+      "id": "aeropress-go",
+      "name": "AeroPress Go",
+      "brand": "AeroPress",
+      "category": "hybrid",
+      "method": "aeropress",
+      "filter": "paper",
+      "notes": "Travel AeroPress that packs into its own mug; slightly smaller capacity than the original."
+    },
+    {
+      "id": "aeropress-xl",
+      "name": "AeroPress XL",
+      "brand": "AeroPress",
+      "category": "hybrid",
+      "method": "aeropress",
+      "filter": "paper",
+      "notes": "Double-size AeroPress for larger batches; uses its own larger filters."
+    },
+    {
+      "id": "aeropress-clear",
+      "name": "AeroPress Clear",
+      "brand": "AeroPress",
+      "category": "hybrid",
+      "method": "aeropress",
+      "filter": "paper",
+      "notes": "AeroPress in a clear chamber so you can watch the brew; same filters and recipes as the original."
+    },
+    {
+      "id": "delter-press",
+      "name": "Delter Coffee Press",
+      "brand": "Delter",
+      "category": "hybrid",
+      "method": "aeropress",
+      "filter": "paper",
+      "notes": "Press brewer that steeps, then gently pushes the brew through a paper filter; often compared to the AeroPress."
+    },
+    {
+      "id": "moka-pot",
+      "name": "Moka pot",
+      "brand": "Bialetti and others",
+      "category": "pressure",
+      "method": "moka",
+      "filter": "metal",
+      "notes": "Stovetop brewer using steam pressure; strong, espresso-like coffee. Grind finer than filter but coarser than espresso; start with hot water and pull off the heat as it sputters."
+    },
+    {
+      "id": "bialetti-brikka",
+      "name": "Brikka",
+      "brand": "Bialetti",
+      "category": "pressure",
+      "method": "moka",
+      "filter": "metal",
+      "notes": "Moka pot with a pressure valve that builds more pressure before release, giving a thicker, crema-like top."
+    },
+    {
+      "id": "cezve",
+      "name": "Cezve / ibrik (Turkish)",
+      "brand": "Various",
+      "category": "other",
+      "method": "turkish",
+      "filter": "none",
+      "notes": "Very finely ground coffee heated with water (and often sugar) in a small pot and served unfiltered; let the grounds settle in the cup."
+    },
+    {
+      "id": "phin",
+      "name": "Phin filter (Vietnamese)",
+      "brand": "Various",
+      "category": "other",
+      "method": "aeropress",
+      "filter": "metal",
+      "notes": "Small metal gravity filter set on the cup; usually served with condensed milk. Nguyen Coffee Supply recommends a fine grind for its phins; too fine and it stops dripping."
+    },
+    {
+      "id": "siphon",
+      "name": "Siphon / vacuum pot",
+      "brand": "Hario, Yama and others",
+      "category": "siphon",
+      "method": "siphon",
+      "filter": "cloth",
+      "notes": "Vapour pressure pushes water up into the coffee, then a vacuum pulls the brew back down through a cloth, paper or metal filter. Clean, aromatic and hot."
+    },
+    {
+      "id": "cold-brew-jar",
+      "name": "Cold brew jar / pitcher",
+      "brand": "Hario and others",
+      "category": "cold",
+      "method": "coldBrew",
+      "filter": "metal",
+      "notes": "Coarse coffee steeped in cold water for many hours, then filtered; smooth and low in acidity. Many pitchers use a fine mesh insert."
+    },
+    {
+      "id": "toddy",
+      "name": "Toddy cold brew system",
+      "brand": "Toddy",
+      "category": "cold",
+      "method": "coldBrew",
+      "filter": "cloth",
+      "notes": "Large-batch cold brew concentrate system with a felt filter."
+    },
+    {
+      "id": "kyoto-drip",
+      "name": "Kyoto / slow-drip tower",
+      "brand": "Various",
+      "category": "cold",
+      "method": "coldBrew",
+      "filter": "paper",
+      "notes": "Ice water drips slowly through the coffee over hours; uses a finer grind than immersion cold brew."
+    },
+    {
+      "id": "espresso-machine",
+      "name": "Espresso machine",
+      "brand": "Various",
+      "category": "espresso",
+      "method": "espresso",
+      "filter": "metal",
+      "notes": "Pump or lever machine pushing about 9 bar through a fine, tamped puck."
+    },
+    {
+      "id": "flair",
+      "name": "Flair (Neo, Classic, Pro)",
+      "brand": "Flair Espresso",
+      "category": "espresso",
+      "method": "espresso",
+      "filter": "metal",
+      "notes": "Manual lever espresso press; you heat water separately and pull by hand, so preheating matters a lot."
+    },
+    {
+      "id": "flair-58",
+      "name": "Flair 58",
+      "brand": "Flair Espresso",
+      "category": "espresso",
+      "method": "espresso",
+      "filter": "metal",
+      "notes": "Manual lever with a 58 mm portafilter and electric preheat for the brew head."
+    },
+    {
+      "id": "cafelat-robot",
+      "name": "Robot",
+      "brand": "Cafelat",
+      "category": "espresso",
+      "method": "espresso",
+      "filter": "metal",
+      "notes": "Manual two-arm lever espresso maker with a 58 mm basket; no electricity needed."
+    },
+    {
+      "id": "wacaco",
+      "name": "Picopresso / Nanopresso",
+      "brand": "Wacaco",
+      "category": "espresso",
+      "method": "espresso",
+      "filter": "metal",
+      "notes": "Portable hand-pumped espresso makers; Picopresso has a naked portafilter-style basket for specialty use."
+    },
+    {
+      "id": "drip-machine",
+      "name": "Automatic drip machine",
+      "brand": "Moccamaster, Fellow, Breville and others",
+      "category": "other",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Batch brewer with a flat or cone basket; grind usually similar to or a little coarser than pour-over."
+    },
+    {
+      "id": "drip-bag",
+      "name": "Drip bag (single-serve)",
+      "brand": "Various",
+      "category": "other",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Pre-filled paper bag that hangs on a cup; pre-ground, so only dose and water can change."
+    },
+    {
+      "id": "melodrip",
+      "name": "Melodrip",
+      "brand": "Melodrip",
+      "category": "other",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Not a brewer: a hand-held dispersion screen you pour through over any dripper to cut agitation and get a cleaner cup."
+    },
+    {
+      "id": "other",
+      "name": "Other brewer",
+      "brand": "",
+      "category": "other",
+      "method": "pourover",
+      "filter": "paper",
+      "notes": "Anything not in the list; pick the closest method so grind suggestions still make sense."
+    }
+  ]
+}

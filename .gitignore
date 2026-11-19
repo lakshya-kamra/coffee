@@ -1,0 +1,24 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+.kotlin/
+# release signing lives outside the repo
+*.jks
+*.keystore
+keystore.properties
+# web
+web/node_modules/
+web/dist/
+web/.vite/
+.vercel/
+node_modules/
+.claude/
+docs/plan/build-reports-*.json

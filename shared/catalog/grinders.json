@@ -1,0 +1,3534 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "grinders": [
+    {
+      "id": "1zpresso-k-ultra",
+      "brand": "1Zpresso",
+      "model": "K-Ultra",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 200,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 100,
+        "micronsPerStep": 20,
+        "dialReading": "External ring numbered 0-9 with 10 clicks between numbers: 100 clicks per full turn, 20 microns of burr travel per click. 1Zpresso writes a setting as number.click and keeps counting past one turn: 6.5 = number 6 plus 5 clicks (65 clicks); 12.3 = one full turn, then number 2 plus 3 clicks (123 clicks). Clockwise is coarser. Zero is where the handle starts to spin with resistance, not the tightest point.",
+        "entryHint": "Type the reading times 10, which is total clicks from zero: 7.5 → 75, 8.0 → 80. On the second turn add 100: number 2 plus 3 clicks → 123.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 20,
+          "to": 35
+        },
+        "espresso": {
+          "from": 30,
+          "to": 45
+        },
+        "aeropress": {
+          "from": 50,
+          "to": 70
+        },
+        "moka": {
+          "from": 50,
+          "to": 70
+        },
+        "pourover": {
+          "from": 75,
+          "to": 90
+        },
+        "siphon": {
+          "from": 80,
+          "to": 90
+        },
+        "frenchPress": {
+          "from": 90,
+          "to": 100
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/manual-kultra-en/",
+          "note": "Manual: 100 clicks per full rotation (dial can go past one rotation), 0.02 mm per click, higher numbers coarser, zero = handle starts to spin with resistance; zero may sit 2+ clicks off after reassembly."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/10/Kultra-Grind-Setting-Reference-20221031.jpg",
+          "note": "Official K-Ultra chart (2022-10-31), linked from 1zpresso.coffee/grindsetting, in numbers (x10 = clicks): Turkish 2.0-3.5, espresso 3.0-4.5, AeroPress/moka/drip 5.0-7.0, siphon/pour over 8.0-9.0, French press 9.0-10.0."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/how-to-dial-in-the-perfect-grind-size-for-pour-over-coffee/",
+          "note": "Manufacturer pour-over starting point: K-Ultra around 80-90 clicks."
+        },
+        {
+          "who": "AD Cafe via 1Zpresso",
+          "url": "https://1zpresso.coffee/kultra-review-adcafe/",
+          "note": "Roaster pour-over recipe published by 1Zpresso: K-Ultra 7.5 (75 clicks)."
+        },
+        {
+          "who": "Who Cafe Roasting via 1Zpresso",
+          "url": "https://1zpresso.coffee/kultra-review-who-cafe-roasting/",
+          "note": "Roaster pour-over recipes published by 1Zpresso: K-Ultra 8 (80 clicks)."
+        },
+        {
+          "who": "P. Coffee Roaster via 1Zpresso",
+          "url": "https://1zpresso.coffee/kultra-review-p-coffee-roaster/",
+          "note": "Roaster recipe published by 1Zpresso: base 8.5 (85 clicks), 8 (80) for a Panama Geisha."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Every range is 1Zpresso's own K-Ultra chart; pour over is widened down to 75 because the roaster recipes 1Zpresso publishes use 7.5-8.5. A dial reading x10 is exactly total clicks (1Zpresso's own convention). It is NOT turns: one full turn is 100 clicks, so 75 is three quarters of one turn. 20 microns is burr travel per click, not particle size. Honest Coffee Guide's K-Ultra chart (espresso 24-50, capped at one turn) disagrees with 1Zpresso and is not used. 1Zpresso describes a heptagonal conical burr but gives no diameter; 48 mm is the commonly quoted figure. Max 200 is a UI bound."
+    },
+    {
+      "id": "1zpresso-k-max",
+      "brand": "1Zpresso",
+      "model": "K-Max",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 150,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 90,
+        "micronsPerStep": 22,
+        "dialReading": "External ring with 9 numbers per turn and 10 clicks between numbers: 90 clicks per turn, 22 microns per click. 1Zpresso reads number.click and keeps counting past a turn: 8.6 = 86 clicks; one full round to 0 plus one number = 10 = 100 clicks.",
+        "entryHint": "Type the reading times 10 (total clicks from zero): 8.6 → 86. After a full turn keep counting numbers: one round plus number 1 → 100.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 20,
+          "to": 35
+        },
+        "espresso": {
+          "from": 30,
+          "to": 45
+        },
+        "aeropress": {
+          "from": 50,
+          "to": 70
+        },
+        "moka": {
+          "from": 50,
+          "to": 70
+        },
+        "pourover": {
+          "from": 80,
+          "to": 90
+        },
+        "siphon": {
+          "from": 80,
+          "to": 90
+        },
+        "frenchPress": {
+          "from": 90,
+          "to": 100
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/04/K-series-Grind-Setting-Reference-211129.jpg",
+          "note": "Official K-Pro/K-Max/K-Plus chart, in numbers (x10 = clicks): Turkish 2.0-3.5, espresso 3.0-4.5, AeroPress/moka/drip 5.0-7.0, siphon/pour over 8.0-9.0, French press 9.0-10.0."
+        }
+      ],
+      "confidence": "high",
+      "notes": "1Zpresso's printed starting points; the same chart covers the K-Pro and K-Plus."
+    },
+    {
+      "id": "1zpresso-k-plus",
+      "brand": "1Zpresso",
+      "model": "K-Plus",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 150,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 90,
+        "micronsPerStep": 22,
+        "dialReading": "Same external ring as the K-Max: 9 numbers per turn, 10 clicks per number, 90 clicks per turn, 22 microns per click. Read number.click (3.2 = 32 clicks).",
+        "entryHint": "Type the reading times 10 (total clicks from zero): 3.2 → 32, 8.6 → 86.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 20,
+          "to": 35
+        },
+        "espresso": {
+          "from": 30,
+          "to": 45
+        },
+        "aeropress": {
+          "from": 50,
+          "to": 70
+        },
+        "moka": {
+          "from": 50,
+          "to": 70
+        },
+        "pourover": {
+          "from": 80,
+          "to": 90
+        },
+        "siphon": {
+          "from": 80,
+          "to": 90
+        },
+        "frenchPress": {
+          "from": 90,
+          "to": 100
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/04/K-series-Grind-Setting-Reference-211129.jpg",
+          "note": "Official K-Pro/K-Max/K-Plus chart, in numbers (x10 = clicks): Turkish 2.0-3.5, espresso 3.0-4.5, AeroPress/moka/drip 5.0-7.0, siphon/pour over 8.0-9.0, French press 9.0-10.0."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Shares the K-Max burr and the K-series chart."
+    },
+    {
+      "id": "1zpresso-zp6-special",
+      "brand": "1Zpresso",
+      "model": "ZP6 Special",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 90,
+        "micronsPerStep": 22,
+        "dialReading": "External ring, 9 numbers per turn, 10 clicks per number (90 per turn), 22 microns per click. Read number.click: 4.8 = 48 clicks.",
+        "entryHint": "Type the reading times 10 (total clicks from zero): 4.8 → 48.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "pourover": {
+          "from": 40,
+          "to": 50
+        },
+        "siphon": {
+          "from": 40,
+          "to": 50
+        },
+        "frenchPress": {
+          "from": 50,
+          "to": 60
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/10/ZP6-special-Grind-Setting-Reference-20221031.jpg",
+          "note": "Official ZP6 chart: siphon/pour over 4.0-5.0, French press 5.0-6.0 (x10 = clicks)."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/how-to-dial-in-the-perfect-grind-size-for-pour-over-coffee/",
+          "note": "Manufacturer pour-over start: 40-50 clicks."
+        },
+        {
+          "who": "Sherry (World Brewers Cup champion) via 1Zpresso",
+          "url": "https://1zpresso.coffee/zp6-kultra-xultra-review-sherry/",
+          "note": "Champion floral recipe on ZP6 at 4.8 (48 clicks), 14 g : 210 g, flat-bottom dripper."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Pour-over only grinder: 1Zpresso gives no espresso range."
+    },
+    {
+      "id": "1zpresso-j-ultra",
+      "brand": "1Zpresso",
+      "model": "J-Ultra",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 100,
+        "micronsPerStep": 8,
+        "dialReading": "External ring numbered 0-9, 10 clicks per number, 100 clicks per turn, 8 microns per click, about 5 turns in total. 1Zpresso writes rotations: 1.5 = one round plus 5 numbers = 150 clicks; charts also write rotation.number.tick (1.5.4 = 154).",
+        "entryHint": "Type total clicks from zero: full turns x 100 + number x 10 + extra clicks. 1.5 rotations → 150; 1.5.4 → 154.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 75,
+          "to": 120
+        },
+        "espresso": {
+          "from": 100,
+          "to": 170
+        },
+        "aeropress": {
+          "from": 200,
+          "to": 270
+        },
+        "moka": {
+          "from": 200,
+          "to": 270
+        },
+        "pourover": {
+          "from": 270,
+          "to": 330
+        },
+        "siphon": {
+          "from": 270,
+          "to": 330
+        },
+        "frenchPress": {
+          "from": 400,
+          "to": 440
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/manual-jultra-en/",
+          "note": "Manual: 100 clicks per rotation, 0.008 mm per click, about five rotations, counter-clockwise to zero."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2023/11/J-Ultra-Grind-setting-reference-20231103-en.jpg",
+          "note": "Official J-Ultra chart (2023-11-03), read on its click axis: Turkish 75-120, espresso 100-170, AeroPress/moka/drip 200-270, siphon/pour over 270-330, French press 400-440 clicks."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Espresso-focused. Ranges are 1Zpresso's own chart; it has no cold-brew band. Honest Coffee Guide's figures (espresso 74-154, V60 163-284) disagree with 1Zpresso and are not used."
+    },
+    {
+      "id": "1zpresso-j-max",
+      "brand": "1Zpresso",
+      "model": "J-Max",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 450,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 90,
+        "micronsPerStep": 8.8,
+        "dialReading": "External ring with 9 numbers per turn and 10 clicks per number: 90 clicks per turn, 8.8 microns per click (J-Max S the same). Charts write rotation.number.tick: 1.5.3 = one turn + number 5 + 3 clicks = 143.",
+        "entryHint": "Type total clicks from zero: full turns x 90 + number x 10 + extra clicks. 1.5.3 → 143.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 70,
+          "to": 110
+        },
+        "espresso": {
+          "from": 90,
+          "to": 150
+        },
+        "aeropress": {
+          "from": 180,
+          "to": 240
+        },
+        "moka": {
+          "from": 180,
+          "to": 240
+        },
+        "pourover": {
+          "from": 240,
+          "to": 300
+        },
+        "siphon": {
+          "from": 240,
+          "to": 300
+        },
+        "frenchPress": {
+          "from": 360,
+          "to": 420
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/07/J-Max-Grind-setting-reference-20220721.jpg",
+          "note": "Official J-Max chart (2022-07-21), read on its click axis: Turkish 70-110, espresso 90-150, AeroPress/moka/drip 180-240, siphon/pour over 240-300, French press 360-420 clicks."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Ranges are 1Zpresso's own J-Max chart; it has no cold-brew band. 1Zpresso's J-Max S notation examples mix decimal turns and turns+numbers (2.4 rotations = 220 clicks), so count clicks, not decimals. Honest Coffee Guide's figures differ and are not used. Max is a UI bound."
+    },
+    {
+      "id": "1zpresso-jx-pro",
+      "brand": "1Zpresso",
+      "model": "JX-Pro",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 200,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 40,
+        "micronsPerStep": 12.5,
+        "dialReading": "Top dial numbered 0-9, 4 clicks per number, 40 clicks per turn, 12.5 microns per click. 1Zpresso writes rotations: 2.8 = 2 rounds + 8 numbers = 112 clicks.",
+        "entryHint": "Type total clicks from zero: turns x 40 + number x 4 + extra clicks. 2.8 rotations → 112.",
+        "dialFormat": "number-tick:4"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 32,
+          "to": 48
+        },
+        "espresso": {
+          "from": 48,
+          "to": 64
+        },
+        "aeropress": {
+          "from": 96,
+          "to": 120
+        },
+        "moka": {
+          "from": 96,
+          "to": 120
+        },
+        "pourover": {
+          "from": 128,
+          "to": 176
+        },
+        "siphon": {
+          "from": 128,
+          "to": 176
+        },
+        "frenchPress": {
+          "from": 168,
+          "to": 200
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2020/09/JX-Pro-Grind-Setting-Reference-20200909.jpg",
+          "note": "Official JX-Pro chart in rotations: Turkish 0.8-1.2, espresso 1.2-1.6, AeroPress/moka/drip 2.4-3.0, siphon/pour over 3.2-4.4, French press 4.2-5.0 (x40 = clicks)."
+        }
+      ],
+      "confidence": "high",
+      "notes": "JX-Pro S uses the same 40-click, 12.5 micron dial."
+    },
+    {
+      "id": "1zpresso-jx",
+      "brand": "1Zpresso",
+      "model": "JX",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 3,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 120,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 30,
+        "micronsPerStep": 25,
+        "dialReading": "Internal adjustment under the burr, 10 numbers per turn, 3 clicks per number, 30 clicks per turn, 25 microns per click. 1Zpresso writes rotations: 1.4 = 1 round + 4 numbers = 42 clicks.",
+        "entryHint": "Type total clicks from zero: turns x 30 + number x 3 + extra clicks. 1.4 rotations → 42.",
+        "dialFormat": "number-tick:3"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 15,
+          "to": 24
+        },
+        "espresso": {
+          "from": 24,
+          "to": 33
+        },
+        "aeropress": {
+          "from": 48,
+          "to": 60
+        },
+        "moka": {
+          "from": 48,
+          "to": 60
+        },
+        "pourover": {
+          "from": 66,
+          "to": 90
+        },
+        "siphon": {
+          "from": 66,
+          "to": 90
+        },
+        "frenchPress": {
+          "from": 84,
+          "to": 102
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2020/09/JX-Grind-Setting-Reference-20200909.jpg",
+          "note": "Official JX chart in rotations: Turkish 0.5-0.8, espresso 0.8-1.1, AeroPress/moka/drip 1.6-2.0, siphon/pour over 2.2-3.0, French press 2.8-3.4 (x30 = clicks)."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Older internal-adjust model, still widely owned."
+    },
+    {
+      "id": "1zpresso-x-ultra",
+      "brand": "1Zpresso",
+      "model": "X-Ultra",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 47,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 270,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 60,
+        "micronsPerStep": 12.5,
+        "dialReading": "External ring with 6 numbers per turn and 10 clicks per number: 60 clicks per turn, 12.5 microns per click, about 4.5 turns. 1Zpresso writes rotations: 1.4 = one round + 4 numbers = 100 clicks; charts also write rotation.number.tick (1.1.5 = 75).",
+        "entryHint": "Type total clicks from zero: turns x 60 + number x 10 + extra clicks. 1.4 rotations → 100; 1.1.5 → 75.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 20,
+          "to": 40
+        },
+        "espresso": {
+          "from": 40,
+          "to": 70
+        },
+        "aeropress": {
+          "from": 70,
+          "to": 110
+        },
+        "moka": {
+          "from": 70,
+          "to": 110
+        },
+        "pourover": {
+          "from": 120,
+          "to": 160
+        },
+        "siphon": {
+          "from": 120,
+          "to": 160
+        },
+        "frenchPress": {
+          "from": 160,
+          "to": 190
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/manual-xultra-en/",
+          "note": "Manual: 60 clicks per rotation, 0.0125 mm per click, 4.5 rotations in total, counter-clockwise is finer."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2023/08/X-Ultra-Grind-setting-reference-20230802.jpg",
+          "note": "Official X-Ultra chart (2023-08-02), read on its click axis: Turkish 20-40, espresso 40-70, AeroPress/moka/drip 70-110, siphon/pour over 120-160, French press 160-190 clicks."
+        }
+      ],
+      "confidence": "high",
+      "notes": "All-rounder. Ranges are 1Zpresso's own chart (no cold-brew band). Honest Coffee Guide's figures (espresso 36-75, V60 80-138) differ and are not used."
+    },
+    {
+      "id": "1zpresso-x-pro",
+      "brand": "1Zpresso",
+      "model": "X-Pro",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 47,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 270,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 60,
+        "micronsPerStep": 12.5,
+        "dialReading": "Same external ring as the X-Ultra: 6 numbers per turn, 10 clicks per number, 60 clicks per turn, 12.5 microns per click. 1.4 rotations = 100 clicks.",
+        "entryHint": "Type total clicks from zero: turns x 60 + number x 10 + extra clicks. 1.1.3 → 73.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 20,
+          "to": 40
+        },
+        "espresso": {
+          "from": 40,
+          "to": 70
+        },
+        "aeropress": {
+          "from": 70,
+          "to": 110
+        },
+        "moka": {
+          "from": 70,
+          "to": 110
+        },
+        "pourover": {
+          "from": 120,
+          "to": 160
+        },
+        "siphon": {
+          "from": 120,
+          "to": 160
+        },
+        "frenchPress": {
+          "from": 160,
+          "to": 190
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2022/08/X-Pro-Grind-setting-reference-20220818.jpg",
+          "note": "Official X-Pro chart (2022-08-18), identical to the X-Ultra chart: Turkish 20-40, espresso 40-70, AeroPress/moka/drip 70-110, siphon/pour over 120-160, French press 160-190 clicks."
+        }
+      ],
+      "confidence": "high",
+      "notes": "X-Pro S shares the dial. Ranges are 1Zpresso's own chart (no cold-brew band); Honest Coffee Guide's figures differ and are not used."
+    },
+    {
+      "id": "1zpresso-q2",
+      "brand": "1Zpresso",
+      "model": "Q2",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 38,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 120,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 30,
+        "micronsPerStep": 25,
+        "dialReading": "Internal adjustment under the burr, numbered 0-9, 3 clicks per number, 30 clicks per turn, 25 microns per click. 1Zpresso writes rotations: 1.4 = 1 round + 4 numbers = 42 clicks.",
+        "entryHint": "Type total clicks from zero: turns x 30 + number x 3 + extra clicks. 1.4 rotations → 42; 2.5 → 75.",
+        "dialFormat": "number-tick:3"
+      },
+      "ranges": {
+        "aeropress": {
+          "from": 36,
+          "to": 60
+        },
+        "moka": {
+          "from": 36,
+          "to": 60
+        },
+        "pourover": {
+          "from": 54,
+          "to": 96
+        },
+        "siphon": {
+          "from": 54,
+          "to": 96
+        },
+        "frenchPress": {
+          "from": 78,
+          "to": 114
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/grind-setting/",
+          "note": "Manufacturer adjustment table: numbers, clicks per rotation, clicks per number and mm per click for every model, plus worked examples of its notation."
+        },
+        {
+          "who": "1Zpresso",
+          "url": "https://1zpresso.coffee/wp-content/uploads/2026/04/grind-setting_q_en_20260423.jpg",
+          "note": "Official Q chart (April 2026) in rotations: AeroPress/moka/drip 1.2-2.0, siphon/pour over 1.8-3.2, French press 2.6-3.8 (x30 = clicks). No espresso or Turkish band."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Travel pour-over grinder; 1Zpresso does not chart it for espresso. Applies to Q2 S and Q Air too."
+    },
+    {
+      "id": "comandante-c40-mk4",
+      "brand": "Comandante",
+      "model": "C40 MK4 Nitro Blade",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 39,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": 30,
+        "dialReading": "No numbers: hold it level and close the burrs; zero is the first click where the handle no longer drops. Count clicks outward from there.",
+        "entryHint": "Type clicks from zero, e.g. 24.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 3,
+          "to": 8
+        },
+        "espresso": {
+          "from": 7,
+          "to": 13
+        },
+        "moka": {
+          "from": 14,
+          "to": 20
+        },
+        "pourover": {
+          "from": 18,
+          "to": 35
+        },
+        "frenchPress": {
+          "from": 25,
+          "to": 35
+        },
+        "aeropress": {
+          "from": 12,
+          "to": 35
+        },
+        "coldBrew": {
+          "from": 30,
+          "to": 40
+        },
+        "siphon": {
+          "from": 14,
+          "to": 29
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Comandante",
+          "url": "https://comandantegrinder.com/pages/faq",
+          "note": "Manufacturer starting points in clicks from zero: Ibrik 3-8, espresso 7-13, moka 14-20, pour over 18-35 (dose and brewer dependent), cupping/French press 25-35; no AeroPress number ('depends on your recipe')."
+        },
+        {
+          "who": "Kaffeemacher (retailer)",
+          "url": "https://kaffeemacher.de/en/products/comandante-red-clix",
+          "note": "Standard axle: about 30 microns of burr movement per click; Red Clix halves it."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/comandante-c40-mk4-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used only for AeroPress 12-35, cold brew 30-40 and siphon 14-29, which Comandante does not give. V60 band 15-25."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Clicks per turn is often quoted as 12 but Comandante does not publish it, so it is left blank. Settings carry over to MK3 with the same axle."
+    },
+    {
+      "id": "comandante-c40-red-clix",
+      "brand": "Comandante",
+      "model": "C40 with Red Clix RX35",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 39,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 80,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": 15,
+        "dialReading": "Red Clix axle and dial: the same zero method, but twice as many clicks; each is about 15 microns.",
+        "entryHint": "Type clicks from zero. A standard-axle recipe doubles: 10 standard clicks = 20 Red Clix clicks.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 6,
+          "to": 16
+        },
+        "espresso": {
+          "from": 14,
+          "to": 26
+        },
+        "moka": {
+          "from": 28,
+          "to": 40
+        },
+        "pourover": {
+          "from": 36,
+          "to": 70
+        },
+        "frenchPress": {
+          "from": 50,
+          "to": 70
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Comandante",
+          "url": "https://comandantegrinder.com/pages/faq",
+          "note": "Manufacturer starting points in clicks from zero: Ibrik 3-8, espresso 7-13, moka 14-20, pour over 18-35 (dose and brewer dependent), cupping/French press 25-35; no AeroPress number ('depends on your recipe')."
+        },
+        {
+          "who": "Bombora Supplies (Comandante distributor) spec sheet",
+          "url": "https://www.essentialutensil.au/cdn/shop/files/Comandante-Range-Spec-Sheet.pdf",
+          "note": "RX35 Red Clix: 15 microns per click, twice the click steps; 'if you dial 10 clicks on your Comandante, you will need to dial in 20 clicks with Red Clix'."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Ranges are Comandante's standard-axle FAQ numbers doubled by Comandante's own rule; Comandante publishes no separate Red Clix chart."
+    },
+    {
+      "id": "timemore-c2",
+      "brand": "Timemore",
+      "model": "Chestnut C2",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 38,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 36,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Internal click nut under the burr, no numbers. Close it until it stops (zero) and count clicks outward.",
+        "entryHint": "Type clicks from zero, e.g. 16.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 6,
+          "to": 12
+        },
+        "moka": {
+          "from": 12,
+          "to": 20
+        },
+        "aeropress": {
+          "from": 11,
+          "to": 30
+        },
+        "pourover": {
+          "from": 13,
+          "to": 29
+        },
+        "siphon": {
+          "from": 12,
+          "to": 25
+        },
+        "frenchPress": {
+          "from": 22,
+          "to": 30
+        },
+        "coldBrew": {
+          "from": 26,
+          "to": 30
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-c2-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Clicks from zero; V60 band 13-22. Warns that settings below 6 clicks may dull the burrs (its Turkish 2-6 was left out for that reason)."
+        }
+      ],
+      "confidence": "low",
+      "notes": "No Timemore click spec could be checked for the C2; reviews disagree (one counts 36 usable clicks). Every range, including espresso, is an aggregator estimate."
+    },
+    {
+      "id": "timemore-c3",
+      "brand": "Timemore",
+      "model": "Chestnut C3 / C3S",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 38,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 12,
+        "micronsPerStep": 83,
+        "dialReading": "Internal click nut under the burr (S2C 660 burr). Close until it stops (zero) and count clicks out; about 12 clicks per turn, about 83 microns per click on the C3S.",
+        "entryHint": "Type clicks from zero, e.g. 15.",
+        "dialFormat": "turns"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 7,
+          "to": 8
+        },
+        "moka": {
+          "from": 7,
+          "to": 8
+        },
+        "pourover": {
+          "from": 13,
+          "to": 16
+        },
+        "frenchPress": {
+          "from": 17,
+          "to": 20
+        },
+        "aeropress": {
+          "from": 9,
+          "to": 25
+        },
+        "coldBrew": {
+          "from": 22,
+          "to": 25
+        },
+        "siphon": {
+          "from": 10,
+          "to": 21
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Slow Pour Supply (retailer, says data is from Timemore documentation)",
+          "url": "https://www.slowpoursupply.co/pages/timemore-chestnut-c-series-model-comparison",
+          "note": "C3S Pro: 12 clicks per turn, 0.0833 mm per click, espresso/moka 7-8, pour over 13-16, French press 17-20 clicks. C3 ESP Pro: 30 clicks per turn, 0.0233 mm per click, espresso/moka 0.8-1.1 turns, pour over 1.4-2.0, French press 2.0-2.3."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-c3-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used for AeroPress 9-25, cold brew 22-25 and siphon 10-21 only. Its espresso 5-10 and moka 10-17 differ from Timemore's 7-8; V60 band 11-18."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Espresso, moka, pour over and French press follow Timemore's C3S Pro figures (relayed by a retailer); Timemore lumps espresso and moka into one 7-8 band. 12 clicks per turn is the C3S Pro figure; one review gives a different count for the original C3, so check yours."
+    },
+    {
+      "id": "timemore-c3-esp",
+      "brand": "Timemore",
+      "model": "Chestnut C3 ESP / ESP Pro",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 38,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 90,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 30,
+        "micronsPerStep": 23.3,
+        "dialReading": "Fine-pitch internal dial: 30 clicks per turn, about 23 microns per click. Timemore quotes settings in turns ('circles'): 1.4 circles = 42 clicks.",
+        "entryHint": "Type total clicks from zero. A chart in circles converts at x30: 0.8 → 24, 1.4 → 42.",
+        "dialFormat": "turns"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 24,
+          "to": 33
+        },
+        "moka": {
+          "from": 24,
+          "to": 33
+        },
+        "pourover": {
+          "from": 42,
+          "to": 60
+        },
+        "frenchPress": {
+          "from": 60,
+          "to": 69
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Slow Pour Supply (retailer, says data is from Timemore documentation)",
+          "url": "https://www.slowpoursupply.co/pages/timemore-chestnut-c-series-model-comparison",
+          "note": "C3S Pro: 12 clicks per turn, 0.0833 mm per click, espresso/moka 7-8, pour over 13-16, French press 17-20 clicks. C3 ESP Pro: 30 clicks per turn, 0.0233 mm per click, espresso/moka 0.8-1.1 turns, pour over 1.4-2.0, French press 2.0-2.3."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Both ESP versions share the dial; the Pro adds a folding handle. Often confused with the Baratza Encore ESP."
+    },
+    {
+      "id": "timemore-chestnut-s3",
+      "brand": "Timemore",
+      "model": "Chestnut S3",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 42,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 90,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": 15,
+        "dialReading": "External dial numbered 0-9 with 10 clicks between numbers, 15 microns per click, 90 settings. Read number.click: 5.3 = 53 clicks. Clockwise is finer.",
+        "entryHint": "Type number x 10 + clicks: 5.3 → 53.",
+        "dialFormat": "number-tick:10"
+      },
+      "ranges": {
+        "moka": {
+          "from": 4,
+          "to": 38
+        },
+        "aeropress": {
+          "from": 0,
+          "to": 72
+        },
+        "pourover": {
+          "from": 10,
+          "to": 69
+        },
+        "siphon": {
+          "from": 6,
+          "to": 54
+        },
+        "frenchPress": {
+          "from": 42,
+          "to": 90
+        },
+        "coldBrew": {
+          "from": 55,
+          "to": 90
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "TIMEMORE manual (manuals.plus copy)",
+          "url": "https://manuals.plus/ae/1005007010040119",
+          "note": "External dial, 0.015 mm per click, locking knob sets zero, clockwise is finer."
+        },
+        {
+          "who": "Brew Coffee Home (review)",
+          "url": "https://www.brewcoffeehome.com/timemore-chestnut-s3-review/",
+          "note": "9 numbers with 10 clicks between each, about 15 microns per step, 90 settings."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-s3-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Its number.click values were multiplied by 10. V60 band 0.9-4.2 (9-42). Its espresso 0-0.5 was left out: the S3 is a filter grinder and Timemore sells an S3 ESP for espresso."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Burr 42 mm per retailers listing an S2C-042 burr. Ranges are an aggregator's."
+    },
+    {
+      "id": "timemore-sculptor-064s",
+      "brand": "Timemore",
+      "model": "Sculptor 064S",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 16,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial with printed numbers; read the number at the pointer, using tenths between numbers.",
+        "entryHint": "Type the dial number, e.g. 6.5.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 2.9
+        },
+        "moka": {
+          "from": 2.5,
+          "to": 8.5
+        },
+        "aeropress": {
+          "from": 1.7,
+          "to": 14.5
+        },
+        "pourover": {
+          "from": 3.5,
+          "to": 13.9
+        },
+        "siphon": {
+          "from": 2.8,
+          "to": 11.3
+        },
+        "frenchPress": {
+          "from": 9.1,
+          "to": 16
+        },
+        "coldBrew": {
+          "from": 11.3,
+          "to": 16
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-sculptor-064s-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Dial numbers; V60 band 3.3-9.3."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Calibrate zero before trusting any chart; units vary."
+    },
+    {
+      "id": "timemore-sculptor-078s",
+      "brand": "Timemore",
+      "model": "Sculptor 078S",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 78,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 18,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial with printed numbers; read the number at the pointer, using tenths between numbers.",
+        "entryHint": "Type the dial number, e.g. 5.5.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 2.6
+        },
+        "moka": {
+          "from": 2.3,
+          "to": 7.6
+        },
+        "aeropress": {
+          "from": 1.6,
+          "to": 13
+        },
+        "pourover": {
+          "from": 3.2,
+          "to": 12.5
+        },
+        "siphon": {
+          "from": 2.6,
+          "to": 10.1
+        },
+        "frenchPress": {
+          "from": 8.2,
+          "to": 18
+        },
+        "coldBrew": {
+          "from": 10.2,
+          "to": 18
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-sculptor-078s-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Dial numbers; V60 band 3-8.3."
+        }
+      ],
+      "confidence": "low",
+      "notes": "The S version adds espresso-capable burr geometry; settings do not carry over to the plain 078."
+    },
+    {
+      "id": "timemore-sculptor-078",
+      "brand": "Timemore",
+      "model": "Sculptor 078",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 78,
+      "popularity": 3,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 18,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial with printed numbers, charted in half steps.",
+        "entryHint": "Type the dial number, e.g. 4.5.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "moka": {
+          "from": 0,
+          "to": 5.5
+        },
+        "aeropress": {
+          "from": 0,
+          "to": 11.5
+        },
+        "pourover": {
+          "from": 1,
+          "to": 11
+        },
+        "siphon": {
+          "from": 0.5,
+          "to": 8.5
+        },
+        "frenchPress": {
+          "from": 6.5,
+          "to": 18
+        },
+        "coldBrew": {
+          "from": 9,
+          "to": 18
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/timemore-sculptor-078-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Dial numbers; V60 band 1-6.5. Espresso shown only at 0, so left out."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Filter-oriented 78 mm flat burr; use the 078S for espresso."
+    },
+    {
+      "id": "kingrinder-k6",
+      "brand": "KINGrinder",
+      "model": "K6",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 240,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 60,
+        "micronsPerStep": 16,
+        "dialReading": "External ring, 60 clicks per turn, about 4 turns. Turn clockwise until it stops for zero, then count clicks out.",
+        "entryHint": "Type total clicks from zero: turns x 60 + clicks. One turn and 20 clicks → 80.",
+        "dialFormat": "turns"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 28,
+          "to": 40
+        },
+        "espresso": {
+          "from": 40,
+          "to": 60
+        },
+        "moka": {
+          "from": 60,
+          "to": 80
+        },
+        "aeropress": {
+          "from": 60,
+          "to": 80
+        },
+        "pourover": {
+          "from": 80,
+          "to": 100
+        },
+        "frenchPress": {
+          "from": 140,
+          "to": 140
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "KINGrinder K4/K6 manual (ManualsLib copy)",
+          "url": "https://www.manualslib.com/manual/3619436/Kingrinder-K4.html",
+          "note": "'One circle is equivalent to 60 clicks'; clockwise to zero; do not grind at zero or below 15 clicks. K6: Turkish 28-40, espresso 40-60, moka/AeroPress 60-80, pour over 80-100, French press 140. K4: Turkish 15-50, espresso 50-60, moka/AeroPress 60-90, pour over 80-100, French press 140."
+        },
+        {
+          "who": "Brew Coffee Home (review)",
+          "url": "https://www.brewcoffeehome.com/?p=16910",
+          "note": "240 clicks in total, 16 microns per click (manufacturer figure)."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/why-conical-burr-microns-per-step-are-always-wrong/",
+          "note": "Measured roughly 8.5 microns of grind change per click on K4/K6 versus the quoted 16."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "16 microns is the quoted burr movement; the measured change in particle size per click is about half that."
+    },
+    {
+      "id": "kingrinder-k4",
+      "brand": "KINGrinder",
+      "model": "K4",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 240,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 60,
+        "micronsPerStep": null,
+        "dialReading": "External ring, 60 clicks per turn. Turn clockwise until it stops for zero, then count clicks out.",
+        "entryHint": "Type total clicks from zero: turns x 60 + clicks.",
+        "dialFormat": "turns"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 15,
+          "to": 50
+        },
+        "espresso": {
+          "from": 50,
+          "to": 60
+        },
+        "moka": {
+          "from": 60,
+          "to": 90
+        },
+        "aeropress": {
+          "from": 60,
+          "to": 90
+        },
+        "pourover": {
+          "from": 80,
+          "to": 100
+        },
+        "frenchPress": {
+          "from": 140,
+          "to": 140
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "KINGrinder K4/K6 manual (ManualsLib copy)",
+          "url": "https://www.manualslib.com/manual/3619436/Kingrinder-K4.html",
+          "note": "'One circle is equivalent to 60 clicks'; clockwise to zero; do not grind at zero or below 15 clicks. K6: Turkish 28-40, espresso 40-60, moka/AeroPress 60-80, pour over 80-100, French press 140. K4: Turkish 15-50, espresso 50-60, moka/AeroPress 60-90, pour over 80-100, French press 140."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Espresso-leaning sibling of the K6. Ranges are the manual's as printed (its Turkish band overlaps espresso)."
+    },
+    {
+      "id": "kinu-m47",
+      "brand": "Kinu",
+      "model": "M47 (Classic / Phoenix / Simplicity)",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": 47,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 425,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": 50,
+        "micronsPerStep": 10,
+        "dialReading": "Top dial with 50 marks per full turn, each about 0.01 mm. Count marks from the zero point (burrs touching).",
+        "entryHint": "Type total marks from zero: full turns x 50 + the mark under the pointer. 2.2 turns → 110.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 55,
+          "to": 115
+        },
+        "turkish": {
+          "from": 15,
+          "to": 65
+        },
+        "moka": {
+          "from": 110,
+          "to": 200
+        },
+        "aeropress": {
+          "from": 100,
+          "to": 290
+        },
+        "pourover": {
+          "from": 125,
+          "to": 280
+        },
+        "siphon": {
+          "from": 115,
+          "to": 240
+        },
+        "frenchPress": {
+          "from": 210,
+          "to": 390
+        },
+        "coldBrew": {
+          "from": 245,
+          "to": 425
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Prima Coffee (retailer video overview)",
+          "url": "https://prima-coffee.com/learn/video/overviews/video-overview-kinu-m47-manual-coffee-and-espresso-grinder/kinu-m47-overview",
+          "note": "50 steps per full rotation, each 1/100 mm."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/kinu-m47-classic-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Rotations from zero x50 = marks: espresso 1.1-2.3, V60 2.5-4.2 (125-210)."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Older M47s were not zeroed at burr contact, so their numbers run lower."
+    },
+    {
+      "id": "hario-skerton-pro",
+      "brand": "Hario",
+      "model": "Skerton Pro",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 12,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Notched adjustment under the handle; tighten to zero and count notches out.",
+        "entryHint": "Type notches from zero, e.g. 3.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 1,
+          "to": 1
+        },
+        "moka": {
+          "from": 2,
+          "to": 3
+        },
+        "aeropress": {
+          "from": 1,
+          "to": 5
+        },
+        "pourover": {
+          "from": 2,
+          "to": 5
+        },
+        "siphon": {
+          "from": 2,
+          "to": 4
+        },
+        "frenchPress": {
+          "from": 4,
+          "to": 8
+        },
+        "coldBrew": {
+          "from": 5,
+          "to": 9
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/hario-skerton-pro-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Notches from zero; V60 band 2-3."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Ceramic burr; coarse steps, so expect to live between notches with a taste-based tweak."
+    },
+    {
+      "id": "hario-mini-mill-plus",
+      "brand": "Hario",
+      "model": "Mini Mill Slim Plus",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 1,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Click nut under the burr; tighten to zero and count clicks out.",
+        "entryHint": "Type clicks from zero, e.g. 7.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "moka": {
+          "from": 4,
+          "to": 8
+        },
+        "aeropress": {
+          "from": 3,
+          "to": 13
+        },
+        "pourover": {
+          "from": 5,
+          "to": 12
+        },
+        "siphon": {
+          "from": 4,
+          "to": 10
+        },
+        "frenchPress": {
+          "from": 9,
+          "to": 18
+        },
+        "coldBrew": {
+          "from": 11,
+          "to": 20
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/hario-mini-mill-plus-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Clicks from zero; V60 band 5-8. Its espresso 1-3 and Turkish 1 were left out: this budget ceramic grinder is not an espresso tool."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Classic budget hand grinder."
+    },
+    {
+      "id": "porlex-mini-ii",
+      "brand": "Porlex",
+      "model": "Mini II",
+      "kind": "hand",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 2,
+      "setting": {
+        "style": "clicks",
+        "unit": "clicks",
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Click ring under the burr; tighten to zero and count clicks out.",
+        "entryHint": "Type clicks from zero, e.g. 10.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "turkish": {
+          "from": 1,
+          "to": 3
+        },
+        "espresso": {
+          "from": 4,
+          "to": 6
+        },
+        "moka": {
+          "from": 7,
+          "to": 11
+        },
+        "aeropress": {
+          "from": 6,
+          "to": 16
+        },
+        "pourover": {
+          "from": 8,
+          "to": 15
+        },
+        "siphon": {
+          "from": 7,
+          "to": 13
+        },
+        "frenchPress": {
+          "from": 12,
+          "to": 22
+        },
+        "coldBrew": {
+          "from": 14,
+          "to": 24
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/porlex-mini-ii-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Clicks from zero; V60 band 7-12."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Ceramic burr travel grinder; fits inside an AeroPress plunger."
+    },
+    {
+      "id": "fellow-ode-gen-2",
+      "brand": "Fellow",
+      "model": "Ode Brew Grinder Gen 2",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 11,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Dial 1 (fine) to 11 (coarse) with two tick marks after each number: 31 settings. Fellow writes the ticks as .1 and .2 (5.2 = number 5, second tick).",
+        "entryHint": "Type the number, then the tick as .1 or .2: 5 → 5, 5 and two ticks → 5.2.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "pourover": {
+          "from": 2,
+          "to": 8
+        },
+        "coldBrew": {
+          "from": 7,
+          "to": 11
+        },
+        "aeropress": {
+          "from": 1.2,
+          "to": 8.2
+        },
+        "frenchPress": {
+          "from": 6,
+          "to": 11
+        },
+        "siphon": {
+          "from": 2.1,
+          "to": 6.2
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Fellow",
+          "url": "https://fellowproducts.com/products/ode-brew-grinder-gen-2",
+          "note": "64 mm flat burrs; '11 settings with 31 total steps'; built for brewed coffee (pour-over, drip, batch brew)."
+        },
+        {
+          "who": "Fellow",
+          "url": "https://fellowproducts.com/pages/how-to-pour-over",
+          "note": "Pour over: start at setting 5 with Gen 2 burrs (about 4 with Gen 1 burrs, 6 with SSP burrs)."
+        },
+        {
+          "who": "Fellow",
+          "url": "https://fellowproducts.com/pages/brewing-how-to-cold-brew",
+          "note": "Cold brew: start at 10 on Gen 2 burrs, not finer than 7; 9 on Gen 1 burrs, 11 with SSP burrs."
+        },
+        {
+          "who": "Fellow recipe posts",
+          "url": "https://fellowproducts.com/blogs/brew-talks/fellows-take-on-necessary-dark-roast-brew-recipe",
+          "note": "Dark-roast pour over: Ode Gen 2 burrs 2-4."
+        },
+        {
+          "who": "Fellow recipe posts",
+          "url": "https://fellowproducts.com/blogs/brew-talks",
+          "note": "Fellow's per-coffee pour-over windows for Ode Gen 2 run from 3-4 and 3.1-4.1 (light, washed coffees) through 4.2-5.2 and 5.2-6.2 to 5-7 and 5-8; with the dark roast that spans 2-8."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used for AeroPress, French press and siphon only. Its pour over 2.2-8.1 agrees with Fellow's spread; V60 band 2.2-5.2."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Not an espresso grinder: Fellow positions Ode for pour-over, drip and batch brew. The same number grinds coarser on Gen 1 burrs and finer on SSP burrs (Fellow: Gen 2 at 5 is about Gen 1 at 4 and SSP at 6)."
+    },
+    {
+      "id": "fellow-opus",
+      "brand": "Fellow",
+      "model": "Opus",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 11,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Main dial 1-11 with sub-steps (41+ settings) plus an inner micro ring. Fellow's recipes assume the inner ring at 0.",
+        "entryHint": "Type the main dial reading (e.g. 5.1) and keep the inner ring at 0, or note its offset in the brew notes.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "pourover": {
+          "from": 3.1,
+          "to": 9
+        },
+        "espresso": {
+          "from": 1,
+          "to": 2.5
+        },
+        "moka": {
+          "from": 2.5,
+          "to": 5.5
+        },
+        "aeropress": {
+          "from": 2,
+          "to": 8.75
+        },
+        "frenchPress": {
+          "from": 6,
+          "to": 11
+        },
+        "coldBrew": {
+          "from": 7.25,
+          "to": 11
+        },
+        "siphon": {
+          "from": 2.75,
+          "to": 7
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Fellow recipe posts",
+          "url": "https://fellowproducts.com/blogs/brew-talks/fellows-take-on-necessary-dark-roast-brew-recipe",
+          "note": "Dark-roast pour over on Opus: 3.1-5.1 with the inner ring at 0."
+        },
+        {
+          "who": "Fellow recipe posts",
+          "url": "https://fellowproducts.com/blogs/brew-talks",
+          "note": "Fellow's per-coffee Opus pour-over windows (inner ring 0) include 4-5, 4.1-5.1, 5.2-6.2, 6-7, 7-8 and 6-9; with the dark roast that spans 3.1-9."
+        },
+        {
+          "who": "Fellow",
+          "url": "https://fellowproducts.com/products/opus-2-conical-burr-grinder",
+          "note": "Opus 2 has 48 mm conical burrs 'vs 40mm in Opus 1' and a stepless side dial."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/fellow-opus-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used for every method except pour over. Its pour over 3-8.5 is close to Fellow's spread; V60 band 3-6."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Original Opus (40 mm conical). Fellow no longer lists it (its product page returned 404 on 2026-11-17); the Opus 2 (48 mm, stepless side dial) replaced it, and Fellow's recipes give the Opus 2 its own numbers, so do not reuse these for it."
+    },
+    {
+      "id": "baratza-encore",
+      "brand": "Baratza",
+      "model": "Encore",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Hopper ring numbered 1-40, stepped; turn the hopper with the motor running.",
+        "entryHint": "Type the number on the ring, e.g. 15.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 8,
+          "to": 8
+        },
+        "aeropress": {
+          "from": 12,
+          "to": 12
+        },
+        "pourover": {
+          "from": 15,
+          "to": 25
+        },
+        "frenchPress": {
+          "from": 28,
+          "to": 32
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/hario-v60-brew-guide",
+          "note": "V60 start: Encore 23, Encore ESP 25, Encore ESP Pro 50, Virtuoso+ 23, Vario+ 9M, Vario W+ 8M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/aeropress-brew-guide",
+          "note": "AeroPress start: Encore 12, Encore ESP 22, Encore ESP Pro 44, Virtuoso+ 12, Sette 270 13E, Vario+ 4M, Vario W+ 3M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/chemex-brew-guide",
+          "note": "Chemex start: Encore 25, Encore ESP 30, Encore ESP Pro 52, Virtuoso+ 25, Vario+ 9M, Vario W+ 7M."
+        },
+        {
+          "who": "Clive Coffee (retailer) listing Baratza's chart, 2021",
+          "url": "https://support.clivecoffee.com/baratza-recommended-grinder-settings",
+          "note": "Encore and Virtuoso: espresso 8, AeroPress 12, V60 15, auto brewer 18, Chemex 20, French press 28. Sette 270: espresso 9E, AeroPress 13E, V60 16E, auto 26E, Chemex 28E. Vario ceramic: espresso 2Q, AeroPress 4M, V60 5M, auto 7M, Chemex 9M, French press 10M."
+        },
+        {
+          "who": "Baratza Encore manual (older edition)",
+          "url": "https://cdn.shopify.com/s/files/1/1656/1527/files/Encore-Manual.pdf",
+          "note": "Older-burr table: espresso 2-6, AeroPress 8-11, V60 13-14, Chemex 20-21, siphon 14, French press 30-32."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Baratza's numbers moved between editions (V60 15 in 2021, 23 in the current guide), so the pour-over window spans both. Not suited to unpressurised espresso."
+    },
+    {
+      "id": "baratza-encore-esp",
+      "brand": "Baratza",
+      "model": "Encore ESP",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Ring numbered 1-40: 1-20 is a fine-step espresso range, 21-40 a coarser-step filter range.",
+        "entryHint": "Type the number on the ring, e.g. 15 for espresso, 25 for V60.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 1,
+          "to": 20
+        },
+        "aeropress": {
+          "from": 22,
+          "to": 22
+        },
+        "pourover": {
+          "from": 25,
+          "to": 30
+        },
+        "frenchPress": {
+          "from": 32,
+          "to": 32
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Baratza Encore ESP manual v1.0 (Jan 2023)",
+          "url": "https://cdn.shopify.com/s/files/1/1656/1527/files/manual-encore-esp-v1-0-en.pdf",
+          "note": "Espresso range 1-20, filter 21-40. Starting points: espresso 15 (medium roast, 18 g), AeroPress 22, V60 25, auto brewer 28, Chemex 30, French press 32."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/product-guides/dialing-in-espresso",
+          "note": "Stay in 1-20 for espresso and start at the coarse end."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/hario-v60-brew-guide",
+          "note": "V60 start: Encore 23, Encore ESP 25, Encore ESP Pro 50, Virtuoso+ 23, Vario+ 9M, Vario W+ 8M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/aeropress-brew-guide",
+          "note": "AeroPress start: Encore 12, Encore ESP 22, Encore ESP Pro 44, Virtuoso+ 12, Sette 270 13E, Vario+ 4M, Vario W+ 3M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/chemex-brew-guide",
+          "note": "Chemex start: Encore 25, Encore ESP 30, Encore ESP Pro 52, Virtuoso+ 25, Vario+ 9M, Vario W+ 7M."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Often confused with Timemore's C3 ESP. The newer Encore ESP Pro uses a different 0-based scale (espresso starts at 40)."
+    },
+    {
+      "id": "baratza-virtuoso-plus",
+      "brand": "Baratza",
+      "model": "Virtuoso+",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 40,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Hopper ring numbered 1-40, stepped.",
+        "entryHint": "Type the number on the ring, e.g. 18.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 8,
+          "to": 8
+        },
+        "aeropress": {
+          "from": 12,
+          "to": 12
+        },
+        "pourover": {
+          "from": 15,
+          "to": 25
+        },
+        "frenchPress": {
+          "from": 28,
+          "to": 28
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/hario-v60-brew-guide",
+          "note": "V60 start: Encore 23, Encore ESP 25, Encore ESP Pro 50, Virtuoso+ 23, Vario+ 9M, Vario W+ 8M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/aeropress-brew-guide",
+          "note": "AeroPress start: Encore 12, Encore ESP 22, Encore ESP Pro 44, Virtuoso+ 12, Sette 270 13E, Vario+ 4M, Vario W+ 3M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/chemex-brew-guide",
+          "note": "Chemex start: Encore 25, Encore ESP 30, Encore ESP Pro 52, Virtuoso+ 25, Vario+ 9M, Vario W+ 7M."
+        },
+        {
+          "who": "Clive Coffee (retailer) listing Baratza's chart, 2021",
+          "url": "https://support.clivecoffee.com/baratza-recommended-grinder-settings",
+          "note": "Encore and Virtuoso: espresso 8, AeroPress 12, V60 15, auto brewer 18, Chemex 20, French press 28. Sette 270: espresso 9E, AeroPress 13E, V60 16E, auto 26E, Chemex 28E. Vario ceramic: espresso 2Q, AeroPress 4M, V60 5M, auto 7M, Chemex 9M, French press 10M."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Same scale and starting points as the Encore in Baratza's charts."
+    },
+    {
+      "id": "baratza-vario",
+      "brand": "Baratza",
+      "model": "Vario+ / Vario W+",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 54,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1.01,
+        "max": 10.23,
+        "step": 0.01,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Two levers: macro 1-10 (numbers) and micro A-W (23 letters), both finer toward 1 and A. Baratza writes settings as 5M.",
+        "entryHint": "Type macro, then the micro letter's position as two digits: 5M → 5.13 (M is the 13th letter), 2Q → 2.17, 4A → 4.01.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 2.17,
+          "to": 2.17
+        },
+        "aeropress": {
+          "from": 4.13,
+          "to": 4.13
+        },
+        "pourover": {
+          "from": 5.13,
+          "to": 9.13
+        },
+        "frenchPress": {
+          "from": 10.13,
+          "to": 10.13
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/hario-v60-brew-guide",
+          "note": "V60 start: Encore 23, Encore ESP 25, Encore ESP Pro 50, Virtuoso+ 23, Vario+ 9M, Vario W+ 8M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/aeropress-brew-guide",
+          "note": "AeroPress start: Encore 12, Encore ESP 22, Encore ESP Pro 44, Virtuoso+ 12, Sette 270 13E, Vario+ 4M, Vario W+ 3M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/chemex-brew-guide",
+          "note": "Chemex start: Encore 25, Encore ESP 30, Encore ESP Pro 52, Virtuoso+ 25, Vario+ 9M, Vario W+ 7M."
+        },
+        {
+          "who": "Clive Coffee (retailer) listing Baratza's chart, 2021",
+          "url": "https://support.clivecoffee.com/baratza-recommended-grinder-settings",
+          "note": "Encore and Virtuoso: espresso 8, AeroPress 12, V60 15, auto brewer 18, Chemex 20, French press 28. Sette 270: espresso 9E, AeroPress 13E, V60 16E, auto 26E, Chemex 28E. Vario ceramic: espresso 2Q, AeroPress 4M, V60 5M, auto 7M, Chemex 9M, French press 10M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/product-guides/dialing-in-espresso",
+          "note": "Vario/Forte: start with the micro lever mid-range, set macro, refine with micro."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Numbers are for the stock ceramic burrs (Vario+). Steel-burr units (Vario W+) run finer per Baratza: AeroPress 3M, V60 8M, Chemex 7M."
+    },
+    {
+      "id": "baratza-sette-270",
+      "brand": "Baratza",
+      "model": "Sette 270 / 270Wi",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1.1,
+        "max": 31.9,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Upper ring: macro numbers 1-31. Lower ring: stepless micro marked A-I. Baratza writes 9E.",
+        "entryHint": "Type macro, then the micro letter's position as one digit: 9E → 9.5 (E is the 5th letter), 13A → 13.1.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 9.5,
+          "to": 9.5
+        },
+        "aeropress": {
+          "from": 13.5,
+          "to": 13.5
+        },
+        "pourover": {
+          "from": 16.5,
+          "to": 28.5
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/brew-guides/aeropress-brew-guide",
+          "note": "AeroPress start: Encore 12, Encore ESP 22, Encore ESP Pro 44, Virtuoso+ 12, Sette 270 13E, Vario+ 4M, Vario W+ 3M."
+        },
+        {
+          "who": "Clive Coffee (retailer) listing Baratza's chart, 2021",
+          "url": "https://support.clivecoffee.com/baratza-recommended-grinder-settings",
+          "note": "Encore and Virtuoso: espresso 8, AeroPress 12, V60 15, auto brewer 18, Chemex 20, French press 28. Sette 270: espresso 9E, AeroPress 13E, V60 16E, auto 26E, Chemex 28E. Vario ceramic: espresso 2Q, AeroPress 4M, V60 5M, auto 7M, Chemex 9M, French press 10M."
+        },
+        {
+          "who": "Baratza",
+          "url": "https://www.baratza.com/en-us/blog/product-guides/dialing-in-espresso",
+          "note": "Sette: centre the micro ring first, dial in with macro, fine-tune with micro."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Espresso-first grinder; Baratza gives no French press setting for the Sette."
+    },
+    {
+      "id": "niche-zero",
+      "brand": "Niche",
+      "model": "Zero",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 63,
+      "popularity": 1,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 50,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial marked 0-50 around the top; past 50 an unmarked section continues coarser.",
+        "entryHint": "Type the dial number at the pointer, e.g. 15.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 5,
+          "to": 20
+        },
+        "moka": {
+          "from": 20,
+          "to": 30
+        },
+        "aeropress": {
+          "from": 30,
+          "to": 35
+        },
+        "pourover": {
+          "from": 35,
+          "to": 45
+        },
+        "frenchPress": {
+          "from": 45,
+          "to": 50
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Niche Coffee",
+          "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/the-ultimate-grind-size-guide-for-niche-grinders",
+          "note": "Niche Zero: espresso 5-20, moka 20-30, AeroPress 30-35, V60 35-45, French press 45+. Niche Duo: espresso 0-10, moka 10-20, AeroPress 20-30, V60 30-45, French press 45+. Stepless."
+        },
+        {
+          "who": "Niche Coffee",
+          "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/how-to-dial-in-your-niche-zero",
+          "note": "Espresso typically lands between 10 and 20."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Niche says '45+' for French press; 50 is the last printed number. Unit-to-unit calibration varies."
+    },
+    {
+      "id": "niche-duo",
+      "brand": "Niche",
+      "model": "Duo",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 83,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 50,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial; Niche says the numbers are a guide. Clockwise is finer. Ships with separate espresso and filter burr sets.",
+        "entryHint": "Type the dial number at the pointer and note which burr set is fitted.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 10
+        },
+        "moka": {
+          "from": 10,
+          "to": 20
+        },
+        "aeropress": {
+          "from": 20,
+          "to": 30
+        },
+        "pourover": {
+          "from": 30,
+          "to": 45
+        },
+        "frenchPress": {
+          "from": 45,
+          "to": 50
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Niche Coffee",
+          "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/the-ultimate-grind-size-guide-for-niche-grinders",
+          "note": "Niche Zero: espresso 5-20, moka 20-30, AeroPress 30-35, V60 35-45, French press 45+. Niche Duo: espresso 0-10, moka 10-20, AeroPress 20-30, V60 30-45, French press 45+. Stepless."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Niche gives French press as '45+'; 50 is the top of the app's range, not a Niche number. Max 50 is a UI bound. Numbers shift with the burr set and how it was zeroed."
+    },
+    {
+      "id": "df64-gen-2",
+      "brand": "Turin (DF)",
+      "model": "DF64 Gen 2",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 1,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 90,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless collar printed 0-90 around one turn. Lower is finer; find your own zero (burrs just touching) first.",
+        "entryHint": "Type the collar number at the pointer, e.g. 12.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 20
+        },
+        "turkish": {
+          "from": 0,
+          "to": 4
+        },
+        "moka": {
+          "from": 19,
+          "to": 49
+        },
+        "aeropress": {
+          "from": 15,
+          "to": 80
+        },
+        "pourover": {
+          "from": 24,
+          "to": 77
+        },
+        "siphon": {
+          "from": 21,
+          "to": 64
+        },
+        "frenchPress": {
+          "from": 53,
+          "to": 90
+        },
+        "coldBrew": {
+          "from": 65,
+          "to": 90
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/turin-df64-gen-2-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 23-53."
+        },
+        {
+          "who": "Brew Coffee Home (review)",
+          "url": "https://www.brewcoffeehome.com/?p=5164",
+          "note": "Espresso about 5-15, V60 about 50-80."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Also sold as MiiCoffee, G-IOTA and Solo. Sources disagree on filter numbers; zero first."
+    },
+    {
+      "id": "df83",
+      "brand": "Turin (DF)",
+      "model": "DF83 / DF83V",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 83,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 90,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless collar with printed numbers. Lower is finer; zero at burr touch first.",
+        "entryHint": "Type the collar number at the pointer.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 8,
+          "to": 28
+        },
+        "turkish": {
+          "from": 0,
+          "to": 11
+        },
+        "moka": {
+          "from": 27,
+          "to": 58
+        },
+        "aeropress": {
+          "from": 23,
+          "to": 90
+        },
+        "pourover": {
+          "from": 33,
+          "to": 87
+        },
+        "siphon": {
+          "from": 29,
+          "to": 73
+        },
+        "frenchPress": {
+          "from": 63,
+          "to": 90
+        },
+        "coldBrew": {
+          "from": 74,
+          "to": 90
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/turin-df83-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 32-63."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Aggregator ranges only."
+    },
+    {
+      "id": "df54",
+      "brand": "Turin (DF)",
+      "model": "DF54",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 54,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 90,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless collar with printed numbers. Lower is finer; zero at burr touch first.",
+        "entryHint": "Type the collar number at the pointer.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 8,
+          "to": 30
+        },
+        "turkish": {
+          "from": 0,
+          "to": 12
+        },
+        "moka": {
+          "from": 29,
+          "to": 62
+        },
+        "aeropress": {
+          "from": 24,
+          "to": 90
+        },
+        "pourover": {
+          "from": 35,
+          "to": 90
+        },
+        "siphon": {
+          "from": 31,
+          "to": 78
+        },
+        "frenchPress": {
+          "from": 67,
+          "to": 90
+        },
+        "coldBrew": {
+          "from": 79,
+          "to": 90
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/turin-df54-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 34-67."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Aggregator ranges only."
+    },
+    {
+      "id": "eureka-mignon-specialita",
+      "brand": "Eureka",
+      "model": "Mignon Specialita",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 55,
+      "popularity": 1,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 10,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless micrometric knob; the printed numbers are reference marks only. Espresso sits inside the first turn from burr contact.",
+        "entryHint": "Type the number at the marker on the first turn, e.g. 2.5. For coarser brews several turns out, log turns in the notes.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 3.5
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/eureka-mignon-specialita-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Rotation+number notation (1+4 = one turn plus 4); only the first-turn espresso band 0-3.5 converts to one number."
+        },
+        {
+          "who": "Clive Coffee (retailer) Eureka manual",
+          "url": "https://support.clivecoffee.com/grinders/eureka/eureka-mignon-user-manual",
+          "note": "Infinitely adjustable; numbers are reference points."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Filter settings need multiple turns, which one number can't hold without knowing the marks per turn; Eureka does not publish that."
+    },
+    {
+      "id": "eureka-mignon-facile",
+      "brand": "Eureka",
+      "model": "Mignon Facile",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 50,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 10,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless micrometric knob like the Specialita; numbers are reference marks.",
+        "entryHint": "Type the number at the marker and keep it consistent.",
+        "dialFormat": "plain"
+      },
+      "ranges": {},
+      "rangeSources": [
+        {
+          "who": "Clive Coffee (retailer) Eureka manual",
+          "url": "https://support.clivecoffee.com/grinders/eureka/eureka-mignon-user-manual",
+          "note": "Mignon family: stepless, numbers are reference points only."
+        }
+      ],
+      "confidence": "low",
+      "notes": "No published or aggregator chart found; dial in espresso by shot time and taste. Range max is a UI bound."
+    },
+    {
+      "id": "mahlkonig-ek43",
+      "brand": "Mahlkönig",
+      "model": "EK43 / EK43 S",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 98,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 16,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial numbered 0-16 on current units (older ones read 1-11 and use a different scale).",
+        "entryHint": "Type the dial number at the pointer, e.g. 9.5.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 5.1
+        },
+        "turkish": {
+          "from": 0,
+          "to": 1
+        },
+        "moka": {
+          "from": 4.7,
+          "to": 12.3
+        },
+        "aeropress": {
+          "from": 3.6,
+          "to": 16
+        },
+        "pourover": {
+          "from": 6,
+          "to": 16
+        },
+        "siphon": {
+          "from": 5.1,
+          "to": 15.9
+        },
+        "frenchPress": {
+          "from": 13.1,
+          "to": 16
+        },
+        "coldBrew": {
+          "from": 16,
+          "to": 16
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/mahlkonig-ek43-0-16-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. 0-16 dial; V60 band 5.7-13.3. The EK43 S page gives the same numbers."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Cafe and competition workhorse. Calibration and burr alignment move these numbers a lot."
+    },
+    {
+      "id": "mahlkonig-x54",
+      "brand": "Mahlkönig",
+      "model": "X54",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 54,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 1,
+        "max": 35,
+        "step": 0.5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial printed 1-35, fine to coarse.",
+        "entryHint": "Type the dial number, e.g. 3 for espresso, 20 for filter.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 1,
+          "to": 5
+        },
+        "pourover": {
+          "from": 15,
+          "to": 25
+        },
+        "frenchPress": {
+          "from": 25,
+          "to": 35
+        },
+        "moka": {
+          "from": 7.5,
+          "to": 22
+        },
+        "aeropress": {
+          "from": 5,
+          "to": 35
+        },
+        "coldBrew": {
+          "from": 30,
+          "to": 35
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Mahlkönig X54 FAQ (PDF)",
+          "url": "https://cdn.shopify.com/s/files/1/0112/2009/0961/files/X54_FAQs_ENG.pdf",
+          "note": "Espresso 01-05, caffe creme 05-15, filter 15-25, French press >25."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/mahlkonig-x54-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used for moka, AeroPress and cold brew only. V60 band 9.5-24."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Espresso, filter and French press are Mahlkonig's own brackets."
+    },
+    {
+      "id": "mahlkonig-e65s",
+      "brand": "Mahlkönig",
+      "model": "E65S / E65S GbW",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 65,
+      "popularity": 3,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless worm-drive adjustment; no published numbered scale that maps to brew methods.",
+        "entryHint": "Log whatever mark you use consistently; dial espresso in by shot time.",
+        "dialFormat": "plain"
+      },
+      "ranges": {},
+      "rangeSources": [
+        {
+          "who": "Mahlkönig",
+          "url": "https://www.mahlkoenig.com/",
+          "note": "Commercial on-demand espresso grinder; no home brew-method chart found."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Included for cafe-trained users. No chart found; range is a UI bound."
+    },
+    {
+      "id": "ditting-807",
+      "brand": "Ditting",
+      "model": "807 / 807 Lab Sweet",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 80,
+      "popularity": 3,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 12,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial with printed numbers; zero must be set per unit.",
+        "entryHint": "Type the dial number after zeroing, e.g. 2.5.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 2,
+          "to": 2.8
+        },
+        "aeropress": {
+          "from": 5,
+          "to": 5
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Home-Barista forum (user reports)",
+          "url": "https://www.home-barista.com/grinders/ditting-807-lab-sweet-user-experience-t73013-200.html",
+          "note": "Owners after re-zeroing: light-roast espresso around 2, washed coffees 2.2-2.8, AeroPress Go about 5. Some units could not reach espresso without zeroing."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Forum numbers only; Ditting publishes no home chart. Max is a UI bound."
+    },
+    {
+      "id": "weber-eg-1",
+      "brand": "Weber Workshops",
+      "model": "EG-1",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 80,
+      "popularity": 3,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 28,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial. Settings are read as an offset from your unit's burr-lock (touch) number.",
+        "entryHint": "Type the dial number minus your burr-lock number, e.g. burr lock at 1.0 and dial at 6.0 → 5.0.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 3.6,
+          "to": 7.6
+        },
+        "turkish": {
+          "from": 0.8,
+          "to": 4.4
+        },
+        "moka": {
+          "from": 7.2,
+          "to": 13.2
+        },
+        "aeropress": {
+          "from": 6.4,
+          "to": 19.2
+        },
+        "pourover": {
+          "from": 8.2,
+          "to": 18.6
+        },
+        "siphon": {
+          "from": 7.5,
+          "to": 16
+        },
+        "frenchPress": {
+          "from": 13.8,
+          "to": 26
+        },
+        "coldBrew": {
+          "from": 16,
+          "to": 28
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/weber-workshops-eg-1-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Numbers above the burr-lock position; V60 band 8-14."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Aggregator ranges only."
+    },
+    {
+      "id": "lagom-p64",
+      "brand": "Option-O",
+      "model": "Lagom P64",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 20,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless collar numbered 0-9 with 10 lines between numbers; read number.line (3.4 = number 3, fourth line). Locked so it can't go below 0.",
+        "entryHint": "Type number.line; on the second turn add 10 (number 2 on the second turn → 12).",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 1.3
+        },
+        "moka": {
+          "from": 1.2,
+          "to": 4.1
+        },
+        "aeropress": {
+          "from": 0.8,
+          "to": 7.1
+        },
+        "pourover": {
+          "from": 1.7,
+          "to": 6.8
+        },
+        "siphon": {
+          "from": 1.3,
+          "to": 5.5
+        },
+        "frenchPress": {
+          "from": 4.5,
+          "to": 10
+        },
+        "coldBrew": {
+          "from": 5.6,
+          "to": 10
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Prima Coffee (retailer video)",
+          "url": "https://prima-coffee.com/learn/video/overviews/video-overview-Option-O-Lagom-P64",
+          "note": "Collar 0-9 with 10 lines between numbers; stepless."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/option-o-lagom-p64-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Dial settings; V60 band 1.6-4.5."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Burr choice (Mizen Omni, SSP, etc.) changes the numbers a lot."
+    },
+    {
+      "id": "lagom-mini",
+      "brand": "Option-O",
+      "model": "Lagom Mini",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 48,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 140,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless; charts count the dots on the adjustment ring from zero.",
+        "entryHint": "Type dots from zero, e.g. 60.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 18,
+          "to": 38
+        },
+        "turkish": {
+          "from": 4,
+          "to": 22
+        },
+        "moka": {
+          "from": 36,
+          "to": 66
+        },
+        "aeropress": {
+          "from": 32,
+          "to": 96
+        },
+        "pourover": {
+          "from": 41,
+          "to": 93
+        },
+        "siphon": {
+          "from": 38,
+          "to": 80
+        },
+        "frenchPress": {
+          "from": 69,
+          "to": 130
+        },
+        "coldBrew": {
+          "from": 80,
+          "to": 140
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/option-o-lagom-mini-moonshine-burrs-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Moonshine burrs, dots from zero; V60 band 40-70. The Obsidian burr page differs."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Aggregator ranges only."
+    },
+    {
+      "id": "wilfa-uniform",
+      "brand": "Wilfa",
+      "model": "Uniform",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 58,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 41,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "41 stepped settings on the bean-container ring, finer toward 1.",
+        "entryHint": "Type the number on the ring, e.g. 20.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 3,
+          "to": 7
+        },
+        "aeropress": {
+          "from": 14,
+          "to": 26
+        },
+        "pourover": {
+          "from": 14,
+          "to": 28
+        },
+        "frenchPress": {
+          "from": 30,
+          "to": 38
+        },
+        "coldBrew": {
+          "from": 39,
+          "to": 41
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Wilfa Uniform manual (ManualsLib copy)",
+          "url": "https://www.manualslib.com/manual/2797625/Wilfa-Uniform.html?page=10",
+          "note": "Espresso 3-7, AeroPress 14-26, pour over 14-28, filter (batch) 22-32, French press 30-38, steep/cold brew 39-41."
+        }
+      ],
+      "confidence": "high",
+      "notes": "Manufacturer chart."
+    },
+    {
+      "id": "varia-vs3",
+      "brand": "Varia",
+      "model": "VS3",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 38,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 20,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial; charts count printed numbers from zero.",
+        "entryHint": "Type the dial number, e.g. 6.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0.2,
+          "to": 3.3
+        },
+        "turkish": {
+          "from": 0,
+          "to": 0.7
+        },
+        "moka": {
+          "from": 3.1,
+          "to": 7.8
+        },
+        "aeropress": {
+          "from": 2.4,
+          "to": 12.5
+        },
+        "pourover": {
+          "from": 3.9,
+          "to": 12.1
+        },
+        "siphon": {
+          "from": 3.3,
+          "to": 10
+        },
+        "frenchPress": {
+          "from": 8.3,
+          "to": 18
+        },
+        "coldBrew": {
+          "from": 10.1,
+          "to": 19.6
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/varia-vs3-gen-2-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Gen 2; V60 band 3.7-8.4. Gen 1 has its own page."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Aggregator ranges only."
+    },
+    {
+      "id": "zerno-z1",
+      "brand": "Zerno",
+      "model": "Z1",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 3,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 1400,
+        "step": 5,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless dial graduated in microns from zero (burr contact).",
+        "entryHint": "Type the micron reading, e.g. 650.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 180,
+          "to": 380
+        },
+        "turkish": {
+          "from": 40,
+          "to": 220
+        },
+        "moka": {
+          "from": 360,
+          "to": 660
+        },
+        "aeropress": {
+          "from": 320,
+          "to": 960
+        },
+        "pourover": {
+          "from": 410,
+          "to": 930
+        },
+        "siphon": {
+          "from": 375,
+          "to": 800
+        },
+        "frenchPress": {
+          "from": 690,
+          "to": 1300
+        },
+        "coldBrew": {
+          "from": 800,
+          "to": 1400
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/zerno-z1-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Micron ranges, which match this dial's own unit. V60 band 400-700."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Because the dial reads microns, the generic micron bands apply directly."
+    },
+    {
+      "id": "fiorenzato-pietro",
+      "brand": "Fiorenzato",
+      "model": "Pietro",
+      "kind": "hand",
+      "burr": "flat",
+      "burrSizeMm": 58,
+      "popularity": 2,
+      "setting": {
+        "style": "stepless",
+        "unit": "",
+        "min": 0,
+        "max": 20,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepless ring nut numbered 0-9 per turn with small steps between; charts read number.step (3.2 = number 3, second step). Clockwise is finer.",
+        "entryHint": "Type number.step; on a second turn add 10.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "moka": {
+          "from": 1.8,
+          "to": 5.7
+        },
+        "aeropress": {
+          "from": 1.2,
+          "to": 9.7
+        },
+        "pourover": {
+          "from": 2.4,
+          "to": 9.3
+        },
+        "siphon": {
+          "from": 2.0,
+          "to": 7.6
+        },
+        "frenchPress": {
+          "from": 6.2,
+          "to": 10
+        },
+        "coldBrew": {
+          "from": 7.6,
+          "to": 10
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Fiorenzato Pietro manual",
+          "url": "https://www.seattlecoffeegear.com/cdn/shop/files/pietro-manual.pdf",
+          "note": "58 mm burrs, stepless ring nut, dial 0-9; printed zones: M-Modal from moka/AeroPress to cold brew tower, B-Modal adds espresso and ibrik."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/fiorenzato-pietro-m-modal-burrs-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. M-Modal burrs; V60 band 2.3-6.2. Its espresso 0-2.0 was left out because the manual puts espresso only on the B-Modal burr."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Ranges are for M-Modal (filter) burrs. B-Modal owners: espresso sits on the first turn per the manual's zone diagram."
+    },
+    {
+      "id": "oxo-conical-burr",
+      "brand": "OXO",
+      "model": "Brew Conical Burr Grinder",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": 40,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 15,
+        "step": 0.1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "15 numbered settings with micro steps between them; charts read number.step (4.1 = setting 4, first micro step).",
+        "entryHint": "Type number.step, e.g. 8.2.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 1,
+          "to": 3.2
+        },
+        "moka": {
+          "from": 3.2,
+          "to": 8
+        },
+        "aeropress": {
+          "from": 3,
+          "to": 12.2
+        },
+        "pourover": {
+          "from": 4.1,
+          "to": 12.1
+        },
+        "siphon": {
+          "from": 4,
+          "to": 10.1
+        },
+        "frenchPress": {
+          "from": 8.2,
+          "to": 15
+        },
+        "coldBrew": {
+          "from": 10.2,
+          "to": 15
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/oxo-conical-burr-coffee-grinder-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 4.1-8.2."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Espresso only realistically with pressurised baskets."
+    },
+    {
+      "id": "breville-smart-grinder-pro",
+      "brand": "Breville / Sage",
+      "model": "Smart Grinder Pro",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 1,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 60,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "60 numbered steps shown on the screen, finer toward 1. The upper burr can be moved internally to shift the whole scale.",
+        "entryHint": "Type the number on the display, e.g. 12.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 1,
+          "to": 30
+        },
+        "turkish": {
+          "from": 1,
+          "to": 2
+        },
+        "moka": {
+          "from": 17,
+          "to": 44
+        },
+        "aeropress": {
+          "from": 13,
+          "to": 60
+        },
+        "pourover": {
+          "from": 31,
+          "to": 54
+        },
+        "siphon": {
+          "from": 18,
+          "to": 58
+        },
+        "frenchPress": {
+          "from": 55,
+          "to": 60
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Breville",
+          "url": "https://www.breville.com/en-us/product/bcg820",
+          "note": "60 grind settings; stainless steel conical burrs (no diameter given)."
+        },
+        {
+          "who": "Breville BCG820 instruction book",
+          "url": "https://assets.breville.com/BCG820/BCG820_USCM_IB_L26_LR.pdf",
+          "note": "Coffee chart: espresso 1-30 (start at 12 with single-wall baskets, 30 with dual-wall), drip 31-45, filter/percolator 46-54, French press 55-60. The upper burr is removable and adjustable."
+        },
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/breville-sage-the-smart-grinder-pro-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Used for Turkish, moka, AeroPress and siphon only. Its espresso 1-18, V60 21-48 and French press 48-60 differ from Breville's chart."
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Espresso, pour over (Breville's drip and filter columns) and French press are Breville's own bands; Turkish, moka, AeroPress and siphon are aggregator estimates. Moving the internal upper burr shifts every number."
+    },
+    {
+      "id": "rancilio-rocky",
+      "brand": "Rancilio",
+      "model": "Rocky",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 50,
+      "popularity": 3,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 0,
+        "max": 55,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "Stepped collar, 55 settings, finer toward 0.",
+        "entryHint": "Type the collar number, e.g. 8.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "espresso": {
+          "from": 0,
+          "to": 11
+        },
+        "turkish": {
+          "from": 0,
+          "to": 1
+        },
+        "moka": {
+          "from": 10,
+          "to": 27
+        },
+        "aeropress": {
+          "from": 8,
+          "to": 45
+        },
+        "pourover": {
+          "from": 13,
+          "to": 44
+        },
+        "siphon": {
+          "from": 11,
+          "to": 36
+        },
+        "frenchPress": {
+          "from": 30,
+          "to": 55
+        },
+        "coldBrew": {
+          "from": 37,
+          "to": 55
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/rancilio-rocky-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 13-30."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Zero varies between units; many need recalibration."
+    },
+    {
+      "id": "mazzer-philos",
+      "brand": "Mazzer",
+      "model": "Philos",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": 64,
+      "popularity": 3,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": 6,
+        "dialReading": "Numbered collar, stepped at about 6 microns per notch; can be converted to stepless.",
+        "entryHint": "Type the collar number.",
+        "dialFormat": "plain"
+      },
+      "ranges": {},
+      "rangeSources": [
+        {
+          "who": "Mazzer",
+          "url": "https://shop.mazzer.com/products/philos",
+          "note": "64 mm I200D or I189D burrs; every notch is about 6 microns; switchable stepped/stepless."
+        }
+      ],
+      "confidence": "low",
+      "notes": "No published brew-method chart found; dial in by taste. Max is a UI bound."
+    },
+    {
+      "id": "capresso-infinity",
+      "brand": "Capresso",
+      "model": "Infinity",
+      "kind": "electric",
+      "burr": "conical",
+      "burrSizeMm": null,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 16,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "16 numbered settings, finer toward 1.",
+        "entryHint": "Type the dial number.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "moka": {
+          "from": 3,
+          "to": 7
+        },
+        "aeropress": {
+          "from": 3,
+          "to": 12
+        },
+        "pourover": {
+          "from": 4,
+          "to": 11
+        },
+        "siphon": {
+          "from": 4,
+          "to": 9
+        },
+        "frenchPress": {
+          "from": 8,
+          "to": 16
+        },
+        "coldBrew": {
+          "from": 10,
+          "to": 16
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/capresso-infinity-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. V60 band 4-8. Its espresso 1-3 was left out: not an espresso grinder."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Budget conical burr grinder."
+    },
+    {
+      "id": "cuisinart-dbm-8",
+      "brand": "Cuisinart",
+      "model": "DBM-8 Supreme Grind",
+      "kind": "electric",
+      "burr": "flat",
+      "burrSizeMm": null,
+      "popularity": 2,
+      "setting": {
+        "style": "numbers",
+        "unit": "",
+        "min": 1,
+        "max": 18,
+        "step": 1,
+        "lowerIsFiner": true,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "18-position dial, finer toward 1.",
+        "entryHint": "Type the dial position.",
+        "dialFormat": "plain"
+      },
+      "ranges": {
+        "moka": {
+          "from": 1,
+          "to": 3
+        },
+        "aeropress": {
+          "from": 1,
+          "to": 7
+        },
+        "pourover": {
+          "from": 1,
+          "to": 6
+        },
+        "siphon": {
+          "from": 1,
+          "to": 5
+        },
+        "frenchPress": {
+          "from": 5,
+          "to": 10
+        },
+        "coldBrew": {
+          "from": 6,
+          "to": 12
+        }
+      },
+      "rangeSources": [
+        {
+          "who": "Honest Coffee Guide (aggregator)",
+          "url": "https://honestcoffeeguide.com/cuisinart-dbm-8-grind-settings/",
+          "note": "Aggregator chart built from the site's own micron estimates and reader feedback, not the manufacturer. Its finest setting is about 420 microns, so no espresso. V60 band 1-4."
+        }
+      ],
+      "confidence": "low",
+      "notes": "Very common budget flat-burr grinder; fines-heavy."
+    }
+  ]
+}

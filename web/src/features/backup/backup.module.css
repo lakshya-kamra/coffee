@@ -1,0 +1,66 @@
+/* YOUR DATA and the import sheet. Static layout only: nothing here animates. */
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.padH {
+  padding: 0 16px;
+}
+
+.storage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.note {
+  margin-top: 12px;
+}
+
+.message {
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.sheetTitle {
+  color: var(--ink-high);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink-mid);
+}
+
+.preview {
+  color: var(--ink-high);
+}
+
+.chipLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-mid);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.danger {
+  color: var(--fault);
+}

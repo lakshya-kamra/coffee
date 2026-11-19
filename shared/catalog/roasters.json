@@ -1,0 +1,2930 @@
+{
+  "version": 1,
+  "updated": "2026-11-17",
+  "roasters": [
+    {
+      "id": "monogram",
+      "name": "Monogram Coffee",
+      "country": "Canada",
+      "city": "Calgary, Alberta",
+      "area": "North America",
+      "notable": "Co-founded by Canadian Barista Champion Ben Put"
+    },
+    {
+      "id": "phil-and-sebastian",
+      "name": "Phil & Sebastian Coffee Roasters",
+      "country": "Canada",
+      "city": "Calgary, Alberta",
+      "area": "North America"
+    },
+    {
+      "id": "rosso",
+      "name": "Rosso Coffee Roasters",
+      "country": "Canada",
+      "city": "Calgary, Alberta",
+      "area": "North America"
+    },
+    {
+      "id": "rogue-wave",
+      "name": "Rogue Wave Coffee",
+      "country": "Canada",
+      "city": "Edmonton, Alberta",
+      "area": "North America"
+    },
+    {
+      "id": "transcend",
+      "name": "Transcend Coffee",
+      "country": "Canada",
+      "city": "Edmonton, Alberta",
+      "area": "North America"
+    },
+    {
+      "id": "kicking-horse",
+      "name": "Kicking Horse Coffee",
+      "country": "Canada",
+      "city": "Invermere, British Columbia",
+      "area": "North America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "cafe-saint-henri",
+      "name": "Café Saint-Henri",
+      "country": "Canada",
+      "city": "Montreal, Quebec",
+      "area": "North America"
+    },
+    {
+      "id": "september-coffee",
+      "name": "September Coffee Co.",
+      "country": "Canada",
+      "city": "Ottawa, Ontario",
+      "area": "North America"
+    },
+    {
+      "id": "de-mello",
+      "name": "De Mello Coffee",
+      "country": "Canada",
+      "city": "Toronto, Ontario",
+      "area": "North America"
+    },
+    {
+      "id": "pilot-coffee",
+      "name": "Pilot Coffee Roasters",
+      "country": "Canada",
+      "city": "Toronto, Ontario",
+      "area": "North America"
+    },
+    {
+      "id": "propeller",
+      "name": "Propeller Coffee Co.",
+      "country": "Canada",
+      "city": "Toronto, Ontario",
+      "area": "North America"
+    },
+    {
+      "id": "subtext",
+      "name": "Subtext Coffee Roasters",
+      "country": "Canada",
+      "city": "Toronto, Ontario",
+      "area": "North America"
+    },
+    {
+      "id": "49th-parallel",
+      "name": "49th Parallel Coffee Roasters",
+      "country": "Canada",
+      "city": "Vancouver, British Columbia",
+      "area": "North America"
+    },
+    {
+      "id": "nemesis",
+      "name": "Nemesis Coffee",
+      "country": "Canada",
+      "city": "Vancouver, British Columbia",
+      "area": "North America"
+    },
+    {
+      "id": "pallet",
+      "name": "Pallet Coffee Roasters",
+      "country": "Canada",
+      "city": "Vancouver, British Columbia",
+      "area": "North America"
+    },
+    {
+      "id": "bows-and-arrows",
+      "name": "Bows & Arrows Coffee Roasters",
+      "country": "Canada",
+      "city": "Victoria, British Columbia",
+      "area": "North America"
+    },
+    {
+      "id": "george-howell",
+      "name": "George Howell Coffee",
+      "country": "United States",
+      "city": "Acton, Massachusetts",
+      "area": "North America",
+      "notable": "Cup of Excellence co-founder; frozen green-coffee storage"
+    },
+    {
+      "id": "ceremony",
+      "name": "Ceremony Coffee Roasters",
+      "country": "United States",
+      "city": "Annapolis, Maryland",
+      "area": "North America"
+    },
+    {
+      "id": "greater-goods",
+      "name": "Greater Goods Coffee Roasters",
+      "country": "United States",
+      "city": "Austin, Texas",
+      "area": "North America"
+    },
+    {
+      "id": "populace",
+      "name": "Populace Coffee",
+      "country": "United States",
+      "city": "Bay City, Michigan",
+      "area": "North America"
+    },
+    {
+      "id": "hydrangea",
+      "name": "Hydrangea Coffee",
+      "country": "United States",
+      "city": "Berkeley, California",
+      "area": "North America",
+      "notable": "Rare and experimental lots, very light roasts"
+    },
+    {
+      "id": "gracenote",
+      "name": "Gracenote Coffee",
+      "country": "United States",
+      "city": "Boston, Massachusetts",
+      "area": "North America"
+    },
+    {
+      "id": "brooklyn-roasting",
+      "name": "Brooklyn Roasting Company",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America"
+    },
+    {
+      "id": "cafe-grumpy",
+      "name": "Café Grumpy",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America"
+    },
+    {
+      "id": "devocion",
+      "name": "Devoción",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America",
+      "notable": "Colombian green coffee shipped fresh to Brooklyn"
+    },
+    {
+      "id": "parlor-coffee",
+      "name": "Parlor Coffee",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America"
+    },
+    {
+      "id": "partners-coffee",
+      "name": "Partners Coffee",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America"
+    },
+    {
+      "id": "sey-coffee",
+      "name": "Sey Coffee",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America",
+      "notable": "Very light Nordic-style roasts, full sourcing transparency"
+    },
+    {
+      "id": "variety-coffee",
+      "name": "Variety Coffee Roasters",
+      "country": "United States",
+      "city": "Brooklyn, New York",
+      "area": "North America"
+    },
+    {
+      "id": "dunkin",
+      "name": "Dunkin'",
+      "country": "United States",
+      "city": "Canton, Massachusetts",
+      "area": "North America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "dark-matter",
+      "name": "Dark Matter Coffee",
+      "country": "United States",
+      "city": "Chicago, Illinois",
+      "area": "North America",
+      "notable": "Bold art-label bags"
+    },
+    {
+      "id": "intelligentsia",
+      "name": "Intelligentsia Coffee",
+      "country": "United States",
+      "city": "Chicago, Illinois",
+      "area": "North America",
+      "notable": "Early direct-trade pioneer, founded 1995"
+    },
+    {
+      "id": "metric",
+      "name": "Metric Coffee",
+      "country": "United States",
+      "city": "Chicago, Illinois",
+      "area": "North America"
+    },
+    {
+      "id": "corvus",
+      "name": "Corvus Coffee Roasters",
+      "country": "United States",
+      "city": "Denver, Colorado",
+      "area": "North America"
+    },
+    {
+      "id": "huckleberry",
+      "name": "Huckleberry Roasters",
+      "country": "United States",
+      "city": "Denver, Colorado",
+      "area": "North America"
+    },
+    {
+      "id": "novo-coffee",
+      "name": "Novo Coffee",
+      "country": "United States",
+      "city": "Denver, Colorado",
+      "area": "North America"
+    },
+    {
+      "id": "counter-culture",
+      "name": "Counter Culture Coffee",
+      "country": "United States",
+      "city": "Durham, North Carolina",
+      "area": "North America",
+      "notable": "Long-running leader in sustainable, transparent sourcing"
+    },
+    {
+      "id": "little-waves",
+      "name": "Little Waves Coffee Roasters",
+      "country": "United States",
+      "city": "Durham, North Carolina",
+      "area": "North America"
+    },
+    {
+      "id": "peets",
+      "name": "Peet's Coffee",
+      "country": "United States",
+      "city": "Emeryville, California",
+      "area": "North America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "madcap",
+      "name": "Madcap Coffee",
+      "country": "United States",
+      "city": "Grand Rapids, Michigan",
+      "area": "North America"
+    },
+    {
+      "id": "methodical",
+      "name": "Methodical Coffee",
+      "country": "United States",
+      "city": "Greenville, South Carolina",
+      "area": "North America"
+    },
+    {
+      "id": "vigilante",
+      "name": "Vigilante Coffee",
+      "country": "United States",
+      "city": "Hyattsville, Maryland",
+      "area": "North America"
+    },
+    {
+      "id": "little-wolf",
+      "name": "Little Wolf Coffee",
+      "country": "United States",
+      "city": "Ipswich, Massachusetts",
+      "area": "North America"
+    },
+    {
+      "id": "messenger",
+      "name": "Messenger Coffee Co.",
+      "country": "United States",
+      "city": "Kansas City, Missouri",
+      "area": "North America"
+    },
+    {
+      "id": "oddly-correct",
+      "name": "Oddly Correct",
+      "country": "United States",
+      "city": "Kansas City, Missouri",
+      "area": "North America"
+    },
+    {
+      "id": "greenwell-farms",
+      "name": "Greenwell Farms",
+      "country": "United States",
+      "city": "Kealakekua, Hawaii",
+      "area": "North America",
+      "notable": "Kona estate roaster"
+    },
+    {
+      "id": "sweet-bloom",
+      "name": "Sweet Bloom Coffee Roasters",
+      "country": "United States",
+      "city": "Lakewood, Colorado",
+      "area": "North America"
+    },
+    {
+      "id": "passenger",
+      "name": "Passenger Coffee",
+      "country": "United States",
+      "city": "Lancaster, Pennsylvania",
+      "area": "North America"
+    },
+    {
+      "id": "go-get-em-tiger",
+      "name": "Go Get Em Tiger",
+      "country": "United States",
+      "city": "Los Angeles, California",
+      "area": "North America"
+    },
+    {
+      "id": "quills",
+      "name": "Quills Coffee",
+      "country": "United States",
+      "city": "Louisville, Kentucky",
+      "area": "North America"
+    },
+    {
+      "id": "sunergos",
+      "name": "Sunergos Coffee",
+      "country": "United States",
+      "city": "Louisville, Kentucky",
+      "area": "North America"
+    },
+    {
+      "id": "panther-coffee",
+      "name": "Panther Coffee",
+      "country": "United States",
+      "city": "Miami, Florida",
+      "area": "North America"
+    },
+    {
+      "id": "irving-farm",
+      "name": "Irving Farm New York",
+      "country": "United States",
+      "city": "Millerton, New York",
+      "area": "North America"
+    },
+    {
+      "id": "dogwood",
+      "name": "Dogwood Coffee Co.",
+      "country": "United States",
+      "city": "Minneapolis, Minnesota",
+      "area": "North America"
+    },
+    {
+      "id": "peace-coffee",
+      "name": "Peace Coffee",
+      "country": "United States",
+      "city": "Minneapolis, Minnesota",
+      "area": "North America"
+    },
+    {
+      "id": "crema-nashville",
+      "name": "Crema Coffee Roasters",
+      "country": "United States",
+      "city": "Nashville, Tennessee",
+      "area": "North America"
+    },
+    {
+      "id": "ruby-coffee",
+      "name": "Ruby Coffee Roasters",
+      "country": "United States",
+      "city": "Nelsonville, Wisconsin",
+      "area": "North America"
+    },
+    {
+      "id": "joe-coffee",
+      "name": "Joe Coffee Company",
+      "country": "United States",
+      "city": "New York City, New York",
+      "area": "North America"
+    },
+    {
+      "id": "blue-bottle",
+      "name": "Blue Bottle Coffee",
+      "country": "United States",
+      "city": "Oakland, California",
+      "area": "North America",
+      "notable": "Freshness-focused roaster, majority-owned by Nestlé since 2017"
+    },
+    {
+      "id": "mother-tongue",
+      "name": "Mother Tongue Coffee",
+      "country": "United States",
+      "city": "Oakland, California",
+      "area": "North America"
+    },
+    {
+      "id": "sweet-marias",
+      "name": "Sweet Maria's",
+      "country": "United States",
+      "city": "Oakland, California",
+      "area": "North America",
+      "notable": "Green coffee supplier for home roasters"
+    },
+    {
+      "id": "olympia-coffee",
+      "name": "Olympia Coffee",
+      "country": "United States",
+      "city": "Olympia, Washington",
+      "area": "North America"
+    },
+    {
+      "id": "elixr",
+      "name": "Elixr Coffee Roasters",
+      "country": "United States",
+      "city": "Philadelphia, Pennsylvania",
+      "area": "North America"
+    },
+    {
+      "id": "la-colombe",
+      "name": "La Colombe",
+      "country": "United States",
+      "city": "Philadelphia, Pennsylvania",
+      "area": "North America",
+      "notable": "Known for canned Draft Latte"
+    },
+    {
+      "id": "rival-bros",
+      "name": "Rival Bros Coffee",
+      "country": "United States",
+      "city": "Philadelphia, Pennsylvania",
+      "area": "North America"
+    },
+    {
+      "id": "speckled-ax",
+      "name": "Speckled Ax",
+      "country": "United States",
+      "city": "Portland, Maine",
+      "area": "North America",
+      "notable": "Wood-fired roasting"
+    },
+    {
+      "id": "tandem",
+      "name": "Tandem Coffee Roasters",
+      "country": "United States",
+      "city": "Portland, Maine",
+      "area": "North America"
+    },
+    {
+      "id": "coava",
+      "name": "Coava Coffee Roasters",
+      "country": "United States",
+      "city": "Portland, Oregon",
+      "area": "North America"
+    },
+    {
+      "id": "heart-coffee",
+      "name": "Heart Coffee Roasters",
+      "country": "United States",
+      "city": "Portland, Oregon",
+      "area": "North America",
+      "notable": "Clean, light Portland roasts"
+    },
+    {
+      "id": "nossa-familia",
+      "name": "Nossa Familia Coffee",
+      "country": "United States",
+      "city": "Portland, Oregon",
+      "area": "North America"
+    },
+    {
+      "id": "proud-mary-us",
+      "name": "Proud Mary Coffee (US)",
+      "country": "United States",
+      "city": "Portland, Oregon",
+      "area": "North America",
+      "notable": "US roastery of the Melbourne original"
+    },
+    {
+      "id": "stumptown",
+      "name": "Stumptown Coffee Roasters",
+      "country": "United States",
+      "city": "Portland, Oregon",
+      "area": "North America",
+      "notable": "Third-wave pioneer known for Hair Bender blend"
+    },
+    {
+      "id": "klatch",
+      "name": "Klatch Coffee",
+      "country": "United States",
+      "city": "Rancho Cucamonga, California",
+      "area": "North America"
+    },
+    {
+      "id": "onyx-coffee-lab",
+      "name": "Onyx Coffee Lab",
+      "country": "United States",
+      "city": "Rogers, Arkansas",
+      "area": "North America",
+      "notable": "Andrea Allen, 2020 US Barista Champion; light-roast leader"
+    },
+    {
+      "id": "death-wish",
+      "name": "Death Wish Coffee",
+      "country": "United States",
+      "city": "Round Lake, New York",
+      "area": "North America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "merit-coffee",
+      "name": "Merit Coffee",
+      "country": "United States",
+      "city": "San Antonio, Texas",
+      "area": "North America"
+    },
+    {
+      "id": "bird-rock",
+      "name": "Bird Rock Coffee Roasters",
+      "country": "United States",
+      "city": "San Diego, California",
+      "area": "North America"
+    },
+    {
+      "id": "mostra",
+      "name": "Mostra Coffee",
+      "country": "United States",
+      "city": "San Diego, California",
+      "area": "North America"
+    },
+    {
+      "id": "andytown",
+      "name": "Andytown Coffee Roasters",
+      "country": "United States",
+      "city": "San Francisco, California",
+      "area": "North America"
+    },
+    {
+      "id": "four-barrel",
+      "name": "Four Barrel Coffee",
+      "country": "United States",
+      "city": "San Francisco, California",
+      "area": "North America"
+    },
+    {
+      "id": "ritual",
+      "name": "Ritual Coffee Roasters",
+      "country": "United States",
+      "city": "San Francisco, California",
+      "area": "North America"
+    },
+    {
+      "id": "saint-frank",
+      "name": "Saint Frank Coffee",
+      "country": "United States",
+      "city": "San Francisco, California",
+      "area": "North America"
+    },
+    {
+      "id": "sightglass",
+      "name": "Sightglass Coffee",
+      "country": "United States",
+      "city": "San Francisco, California",
+      "area": "North America"
+    },
+    {
+      "id": "moonwake",
+      "name": "Moonwake Coffee Roasters",
+      "country": "United States",
+      "city": "San Jose, California",
+      "area": "North America"
+    },
+    {
+      "id": "equator",
+      "name": "Equator Coffees",
+      "country": "United States",
+      "city": "San Rafael, California",
+      "area": "North America"
+    },
+    {
+      "id": "cat-and-cloud",
+      "name": "Cat & Cloud Coffee",
+      "country": "United States",
+      "city": "Santa Cruz, California",
+      "area": "North America"
+    },
+    {
+      "id": "verve",
+      "name": "Verve Coffee Roasters",
+      "country": "United States",
+      "city": "Santa Cruz, California",
+      "area": "North America"
+    },
+    {
+      "id": "perc-coffee",
+      "name": "PERC Coffee",
+      "country": "United States",
+      "city": "Savannah, Georgia",
+      "area": "North America"
+    },
+    {
+      "id": "anchorhead",
+      "name": "Anchorhead Coffee",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America"
+    },
+    {
+      "id": "elm-coffee",
+      "name": "Elm Coffee Roasters",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America"
+    },
+    {
+      "id": "espresso-vivace",
+      "name": "Espresso Vivace",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America",
+      "notable": "Seattle espresso pioneer"
+    },
+    {
+      "id": "kuma",
+      "name": "Kuma Coffee",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America"
+    },
+    {
+      "id": "starbucks-reserve",
+      "name": "Starbucks Reserve",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "victrola",
+      "name": "Victrola Coffee Roasters",
+      "country": "United States",
+      "city": "Seattle, Washington",
+      "area": "North America"
+    },
+    {
+      "id": "blueprint",
+      "name": "Blueprint Coffee",
+      "country": "United States",
+      "city": "St. Louis, Missouri",
+      "area": "North America"
+    },
+    {
+      "id": "kaldis",
+      "name": "Kaldi's Coffee",
+      "country": "United States",
+      "city": "St. Louis, Missouri",
+      "area": "North America"
+    },
+    {
+      "id": "buddy-brew",
+      "name": "Buddy Brew Coffee",
+      "country": "United States",
+      "city": "Tampa, Florida",
+      "area": "North America"
+    },
+    {
+      "id": "cartel-coffee",
+      "name": "Cartel Coffee Lab",
+      "country": "United States",
+      "city": "Tempe, Arizona",
+      "area": "North America"
+    },
+    {
+      "id": "pts-coffee",
+      "name": "PT's Coffee Roasting Co.",
+      "country": "United States",
+      "city": "Topeka, Kansas",
+      "area": "North America"
+    },
+    {
+      "id": "wonderstate",
+      "name": "Wonderstate Coffee",
+      "country": "United States",
+      "city": "Viroqua, Wisconsin",
+      "area": "North America",
+      "notable": "Formerly Kickapoo Coffee"
+    },
+    {
+      "id": "black-and-white",
+      "name": "Black & White Coffee Roasters",
+      "country": "United States",
+      "city": "Wake Forest, North Carolina",
+      "area": "North America",
+      "notable": "Expressive, fruit-forward roasts"
+    },
+    {
+      "id": "brandywine",
+      "name": "Brandywine Coffee Roasters",
+      "country": "United States",
+      "city": "Wilmington, Delaware",
+      "area": "North America"
+    },
+    {
+      "id": "all-saints-cafe",
+      "name": "All Saints Café",
+      "country": "Argentina",
+      "city": "Buenos Aires",
+      "area": "Latin America"
+    },
+    {
+      "id": "lab-tostadores",
+      "name": "LAB Tostadores de Café",
+      "country": "Argentina",
+      "city": "Buenos Aires",
+      "area": "Latin America"
+    },
+    {
+      "id": "orfeu",
+      "name": "Orfeu Cafés Especiais",
+      "country": "Brazil",
+      "city": "Botelhos, Minas Gerais",
+      "area": "Latin America",
+      "notable": "Farm-roasted coffee from Fazenda Sertãozinho"
+    },
+    {
+      "id": "coffee-lab-sp",
+      "name": "Coffee Lab",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America",
+      "notable": "Isabela Raposeiras' pioneering Vila Madalena roastery-café"
+    },
+    {
+      "id": "isso-e-cafe",
+      "name": "Isso É Café",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America"
+    },
+    {
+      "id": "octavio-cafe",
+      "name": "Octavio Café",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America"
+    },
+    {
+      "id": "santo-grao",
+      "name": "Santo Grão",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America"
+    },
+    {
+      "id": "um-coffee-co",
+      "name": "Um Coffee Co.",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America"
+    },
+    {
+      "id": "wolff-cafe",
+      "name": "Wolff Café",
+      "country": "Brazil",
+      "city": "São Paulo",
+      "area": "Latin America"
+    },
+    {
+      "id": "cafe-altura",
+      "name": "Café Altura",
+      "country": "Chile",
+      "city": "Santiago",
+      "area": "Latin America"
+    },
+    {
+      "id": "puelo",
+      "name": "Puelo Coffee Roasters",
+      "country": "Chile",
+      "city": "Santiago",
+      "area": "Latin America"
+    },
+    {
+      "id": "azahar",
+      "name": "Azahar Coffee",
+      "country": "Colombia",
+      "city": "Armenia",
+      "area": "Latin America"
+    },
+    {
+      "id": "amor-perfecto",
+      "name": "Amor Perfecto",
+      "country": "Colombia",
+      "city": "Bogotá",
+      "area": "Latin America",
+      "notable": "Colombian origin-roasting pioneer since 1997"
+    },
+    {
+      "id": "juan-valdez",
+      "name": "Juan Valdez Café",
+      "country": "Colombia",
+      "city": "Bogotá",
+      "area": "Latin America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "libertario",
+      "name": "Libertario Coffee Roasters",
+      "country": "Colombia",
+      "city": "Bogotá",
+      "area": "Latin America"
+    },
+    {
+      "id": "pergamino",
+      "name": "Pergamino",
+      "country": "Colombia",
+      "city": "Medellín",
+      "area": "Latin America",
+      "notable": "Medellín specialty pioneer"
+    },
+    {
+      "id": "cafe-britt",
+      "name": "Café Britt",
+      "country": "Costa Rica",
+      "city": "Heredia",
+      "area": "Latin America",
+      "notable": "mainstream"
+    },
+    {
+      "id": "almanegra",
+      "name": "Almanegra Café",
+      "country": "Mexico",
+      "city": "Mexico City",
+      "area": "Latin America"
+    },
+    {
+      "id": "buna",
+      "name": "Buna",
+      "country": "Mexico",
+      "city": "Mexico City",
+      "area": "Latin America",
+      "notable": "Roasts Mexican single origins"
+    },
+    {
+      "id": "cafe-avellaneda",
+      "name": "Café Avellaneda",
+      "country": "Mexico",
+      "city": "Mexico City",
+      "area": "Latin America"
+    },
+    {
+      "id": "cardinal",
+      "name": "Cardinal Casa de Café",
+      "country": "Mexico",
+      "city": "Mexico City",
+      "area": "Latin America"
+    },
+    {
+      "id": "cafe-unido",
+      "name": "Café Unido",
+      "country": "Panama",
+      "city": "Panama City",
+      "area": "Latin America",
+      "notable": "Panamanian roaster serving Geisha and local lots"
+    },
+    {
+      "id": "neira-cafe-lab",
+      "name": "Neira Café Lab",
+      "country": "Peru",
+      "city": "Lima",
+      "area": "Latin America"
+    },
+    {
+      "id": "origen-tostadores",
+      "name": "Origen Tostadores de Café",
+      "country": "Peru",
+      "city": "Lima",
+      "area": "Latin America"
+    },
+    {
+      "id": "tostaduria-bisetti",
+      "name": "Tostaduría Bisetti",
+      "country": "Peru",
+      "city": "Lima",
+      "area": "Latin America"
+    },
+    {
+      "id": "alt-wien",
+      "name": "Alt Wien Kaffee",
+      "country": "Austria",
+      "city": "Vienna",
+      "area": "Europe"
+    },
+    {
+      "id": "coffee-pirates",
+      "name": "Coffee Pirates",
+      "country": "Austria",
+      "city": "Vienna",
+      "area": "Europe"
+    },
+    {
+      "id": "mok",
+      "name": "MOK Specialty Coffee",
+      "country": "Belgium",
+      "city": "Brussels",
+      "area": "Europe"
+    },
+    {
+      "id": "or-coffee",
+      "name": "OR Coffee",
+      "country": "Belgium",
+      "city": "Ghent",
+      "area": "Europe"
+    },
+    {
+      "id": "industra",
+      "name": "Industra Coffee",
+      "country": "Czech Republic",
+      "city": "Brno",
+      "area": "Europe"
+    },
+    {
+      "id": "fathers-coffee",
+      "name": "Father's Coffee Roastery",
+      "country": "Czech Republic",
+      "city": "Ostrava",
+      "area": "Europe"
+    },
+    {
+      "id": "doubleshot",
+      "name": "Doubleshot",
+      "country": "Czech Republic",
+      "city": "Prague",
+      "area": "Europe"
+    },
+    {
+      "id": "la-cabra",
+      "name": "La Cabra",
+      "country": "Denmark",
+      "city": "Aarhus",
+      "area": "Europe",
+      "notable": "Nordic light-roast roastery"
+    },
+    {
+      "id": "andersen-maillard",
+      "name": "Andersen & Maillard",
+      "country": "Denmark",
+      "city": "Copenhagen",
+      "area": "Europe"
+    },
+    {
+      "id": "april",
+      "name": "April Coffee Roasters",
+      "country": "Denmark",
+      "city": "Copenhagen",
+      "area": "Europe",
+      "notable": "Patrik Rolf's roastery and brewing-gear brand"
+    },
+    {
+      "id": "prolog",
+      "name": "Prolog Coffee",
+      "country": "Denmark",
+      "city": "Copenhagen",
+      "area": "Europe"
+    },
+    {
+      "id": "coffee-collective",
+      "name": "The Coffee Collective",
+      "country": "Denmark",
+      "city": "Copenhagen",
+      "area": "Europe",
+      "notable": "Co-founded by 2006 World Barista Champion Klaus Thomsen"
+    },
+    {
+      "id": "good-life-coffee",
+      "name": "Good Life Coffee",
+      "country": "Finland",
+      "city": "Helsinki",
+      "area": "Europe"
+    },
+    {
+      "id": "kaffa-roastery",
+      "name": "Kaffa Roastery",
+      "country": "Finland",
+      "city": "Helsinki",
+      "area": "Europe"
+    },
+    {
+      "id": "paulig",
+      "name": "Paulig",
+      "country": "Finland",
+      "city": "Helsinki",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "cafe-piha",
+      "name": "Café Piha",
+      "country": "France",
+      "city": "Bordeaux",
+      "area": "Europe"
+    },
+    {
+      "id": "belleville-brulerie",
+      "name": "Belleville Brûlerie",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "coutume",
+      "name": "Coutume",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "kawa",
+      "name": "KAWA Coffee",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "larbre-a-cafe",
+      "name": "L'Arbre à Café",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "lomi",
+      "name": "Lomi",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "terres-de-cafe",
+      "name": "Terres de Café",
+      "country": "France",
+      "city": "Paris",
+      "area": "Europe"
+    },
+    {
+      "id": "19grams",
+      "name": "19grams",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "bonanza",
+      "name": "Bonanza Coffee Roasters",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "coffee-circle",
+      "name": "Coffee Circle",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "five-elephant",
+      "name": "Five Elephant",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "fjord-coffee",
+      "name": "Fjord Coffee Roasters",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "the-barn",
+      "name": "The Barn",
+      "country": "Germany",
+      "city": "Berlin",
+      "area": "Europe"
+    },
+    {
+      "id": "hoppenworth-ploch",
+      "name": "Hoppenworth & Ploch",
+      "country": "Germany",
+      "city": "Frankfurt",
+      "area": "Europe"
+    },
+    {
+      "id": "jb-kaffee",
+      "name": "JB Kaffee",
+      "country": "Germany",
+      "city": "Gärtringen",
+      "area": "Europe"
+    },
+    {
+      "id": "elbgold",
+      "name": "Elbgold",
+      "country": "Germany",
+      "city": "Hamburg",
+      "area": "Europe"
+    },
+    {
+      "id": "quijote",
+      "name": "Quijote Kaffee",
+      "country": "Germany",
+      "city": "Hamburg",
+      "area": "Europe"
+    },
+    {
+      "id": "tchibo",
+      "name": "Tchibo",
+      "country": "Germany",
+      "city": "Hamburg",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "dallmayr",
+      "name": "Dallmayr",
+      "country": "Germany",
+      "city": "Munich",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "man-versus-machine",
+      "name": "Man versus Machine",
+      "country": "Germany",
+      "city": "Munich",
+      "area": "Europe"
+    },
+    {
+      "id": "machhoerndl",
+      "name": "Machhörndl Kaffee",
+      "country": "Germany",
+      "city": "Nuremberg",
+      "area": "Europe"
+    },
+    {
+      "id": "taf-coffee",
+      "name": "Taf Coffee",
+      "country": "Greece",
+      "city": "Athens",
+      "area": "Europe"
+    },
+    {
+      "id": "kafea-terra",
+      "name": "Kafea Terra",
+      "country": "Greece",
+      "city": "Peania",
+      "area": "Europe"
+    },
+    {
+      "id": "reykjavik-roasters",
+      "name": "Reykjavík Roasters",
+      "country": "Iceland",
+      "city": "Reykjavík",
+      "area": "Europe"
+    },
+    {
+      "id": "3fe",
+      "name": "3FE",
+      "country": "Ireland",
+      "city": "Dublin",
+      "area": "Europe",
+      "notable": "Colin Harmon's Dublin specialty pioneer"
+    },
+    {
+      "id": "cloud-picker",
+      "name": "Cloud Picker Coffee",
+      "country": "Ireland",
+      "city": "Dublin",
+      "area": "Europe"
+    },
+    {
+      "id": "roasted-brown",
+      "name": "Roasted Brown",
+      "country": "Ireland",
+      "city": "Dublin",
+      "area": "Europe"
+    },
+    {
+      "id": "badger-and-dodo",
+      "name": "Badger & Dodo",
+      "country": "Ireland",
+      "city": "Fermoy, County Cork",
+      "area": "Europe"
+    },
+    {
+      "id": "segafredo",
+      "name": "Segafredo Zanetti",
+      "country": "Italy",
+      "city": "Bologna",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "ditta-artigianale",
+      "name": "Ditta Artigianale",
+      "country": "Italy",
+      "city": "Florence",
+      "area": "Europe"
+    },
+    {
+      "id": "gardelli",
+      "name": "Gardelli Specialty Coffees",
+      "country": "Italy",
+      "city": "Forlì",
+      "area": "Europe",
+      "notable": "Award-winning light-roast specialist"
+    },
+    {
+      "id": "kimbo",
+      "name": "Kimbo",
+      "country": "Italy",
+      "city": "Naples",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "illy",
+      "name": "illy",
+      "country": "Italy",
+      "city": "Trieste",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "lavazza",
+      "name": "Lavazza",
+      "country": "Italy",
+      "city": "Turin",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "rocket-bean",
+      "name": "Rocket Bean Roastery",
+      "country": "Latvia",
+      "city": "Riga",
+      "area": "Europe"
+    },
+    {
+      "id": "crooked-nose",
+      "name": "Crooked Nose & Coffee Stories",
+      "country": "Lithuania",
+      "city": "Vilnius",
+      "area": "Europe"
+    },
+    {
+      "id": "huracan",
+      "name": "Huracán Coffee",
+      "country": "Lithuania",
+      "city": "Vilnius",
+      "area": "Europe"
+    },
+    {
+      "id": "taste-map",
+      "name": "Taste Map Coffee Roasters",
+      "country": "Lithuania",
+      "city": "Vilnius",
+      "area": "Europe"
+    },
+    {
+      "id": "bocca",
+      "name": "Bocca Coffee",
+      "country": "Netherlands",
+      "city": "Amsterdam",
+      "area": "Europe"
+    },
+    {
+      "id": "dak",
+      "name": "DAK Coffee Roasters",
+      "country": "Netherlands",
+      "city": "Amsterdam",
+      "area": "Europe",
+      "notable": "Bold, experimental fermented lots"
+    },
+    {
+      "id": "friedhats",
+      "name": "Friedhats",
+      "country": "Netherlands",
+      "city": "Amsterdam",
+      "area": "Europe",
+      "notable": "Amsterdam light-roast favourite"
+    },
+    {
+      "id": "lot-sixty-one",
+      "name": "Lot Sixty One",
+      "country": "Netherlands",
+      "city": "Amsterdam",
+      "area": "Europe"
+    },
+    {
+      "id": "white-label",
+      "name": "White Label Coffee",
+      "country": "Netherlands",
+      "city": "Amsterdam",
+      "area": "Europe"
+    },
+    {
+      "id": "manhattan",
+      "name": "Manhattan Coffee Roasters",
+      "country": "Netherlands",
+      "city": "Rotterdam",
+      "area": "Europe",
+      "notable": "Very clean, light filter and espresso roasts"
+    },
+    {
+      "id": "fuglen",
+      "name": "Fuglen",
+      "country": "Norway",
+      "city": "Oslo",
+      "area": "Europe",
+      "notable": "Oslo café-bar with its own roastery; sister roastery in Tokyo"
+    },
+    {
+      "id": "supreme-roastworks",
+      "name": "Supreme Roastworks",
+      "country": "Norway",
+      "city": "Oslo",
+      "area": "Europe"
+    },
+    {
+      "id": "tim-wendelboe",
+      "name": "Tim Wendelboe",
+      "country": "Norway",
+      "city": "Oslo",
+      "area": "Europe",
+      "notable": "2004 World Barista Champion's roastery; very clean light roasts"
+    },
+    {
+      "id": "jacu",
+      "name": "Jacu Coffee Roastery",
+      "country": "Norway",
+      "city": "Ålesund",
+      "area": "Europe"
+    },
+    {
+      "id": "audun",
+      "name": "Audun Coffee",
+      "country": "Poland",
+      "city": "Bydgoszcz",
+      "area": "Europe"
+    },
+    {
+      "id": "nieczapla",
+      "name": "Nieczapla Coffee Roasters",
+      "country": "Poland",
+      "city": "Gdańsk",
+      "area": "Europe"
+    },
+    {
+      "id": "hard-beans",
+      "name": "Hard Beans",
+      "country": "Poland",
+      "city": "Opole",
+      "area": "Europe"
+    },
+    {
+      "id": "lacava",
+      "name": "LaCava Roastery",
+      "country": "Poland",
+      "city": "Warsaw",
+      "area": "Europe"
+    },
+    {
+      "id": "hayb",
+      "name": "HAYB Speciality Coffee",
+      "country": "Poland",
+      "city": "Wrocław",
+      "area": "Europe"
+    },
+    {
+      "id": "fabrica-coffee",
+      "name": "Fábrica Coffee Roasters",
+      "country": "Portugal",
+      "city": "Lisbon",
+      "area": "Europe"
+    },
+    {
+      "id": "origo",
+      "name": "Origo",
+      "country": "Romania",
+      "city": "Bucharest",
+      "area": "Europe"
+    },
+    {
+      "id": "spojka",
+      "name": "Spojka Roastery",
+      "country": "Slovakia",
+      "city": "Prešov",
+      "area": "Europe"
+    },
+    {
+      "id": "el-magnifico",
+      "name": "Cafés El Magnífico",
+      "country": "Spain",
+      "city": "Barcelona",
+      "area": "Europe"
+    },
+    {
+      "id": "nomad-coffee",
+      "name": "Nomad Coffee",
+      "country": "Spain",
+      "city": "Barcelona",
+      "area": "Europe"
+    },
+    {
+      "id": "syra-coffee",
+      "name": "Syra Coffee",
+      "country": "Spain",
+      "city": "Barcelona",
+      "area": "Europe"
+    },
+    {
+      "id": "right-side",
+      "name": "Right Side Coffee",
+      "country": "Spain",
+      "city": "Castelldefels",
+      "area": "Europe"
+    },
+    {
+      "id": "hola-coffee",
+      "name": "Hola Coffee",
+      "country": "Spain",
+      "city": "Madrid",
+      "area": "Europe"
+    },
+    {
+      "id": "da-matteo",
+      "name": "Da Matteo",
+      "country": "Sweden",
+      "city": "Gothenburg",
+      "area": "Europe"
+    },
+    {
+      "id": "morgon",
+      "name": "Morgon Coffee Roasters",
+      "country": "Sweden",
+      "city": "Gothenburg",
+      "area": "Europe"
+    },
+    {
+      "id": "koppi",
+      "name": "Koppi",
+      "country": "Sweden",
+      "city": "Helsingborg",
+      "area": "Europe"
+    },
+    {
+      "id": "lofbergs",
+      "name": "Löfbergs",
+      "country": "Sweden",
+      "city": "Karlstad",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "drop-coffee",
+      "name": "Drop Coffee",
+      "country": "Sweden",
+      "city": "Stockholm",
+      "area": "Europe",
+      "notable": "Stockholm light-roast reference roastery"
+    },
+    {
+      "id": "gringo-nordic",
+      "name": "Gringo Nordic Coffee Roasters",
+      "country": "Sweden",
+      "city": "Stockholm",
+      "area": "Europe"
+    },
+    {
+      "id": "johan-nystrom",
+      "name": "Johan & Nyström",
+      "country": "Sweden",
+      "city": "Stockholm",
+      "area": "Europe"
+    },
+    {
+      "id": "kaffeemacher",
+      "name": "Kaffeemacher",
+      "country": "Switzerland",
+      "city": "Basel",
+      "area": "Europe"
+    },
+    {
+      "id": "nespresso",
+      "name": "Nespresso",
+      "country": "Switzerland",
+      "city": "Lausanne",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "mame",
+      "name": "Mame",
+      "country": "Switzerland",
+      "city": "Zurich",
+      "area": "Europe",
+      "notable": "Co-founded by Swiss champion barista Emi Fukahori"
+    },
+    {
+      "id": "kronotrop",
+      "name": "Kronotrop",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "area": "Europe"
+    },
+    {
+      "id": "petra-roasting",
+      "name": "Petra Roasting Co.",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "area": "Europe"
+    },
+    {
+      "id": "mad-heads",
+      "name": "Mad Heads Coffee",
+      "country": "Ukraine",
+      "city": "Kyiv",
+      "area": "Europe"
+    },
+    {
+      "id": "coaltown",
+      "name": "Coaltown Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Ammanford",
+      "area": "Europe"
+    },
+    {
+      "id": "colonna",
+      "name": "Colonna Coffee",
+      "country": "United Kingdom",
+      "city": "Bath",
+      "area": "Europe",
+      "notable": "Founded by Maxwell Colonna-Dashwood"
+    },
+    {
+      "id": "bailies",
+      "name": "Bailies Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Belfast",
+      "area": "Europe"
+    },
+    {
+      "id": "quarter-horse",
+      "name": "Quarter Horse Coffee",
+      "country": "United Kingdom",
+      "city": "Birmingham",
+      "area": "Europe"
+    },
+    {
+      "id": "clifton-coffee",
+      "name": "Clifton Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Bristol",
+      "area": "Europe"
+    },
+    {
+      "id": "extract-coffee",
+      "name": "Extract Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Bristol",
+      "area": "Europe"
+    },
+    {
+      "id": "hard-lines",
+      "name": "Hard Lines",
+      "country": "United Kingdom",
+      "city": "Cardiff",
+      "area": "Europe"
+    },
+    {
+      "id": "manumit",
+      "name": "Manumit Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Cardiff",
+      "area": "Europe"
+    },
+    {
+      "id": "rave-coffee",
+      "name": "Rave Coffee",
+      "country": "United Kingdom",
+      "city": "Cirencester",
+      "area": "Europe"
+    },
+    {
+      "id": "artisan-roast",
+      "name": "Artisan Roast",
+      "country": "United Kingdom",
+      "city": "Edinburgh",
+      "area": "Europe"
+    },
+    {
+      "id": "fortitude",
+      "name": "Fortitude Coffee",
+      "country": "United Kingdom",
+      "city": "Edinburgh",
+      "area": "Europe"
+    },
+    {
+      "id": "crankhouse",
+      "name": "Crankhouse Coffee",
+      "country": "United Kingdom",
+      "city": "Exeter",
+      "area": "Europe"
+    },
+    {
+      "id": "dear-green",
+      "name": "Dear Green Coffee",
+      "country": "United Kingdom",
+      "city": "Glasgow",
+      "area": "Europe"
+    },
+    {
+      "id": "taylors-of-harrogate",
+      "name": "Taylors of Harrogate",
+      "country": "United Kingdom",
+      "city": "Harrogate",
+      "area": "Europe",
+      "notable": "mainstream"
+    },
+    {
+      "id": "origin-coffee-uk",
+      "name": "Origin Coffee",
+      "country": "United Kingdom",
+      "city": "Helston, Cornwall",
+      "area": "Europe"
+    },
+    {
+      "id": "horsham-coffee",
+      "name": "Horsham Coffee Roaster",
+      "country": "United Kingdom",
+      "city": "Horsham",
+      "area": "Europe"
+    },
+    {
+      "id": "dark-woods",
+      "name": "Dark Woods Coffee",
+      "country": "United Kingdom",
+      "city": "Huddersfield",
+      "area": "Europe"
+    },
+    {
+      "id": "north-star",
+      "name": "North Star Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "Leeds",
+      "area": "Europe"
+    },
+    {
+      "id": "neighbourhood-coffee",
+      "name": "Neighbourhood Coffee",
+      "country": "United Kingdom",
+      "city": "Liverpool",
+      "area": "Europe"
+    },
+    {
+      "id": "assembly",
+      "name": "Assembly Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "caravan",
+      "name": "Caravan Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "climpson-and-sons",
+      "name": "Climpson & Sons",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "dark-arts",
+      "name": "Dark Arts Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "kiss-the-hippo",
+      "name": "Kiss the Hippo",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "monmouth",
+      "name": "Monmouth Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "pact-coffee",
+      "name": "Pact Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe",
+      "notable": "Subscription roaster"
+    },
+    {
+      "id": "plot-roasting",
+      "name": "Plot Roasting",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "square-mile",
+      "name": "Square Mile Coffee Roasters",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe",
+      "notable": "Co-founded by 2007 World Barista Champion James Hoffmann"
+    },
+    {
+      "id": "union-coffee",
+      "name": "Union Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "workshop-coffee",
+      "name": "Workshop Coffee",
+      "country": "United Kingdom",
+      "city": "London",
+      "area": "Europe"
+    },
+    {
+      "id": "ancoats-coffee",
+      "name": "Ancoats Coffee Co.",
+      "country": "United Kingdom",
+      "city": "Manchester",
+      "area": "Europe"
+    },
+    {
+      "id": "steampunk-coffee",
+      "name": "Steampunk Coffee",
+      "country": "United Kingdom",
+      "city": "North Berwick",
+      "area": "Europe"
+    },
+    {
+      "id": "rounton",
+      "name": "Rounton Coffee",
+      "country": "United Kingdom",
+      "city": "Northallerton",
+      "area": "Europe"
+    },
+    {
+      "id": "ozone-uk",
+      "name": "Ozone Coffee (UK)",
+      "country": "United Kingdom",
+      "city": "Stafford",
+      "area": "Europe",
+      "notable": "UK arm of New Plymouth's Ozone; absorbed Hasbean; London cafés"
+    },
+    {
+      "id": "cafelix",
+      "name": "Cafelix",
+      "country": "Israel",
+      "city": "Tel Aviv",
+      "area": "Middle East"
+    },
+    {
+      "id": "nahat",
+      "name": "Nahat Coffee Roastery",
+      "country": "Israel",
+      "city": "Tel Aviv",
+      "area": "Middle East"
+    },
+    {
+      "id": "kalei",
+      "name": "Kalei Coffee Co.",
+      "country": "Lebanon",
+      "city": "Beirut",
+      "area": "Middle East",
+      "notable": "Roasts in Beirut; cafés in Mar Mikhael and Ras Beirut"
+    },
+    {
+      "id": "brew92",
+      "name": "Brew92",
+      "country": "Saudi Arabia",
+      "city": "Jeddah",
+      "area": "Middle East"
+    },
+    {
+      "id": "sout-roastery",
+      "name": "Sout Roastery",
+      "country": "Saudi Arabia",
+      "city": "Jeddah",
+      "area": "Middle East"
+    },
+    {
+      "id": "bunista",
+      "name": "Bunista",
+      "country": "Saudi Arabia",
+      "city": "Khobar",
+      "area": "Middle East"
+    },
+    {
+      "id": "camel-step",
+      "name": "Camel Step Coffee Roasters",
+      "country": "Saudi Arabia",
+      "city": "Riyadh",
+      "area": "Middle East",
+      "notable": "Early homegrown Saudi specialty roaster"
+    },
+    {
+      "id": "elixir-bunn",
+      "name": "Elixir Bunn Coffee Roasters",
+      "country": "Saudi Arabia",
+      "city": "Riyadh",
+      "area": "Middle East"
+    },
+    {
+      "id": "boon-coffee",
+      "name": "Boon Coffee",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "emirati-coffee",
+      "name": "Emirati Coffee Co.",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "mokha-1450",
+      "name": "Mokha 1450",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "nightjar",
+      "name": "Nightjar Coffee Roasters",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "raw-coffee",
+      "name": "RAW Coffee Company",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East",
+      "notable": "Dubai specialty pioneer, founded 2007"
+    },
+    {
+      "id": "seven-fortunes",
+      "name": "Seven Fortunes Coffee Roasters",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "specialty-batch",
+      "name": "Specialty Batch",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "area": "Middle East"
+    },
+    {
+      "id": "galani",
+      "name": "Galani Coffee",
+      "country": "Ethiopia",
+      "city": "Addis Ababa",
+      "area": "Africa"
+    },
+    {
+      "id": "tomoca",
+      "name": "Tomoca Coffee",
+      "country": "Ethiopia",
+      "city": "Addis Ababa",
+      "area": "Africa",
+      "notable": "Addis Ababa institution since 1953"
+    },
+    {
+      "id": "dormans",
+      "name": "Dormans",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "area": "Africa",
+      "notable": "mainstream"
+    },
+    {
+      "id": "spring-valley",
+      "name": "Spring Valley Coffee",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "area": "Africa"
+    },
+    {
+      "id": "kaldi-coffee-lagos",
+      "name": "Kaldi Coffee",
+      "country": "Nigeria",
+      "city": "Lagos",
+      "area": "Africa"
+    },
+    {
+      "id": "question-coffee",
+      "name": "Question Coffee",
+      "country": "Rwanda",
+      "city": "Kigali",
+      "area": "Africa",
+      "notable": "Social enterprise working with women coffee farmers"
+    },
+    {
+      "id": "deluxe-coffeeworks",
+      "name": "Deluxe Coffeeworks",
+      "country": "South Africa",
+      "city": "Cape Town",
+      "area": "Africa"
+    },
+    {
+      "id": "espresso-lab",
+      "name": "Espresso Lab Microroasters",
+      "country": "South Africa",
+      "city": "Cape Town",
+      "area": "Africa"
+    },
+    {
+      "id": "origin-coffee-za",
+      "name": "Origin Coffee Roasting",
+      "country": "South Africa",
+      "city": "Cape Town",
+      "area": "Africa",
+      "notable": "Long-running roastery-café in De Waterkant"
+    },
+    {
+      "id": "rosetta-roastery",
+      "name": "Rosetta Roastery",
+      "country": "South Africa",
+      "city": "Cape Town",
+      "area": "Africa"
+    },
+    {
+      "id": "truth-coffee",
+      "name": "Truth Coffee Roasting",
+      "country": "South Africa",
+      "city": "Cape Town",
+      "area": "Africa",
+      "notable": "Steampunk-styled roastery-café"
+    },
+    {
+      "id": "bean-there",
+      "name": "Bean There Coffee Company",
+      "country": "South Africa",
+      "city": "Johannesburg",
+      "area": "Africa"
+    },
+    {
+      "id": "father-coffee",
+      "name": "Father Coffee",
+      "country": "South Africa",
+      "city": "Johannesburg",
+      "area": "Africa"
+    },
+    {
+      "id": "araku",
+      "name": "Araku Coffee",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia",
+      "notable": "Coffee from Araku Valley tribal farmers"
+    },
+    {
+      "id": "black-baza",
+      "name": "Black Baza Coffee",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia",
+      "notable": "Forest-grown, conservation-led smallholder coffee"
+    },
+    {
+      "id": "kohi-roasters",
+      "name": "Kohi Roasters",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia"
+    },
+    {
+      "id": "maverick-and-farmer",
+      "name": "Maverick & Farmer",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia",
+      "notable": "Roaster with its own Coorg estate"
+    },
+    {
+      "id": "naivo",
+      "name": "Naivo Coffee Company",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia"
+    },
+    {
+      "id": "third-wave-coffee",
+      "name": "Third Wave Coffee",
+      "country": "India",
+      "city": "Bengaluru",
+      "area": "South Asia",
+      "notable": "Large Indian specialty café chain"
+    },
+    {
+      "id": "kapi-kottai",
+      "name": "Kapi Kottai",
+      "country": "India",
+      "city": "Chennai",
+      "area": "South Asia"
+    },
+    {
+      "id": "fraction-9",
+      "name": "Fraction 9 Coffee Roasters",
+      "country": "India",
+      "city": "Chikmagalur",
+      "area": "South Asia",
+      "notable": "Roasts coffee from its own Chikmagalur estate"
+    },
+    {
+      "id": "halli-berri",
+      "name": "Halli Berri",
+      "country": "India",
+      "city": "Chikmagalur",
+      "area": "South Asia",
+      "notable": "Women-run family coffee estate brand"
+    },
+    {
+      "id": "roastery-coffee-house",
+      "name": "Roastery Coffee House",
+      "country": "India",
+      "city": "Hyderabad",
+      "area": "South Asia"
+    },
+    {
+      "id": "curious-life",
+      "name": "Curious Life Coffee Roasters",
+      "country": "India",
+      "city": "Jaipur",
+      "area": "South Asia"
+    },
+    {
+      "id": "dope-coffee",
+      "name": "Dope Coffee Roasters",
+      "country": "India",
+      "city": "Mumbai",
+      "area": "South Asia"
+    },
+    {
+      "id": "kc-roasters",
+      "name": "KC Roasters",
+      "country": "India",
+      "city": "Mumbai",
+      "area": "South Asia",
+      "notable": "Also known as Koinonia Coffee Roasters"
+    },
+    {
+      "id": "subko",
+      "name": "Subko",
+      "country": "India",
+      "city": "Mumbai",
+      "area": "South Asia",
+      "notable": "Specialty coffee roaster, bakehouse and cacao maker"
+    },
+    {
+      "id": "corridor-seven",
+      "name": "Corridor Seven Coffee Roasters",
+      "country": "India",
+      "city": "Nagpur",
+      "area": "South Asia",
+      "notable": "Founded by 2017 Indian AeroPress Champion Mithilesh Vazalwar"
+    },
+    {
+      "id": "blue-tokai",
+      "name": "Blue Tokai Coffee Roasters",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia",
+      "notable": "One of India's largest specialty roasters"
+    },
+    {
+      "id": "devans",
+      "name": "Devans South Indian Coffee & Tea",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia"
+    },
+    {
+      "id": "quick-brown-fox",
+      "name": "Quick Brown Fox Coffee Roasters",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia"
+    },
+    {
+      "id": "rossette",
+      "name": "Rossette Coffee Lab",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia"
+    },
+    {
+      "id": "savorworks",
+      "name": "Savorworks Roasters",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia",
+      "notable": "Coffee and chocolate atelier"
+    },
+    {
+      "id": "sleepy-owl",
+      "name": "Sleepy Owl Coffee",
+      "country": "India",
+      "city": "New Delhi",
+      "area": "South Asia",
+      "notable": "Cold brew and everyday coffee brand"
+    },
+    {
+      "id": "bloom-coffee-roasters",
+      "name": "Bloom Coffee Roasters",
+      "country": "India",
+      "city": "Panchkula",
+      "area": "South Asia"
+    },
+    {
+      "id": "grey-soul",
+      "name": "Grey Soul Coffee Roasters",
+      "country": "India",
+      "city": "Pune",
+      "area": "South Asia"
+    },
+    {
+      "id": "metal-hands",
+      "name": "Metal Hands",
+      "country": "China",
+      "city": "Beijing",
+      "area": "East Asia"
+    },
+    {
+      "id": "manner",
+      "name": "Manner Coffee",
+      "country": "China",
+      "city": "Shanghai",
+      "area": "East Asia",
+      "notable": "mainstream"
+    },
+    {
+      "id": "rumors",
+      "name": "Rumors Coffee Roasters",
+      "country": "China",
+      "city": "Shanghai",
+      "area": "East Asia"
+    },
+    {
+      "id": "seesaw",
+      "name": "Seesaw Coffee",
+      "country": "China",
+      "city": "Shanghai",
+      "area": "East Asia"
+    },
+    {
+      "id": "sumerian",
+      "name": "Sumerian Coffee",
+      "country": "China",
+      "city": "Shanghai",
+      "area": "East Asia"
+    },
+    {
+      "id": "knockbox",
+      "name": "Knockbox Coffee Company",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "area": "East Asia"
+    },
+    {
+      "id": "noc-coffee",
+      "name": "NOC Coffee Co.",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "area": "East Asia"
+    },
+    {
+      "id": "coffee-academics",
+      "name": "The Coffee Academics",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "area": "East Asia"
+    },
+    {
+      "id": "cupping-room",
+      "name": "The Cupping Room",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "area": "East Asia"
+    },
+    {
+      "id": "philocoffea",
+      "name": "Philocoffea",
+      "country": "Japan",
+      "city": "Funabashi",
+      "area": "East Asia",
+      "notable": "Tetsu Kasuya's roastery; 2016 World Brewers Cup champion"
+    },
+    {
+      "id": "maruyama",
+      "name": "Maruyama Coffee",
+      "country": "Japan",
+      "city": "Karuizawa",
+      "area": "East Asia"
+    },
+    {
+      "id": "ucc",
+      "name": "UCC Ueshima Coffee",
+      "country": "Japan",
+      "city": "Kobe",
+      "area": "East Asia",
+      "notable": "mainstream"
+    },
+    {
+      "id": "arabica-kyoto",
+      "name": "% Arabica",
+      "country": "Japan",
+      "city": "Kyoto",
+      "area": "East Asia"
+    },
+    {
+      "id": "kurasu",
+      "name": "Kurasu",
+      "country": "Japan",
+      "city": "Kyoto",
+      "area": "East Asia"
+    },
+    {
+      "id": "ogawa-coffee",
+      "name": "Ogawa Coffee",
+      "country": "Japan",
+      "city": "Kyoto",
+      "area": "East Asia"
+    },
+    {
+      "id": "weekenders",
+      "name": "Weekenders Coffee",
+      "country": "Japan",
+      "city": "Kyoto",
+      "area": "East Asia"
+    },
+    {
+      "id": "unir",
+      "name": "Unir",
+      "country": "Japan",
+      "city": "Nagaokakyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "lilo-coffee",
+      "name": "LiLo Coffee Roasters",
+      "country": "Japan",
+      "city": "Osaka",
+      "area": "East Asia"
+    },
+    {
+      "id": "fuglen-tokyo",
+      "name": "Fuglen Coffee Roasters Tokyo",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "glitch",
+      "name": "Glitch Coffee & Roasters",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia",
+      "notable": "Very light single-origin roasts"
+    },
+    {
+      "id": "horiguchi",
+      "name": "Horiguchi Coffee",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "leaves-coffee",
+      "name": "Leaves Coffee Roasters",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "light-up-coffee",
+      "name": "Light Up Coffee",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "nozy-coffee",
+      "name": "Nozy Coffee",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "onibus",
+      "name": "Onibus Coffee",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "sarutahiko",
+      "name": "Sarutahiko Coffee",
+      "country": "Japan",
+      "city": "Tokyo",
+      "area": "East Asia"
+    },
+    {
+      "id": "momos",
+      "name": "Momos Coffee",
+      "country": "South Korea",
+      "city": "Busan",
+      "area": "East Asia",
+      "notable": "Jooyeon Jeon, 2019 World Barista Champion"
+    },
+    {
+      "id": "terarosa",
+      "name": "Terarosa",
+      "country": "South Korea",
+      "city": "Gangneung",
+      "area": "East Asia"
+    },
+    {
+      "id": "anthracite",
+      "name": "Anthracite Coffee Roasters",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "bean-brothers",
+      "name": "Bean Brothers",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "center-coffee",
+      "name": "Center Coffee",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "coffee-libre",
+      "name": "Coffee Libre",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia",
+      "notable": "Early Korean specialty roaster, founded 2009"
+    },
+    {
+      "id": "felt-coffee",
+      "name": "Felt Coffee",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "fritz",
+      "name": "Fritz Coffee Company",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "mesh-coffee",
+      "name": "Mesh Coffee",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "namusairo",
+      "name": "Namusairo",
+      "country": "South Korea",
+      "city": "Seoul",
+      "area": "East Asia"
+    },
+    {
+      "id": "fika-fika",
+      "name": "Fika Fika Cafe",
+      "country": "Taiwan",
+      "city": "Taipei",
+      "area": "East Asia",
+      "notable": "James Chen, Nordic Roaster champion"
+    },
+    {
+      "id": "rufous",
+      "name": "Rufous Coffee",
+      "country": "Taiwan",
+      "city": "Taipei",
+      "area": "East Asia"
+    },
+    {
+      "id": "simple-kaffa",
+      "name": "Simple Kaffa",
+      "country": "Taiwan",
+      "city": "Taipei",
+      "area": "East Asia",
+      "notable": "Berg Wu, 2016 World Barista Champion"
+    },
+    {
+      "id": "vwi-chadwang",
+      "name": "VWI by CHADWANG",
+      "country": "Taiwan",
+      "city": "Taipei",
+      "area": "East Asia",
+      "notable": "Chad Wang, 2017 World Brewers Cup champion"
+    },
+    {
+      "id": "one-fifteenth",
+      "name": "1/15 One Fifteenth Coffee",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "anomali",
+      "name": "Anomali Coffee",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "tanamera",
+      "name": "Tanamera Coffee",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "area": "Southeast Asia",
+      "notable": "Roasts Indonesian coffee only"
+    },
+    {
+      "id": "expat-roasters",
+      "name": "Expat. Roasters",
+      "country": "Indonesia",
+      "city": "Seminyak, Bali",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "seniman",
+      "name": "Seniman Coffee Studio",
+      "country": "Indonesia",
+      "city": "Ubud, Bali",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "ghostbird",
+      "name": "Ghostbird Coffee Co.",
+      "country": "Malaysia",
+      "city": "Kuala Lumpur",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "bad-artist",
+      "name": "Bad Artist Coffee Co.",
+      "country": "Malaysia",
+      "city": "Petaling Jaya",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "yardstick",
+      "name": "Yardstick Coffee",
+      "country": "Philippines",
+      "city": "Makati, Metro Manila",
+      "area": "Southeast Asia",
+      "notable": "Pioneer of Manila's third-wave scene"
+    },
+    {
+      "id": "apartment-coffee",
+      "name": "Apartment Coffee",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "common-man",
+      "name": "Common Man Coffee Roasters",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "homeground",
+      "name": "Homeground Coffee Roasters",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "nylon",
+      "name": "Nylon Coffee Roasters",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "ppp-coffee",
+      "name": "PPP Coffee",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia",
+      "notable": "Formerly Papa Palheta"
+    },
+    {
+      "id": "tiong-hoe",
+      "name": "Tiong Hoe Specialty Coffee",
+      "country": "Singapore",
+      "city": "Singapore",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "brave-roasters",
+      "name": "Brave Roasters",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "ceresia",
+      "name": "Ceresia Coffee Roasters",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "pacamara",
+      "name": "Pacamara Coffee Roasters",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "roots-coffee",
+      "name": "Roots Coffee Roaster",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "area": "Southeast Asia",
+      "notable": "Foundational Thai third-wave roaster, 2014"
+    },
+    {
+      "id": "akha-ama",
+      "name": "Akha Ama Coffee",
+      "country": "Thailand",
+      "city": "Chiang Mai",
+      "area": "Southeast Asia",
+      "notable": "Coffee from the founder's Akha hill village"
+    },
+    {
+      "id": "ristr8to",
+      "name": "Ristr8to",
+      "country": "Thailand",
+      "city": "Chiang Mai",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "trung-nguyen",
+      "name": "Trung Nguyên Legend",
+      "country": "Vietnam",
+      "city": "Buôn Ma Thuột",
+      "area": "Southeast Asia",
+      "notable": "mainstream"
+    },
+    {
+      "id": "bosgaurus",
+      "name": "Bosgaurus Coffee Roasters",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "every-half",
+      "name": "Every Half Coffee Roasters",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "area": "Southeast Asia",
+      "notable": "Built around specialty Vietnamese robusta"
+    },
+    {
+      "id": "saigon-coffee-roastery",
+      "name": "Saigon Coffee Roastery",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "the-workshop-saigon",
+      "name": "The Workshop Coffee",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "area": "Southeast Asia"
+    },
+    {
+      "id": "monastery-coffee",
+      "name": "Monastery Coffee",
+      "country": "Australia",
+      "city": "Adelaide",
+      "area": "Oceania"
+    },
+    {
+      "id": "fonzie-abbott",
+      "name": "Fonzie Abbott",
+      "country": "Australia",
+      "city": "Brisbane",
+      "area": "Oceania"
+    },
+    {
+      "id": "ona-coffee",
+      "name": "ONA Coffee",
+      "country": "Australia",
+      "city": "Canberra",
+      "area": "Oceania",
+      "notable": "Saša Šestić, 2015 World Barista Champion"
+    },
+    {
+      "id": "axil",
+      "name": "Axil Coffee Roasters",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "code-black",
+      "name": "Code Black Coffee",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "dukes",
+      "name": "Dukes Coffee Roasters",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "genovese",
+      "name": "Genovese Coffee",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "industry-beans",
+      "name": "Industry Beans",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "market-lane",
+      "name": "Market Lane Coffee",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "padre",
+      "name": "Padre Coffee",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "proud-mary",
+      "name": "Proud Mary Coffee",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "seven-seeds",
+      "name": "Seven Seeds",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "small-batch",
+      "name": "Small Batch Roasting Co.",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "st-ali",
+      "name": "ST. ALi",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "veneziano",
+      "name": "Veneziano Coffee Roasters",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "zest",
+      "name": "Zest Specialty Coffee Roasters",
+      "country": "Australia",
+      "city": "Melbourne",
+      "area": "Oceania"
+    },
+    {
+      "id": "blacklist",
+      "name": "Blacklist Coffee Roasters",
+      "country": "Australia",
+      "city": "Perth",
+      "area": "Oceania"
+    },
+    {
+      "id": "five-senses",
+      "name": "Five Senses Coffee",
+      "country": "Australia",
+      "city": "Perth",
+      "area": "Oceania"
+    },
+    {
+      "id": "artificer",
+      "name": "Artificer Coffee",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "campos",
+      "name": "Campos Coffee",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "coffee-alchemy",
+      "name": "Coffee Alchemy",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "mecca-coffee",
+      "name": "Mecca Coffee",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "pablo-and-rustys",
+      "name": "Pablo & Rusty's",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "reuben-hills",
+      "name": "Reuben Hills",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "sample-coffee",
+      "name": "Sample Coffee",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "single-o",
+      "name": "Single O",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "tobys-estate",
+      "name": "Toby's Estate",
+      "country": "Australia",
+      "city": "Sydney",
+      "area": "Oceania"
+    },
+    {
+      "id": "allpress",
+      "name": "Allpress Espresso",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "area": "Oceania"
+    },
+    {
+      "id": "atomic-coffee",
+      "name": "Atomic Coffee Roasters",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "area": "Oceania"
+    },
+    {
+      "id": "eighthirty",
+      "name": "Eighthirty",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "area": "Oceania"
+    },
+    {
+      "id": "kokako",
+      "name": "Kōkako Organic Coffee",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "area": "Oceania"
+    },
+    {
+      "id": "hummingbird",
+      "name": "Hummingbird Coffee",
+      "country": "New Zealand",
+      "city": "Christchurch",
+      "area": "Oceania"
+    },
+    {
+      "id": "ozone-nz",
+      "name": "Ozone Coffee",
+      "country": "New Zealand",
+      "city": "New Plymouth",
+      "area": "Oceania"
+    },
+    {
+      "id": "coffee-supreme",
+      "name": "Coffee Supreme",
+      "country": "New Zealand",
+      "city": "Wellington",
+      "area": "Oceania"
+    },
+    {
+      "id": "flight-coffee",
+      "name": "Flight Coffee",
+      "country": "New Zealand",
+      "city": "Wellington",
+      "area": "Oceania"
+    },
+    {
+      "id": "havana-coffee",
+      "name": "Havana Coffee Works",
+      "country": "New Zealand",
+      "city": "Wellington",
+      "area": "Oceania"
+    },
+    {
+      "id": "laffare",
+      "name": "L'affare",
+      "country": "New Zealand",
+      "city": "Wellington",
+      "area": "Oceania"
+    },
+    {
+      "id": "peoples-coffee",
+      "name": "Peoples Coffee",
+      "country": "New Zealand",
+      "city": "Wellington",
+      "area": "Oceania"
+    }
+  ]
+}

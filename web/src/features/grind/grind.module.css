@@ -1,0 +1,82 @@
+/* Grind widgets (A§7.5): dial reading input, starting-point ranges, the one-line start hint. */
+
+.reading { display: flex; flex-direction: column; gap: 10px; }
+.parts { display: flex; flex-wrap: wrap; gap: 10px; }
+.part { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--stepper-well);
+  padding: 0 2px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+}
+.stepBtn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  color: var(--ink-high);
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform 120ms var(--ease-emphasized);
+  touch-action: manipulation;
+  user-select: none;
+}
+.stepBtn:active:not(:disabled) { transform: scale(0.92); }
+.stepBtn:disabled { opacity: 0.35; cursor: default; }
+.stepInput {
+  width: 3.2ch;
+  min-width: 36px;
+  text-align: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  color: var(--ink-high);
+}
+.stepInput:focus { outline: none; }
+.stepper:focus-within { box-shadow: 0 0 0 2px var(--ink-high); }
+.stepper[data-error="true"] { box-shadow: 0 0 0 2px var(--fault); }
+
+.stores { color: var(--ink-mid); }
+.error { color: var(--fault); }
+
+/* GrindRangeCard */
+.rangeCard { display: flex; flex-direction: column; gap: 10px; }
+.rangeHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rangeRows { display: flex; flex-direction: column; }
+.rangeRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border-radius: var(--r-well);
+}
+.rangeRow[data-chosen="true"] { background: var(--surface2); }
+.rangeMethod { color: var(--ink-mid); }
+.rangeRow[data-chosen="true"] .rangeMethod { color: var(--ink-high); font-weight: 500; }
+.rangeValue { text-align: right; }
+.sources { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.sources a { color: var(--ink-high); text-underline-offset: 3px; text-decoration-color: var(--outline-strong); }
+.note { color: var(--ink-low); }
+
+.oneLine { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; color: var(--ink-mid); }
+
+/* GrindStartHint */
+.hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+.hintText { color: var(--ink-mid); min-width: 0; }
