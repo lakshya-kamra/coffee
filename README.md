@@ -39,7 +39,7 @@ the same key, which is why you should always take the APK from this repository's
 
 ### Web
 
-Web app: see the repository's About link
+Web app: <https://coffee-psi-brown.vercel.app>
 
 The browser version needs no install. It can be added to a home screen and works offline
 once loaded. See [Web](#web).

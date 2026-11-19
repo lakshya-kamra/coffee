@@ -22,3 +22,5 @@ web/.vite/
 node_modules/
 .claude/
 docs/plan/build-reports-*.json
+
+.vercel

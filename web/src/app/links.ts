@@ -7,4 +7,4 @@ export const SOURCE_URL = `https://github.com/${GITHUB_REPO}`;
 /** "Get the Android app": the signed APK on the latest GitHub release. */
 export const ANDROID_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest`;
 /** Set after the first Vercel deploy (web-spec §20.5 step 3). Empty = not deployed yet. */
-export const WEB_APP_URL = "";
+export const WEB_APP_URL = "https://coffee-psi-brown.vercel.app";
