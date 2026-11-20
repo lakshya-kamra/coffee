@@ -1,5 +1,34 @@
-/* Review (port of ReviewScreen.kt). */
-.form { min-height: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+/* Review (port of ReviewScreen.kt; v4 §3.6). One column below 840 (the sections follow their
+   o1..o11 order), two columns inside the focus layer from 840: what happened left, how it tasted
+   right, with the action bar sticky at the foot of the right column. */
+.page { min-height: 100%; padding-top: env(safe-area-inset-top); }
+.grid {
+  width: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.left, .right { display: contents; }
+.o1 { order: 1; } .o2 { order: 2; } .o3 { order: 3; } .o4 { order: 4; } .o5 { order: 5; } .o6 { order: 6; }
+.o7 { order: 7; } .o8 { order: 8; } .o9 { order: 9; } .o10 { order: 10; } .o11 { order: 11; }
+
+@container pane (min-width: 840px) {
+  .grid {
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: var(--pane-gap, 24px);
+    align-items: start;
+  }
+  /* The left column stays in view while the right one scrolls. */
+  .left { display: flex; flex-direction: column; position: sticky; top: 0; padding-bottom: 24px; }
+  .right { display: flex; flex-direction: column; min-height: 100dvh; }
+  .saveOne { max-width: var(--primary-max); margin-left: auto; }
+}
+
 .grow { flex: 1; min-width: 0; }
 .gap8 { height: 8px; flex: none; }
 .gap12 { height: 12px; flex: none; }
@@ -9,20 +38,45 @@
 .missingArt { display: inline-flex; }
 
 .headTop { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
-.title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.title { overflow-wrap: anywhere; }
 .gridCard { margin-top: 12px; padding: 6px 18px; border-radius: var(--r-card); background: var(--surface1); }
 .editBox { display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px; }
-.fieldRow { display: flex; gap: 12px; align-items: flex-start; }
+.fieldRow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.fieldRow > .grow { flex: 1 1 140px; }
 .quietLeft { align-self: flex-start; margin-left: -12px; }
-.timeRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.timeRow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .warning { color: var(--attention); padding-left: 2px; }
+.termLabel { margin-top: 24px; margin-bottom: var(--eyebrow-gap); }
 
-.overallTop { display: flex; align-items: center; }
+.overallTop { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .nwu { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
 .unitXL { font-size: 1.68rem; color: var(--ink-mid); }
 .sliders { display: flex; flex-direction: column; gap: 12px; }
 .chipLabel { display: block; margin: 16px 0 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* "More detail" and "Advanced": a row that says what it hides. The chevron turns (transform). */
+.disclosure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+  color: var(--ink-high);
+  text-align: left;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+@media (hover: hover) and (pointer: fine) {
+  .disclosure:hover { background: var(--surface2); }
+}
+.disclosure + * { margin-top: 12px; }
+.disclosureText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.chevron { display: inline-flex; transform: rotate(-90deg); transition: transform 200ms var(--ease-emphasized); color: var(--ink-mid); }
+.chevron[data-open] { transform: rotate(90deg); }
 
 .bedGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .bedTile {
@@ -31,24 +85,15 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 76px;
+  min-height: 76px;
   padding: 8px 4px;
   border-radius: var(--r-well);
   border: 1.5px solid transparent;
-  transition: background-color 180ms var(--ease-emphasized), border-color 180ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
+  transition: background-color 180ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
 }
 .bedTile[data-selected="true"] { transform: scale(1.03); }
 .bedTile:active { transform: scale(0.96); }
-.bedLabel {
-  letter-spacing: 0.5px;
-  text-align: center;
-  color: var(--ink-mid);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
+.bedLabel { letter-spacing: 0.5px; text-align: center; color: var(--ink-mid); overflow-wrap: anywhere; }
 .bedTile[data-selected="true"] .bedLabel { color: var(--ink-high); }
 /* The reading appears in its own space instantly; only its content fades (rule 1). */
 .reading {
@@ -76,9 +121,17 @@
   padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
   background: linear-gradient(to bottom, transparent, var(--bg) 40px);
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
 }
 .sticky > * { pointer-events: auto; }
 /* ReviewScreen.kt's StickyCtaBar weights: Save 0.36, Save & analyse 0.64. */
 .stickyRow { display: flex; gap: 10px; }
 .stickySave { flex: 36 1 0; width: auto; min-width: 0; border-radius: var(--r-primary); }
 .stickyAnalyse { flex: 64 1 0; width: auto; min-width: 0; }
+
+@media (forced-colors: active) {
+  .disclosure, .bedTile { border: 1px solid ButtonBorder; }
+  .bedTile[data-selected="true"] { border: 2px solid Highlight; }
+  .gridCard { border: 1px solid CanvasText; }
+}

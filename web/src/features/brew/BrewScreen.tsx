@@ -1,80 +1,61 @@
 /**
- * Port of BrewScreen.kt + BrewViewModel.kt (web-spec §11 Brew, §12). Setup pane (dose, grind,
- * temperature, coffee, prep) over a calm mesh; Start hands over to the running pane: the mesh by
- * mood, the canvas ring with the clock, the live journey line, the step card and the transport.
+ * Port of BrewScreen.kt + BrewViewModel.kt (web-spec §11 Brew, §12; v4 §3.4, §3.5, §4.9, §4.10).
+ * Setup pane (dose, grind, temperature, coffee, prep) over a calm mesh; Start hands over to the
+ * running pane (portrait, stage or short, chosen live from the window) or, for espresso, to shot
+ * mode. /brew/:id/again/:uid opens the setup prefilled from that brew.
  *
  * React renders only on discrete engine changes (start, pause, step, bed exposed, seek, done).
  * The clock digits, countdown, water readout, overrun, ring and journey line are leaves fed by
  * the shared frame loop (rule 4). A reload mid-brew resumes from kv activeBrew (§12.5).
  */
 import { animate } from "motion";
-import { AnimatePresence, m, useMotionValue, type MotionValue } from "motion/react";
-import { memo, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { AnimatePresence, m, useMotionValue } from "motion/react";
+import { useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
 import { nav } from "@/app/router";
-import { CoffeeMug, Dripper } from "@/art";
+import { useShortcuts, type Binding } from "@/app/shortcuts";
+import { showToast } from "@/app/toast";
+import { useWindowClass } from "@/app/windowClass";
+import { CoffeeMug } from "@/art";
+import { Brewers } from "@/catalog/catalog";
+import { useCatalog } from "@/catalog/useCatalog";
 import { repo, type ActiveBrew } from "@/data/repo";
-import type { BeanRow, BrewRow, GrinderRow } from "@/data/schema";
-import { grinderDisplay } from "@/data/schema";
-import { settings as settingsStore, type Settings } from "@/data/settings";
+import type { BrewRow } from "@/data/schema";
+import { settings as settingsStore } from "@/data/settings";
 import { persistOnce } from "@/data/storage";
-import { getSnapshot, store, useRecipe, useSettings } from "@/data/store";
-import {
-  DetailTopBar,
-  EyebrowLabel,
-  FieldWell,
-  HairLine,
-  Icon,
-  IconWell,
-  PillButton,
-  PrimaryButton,
-  QuietButton,
-  RadioRow,
-  SecondaryButton,
-  SelectableChip,
-  SoftCard,
-  StatusLine,
-  TickingNumber,
-  toCaps,
-} from "@/design/components";
-import { decel, effectsDefault, settle, spatialDefault } from "@/design/motion";
-import { brewerArt, brewerShortName } from "@/domain/core/brewer";
-import { clock, epochDayOf, grams, ratio, timeLabel } from "@/domain/core/format";
-import { scaledToDose, stepBoundaries, totalSec, waterAt, waterAtF, type Recipe, type RecipeStep } from "@/domain/core/recipe";
-import { roastStatus, roastWord, scoreStatus } from "@/domain/core/status";
-import { temp, tempUnit, unitsOf } from "@/domain/core/units";
-import { describe, format as formatGrind } from "@/domain/grind";
-import { DialReadingInput, GrindStartHint, useGrindScale } from "@/features/grind";
-import { BrewRing, ConfirmSheet, JourneyLine, MeshGradient, journeyNodes, stepMood, useFrame, writeText, type BrewEngineView, type BrewMood, type JourneyNode } from "@/viz";
+import { getSnapshot, store, useBrew, useRecipe, useSettings } from "@/data/store";
+import { ConfirmSheet, DetailTopBar, QuietButton, SecondaryButton } from "@/design/components";
+import { decel, settle } from "@/design/motion";
+import { timeLabel } from "@/domain/core/format";
+import type { Recipe } from "@/domain/core/recipe";
+import { unitsOf } from "@/domain/core/units";
+import { MeshGradient, stepMood, useFrame, type BrewMood } from "@/viz";
+import { AGAIN_TITLE, againSetup, oneOffRecipe } from "./again";
+import { Announcer, doneAnnouncement, stepAnnouncement, stepLead, TEN_LEFT, tenLeftDue, TIME_FOR_NEXT } from "./announce";
 import { CuePlayer, cueOffsetsSec, vibrateStep } from "./cues";
 import { BrewEngine, type EngineState } from "./engine";
-import { buildBrewRow, grindPreference, initialSetup, minClicks, prefillGrind, usesClicks, type Setup } from "./setup";
-import { ScreenLock, wakeLockSupported } from "./wakeLock";
+import { runLayoutFor, setupLayoutFor } from "./layout";
+import { RunningPane, type StepCueEvent } from "./RunningPane";
+import { SetupPane, type SetupData } from "./SetupPane";
+import { buildBrewRow, initialSetup, setupRecipe, withSetupDefaults, type Setup } from "./setup";
+import { initialShot, shotReducer, shotYield } from "./shot";
+import { ShotPane } from "./ShotPane";
+import { ScreenLock } from "./wakeLock";
 import b from "./brew.module.css";
 
-/** Brewers that actually look like a cone with a bed in it. */
-// Drip and Siphon drew as V60 and Chemex before v4, so they keep the dripper.
-const POUR_OVER = new Set(["V60", "Chemex", "Kalita", "Switch", "Drip", "Siphon"]);
 /** How much of the setup mesh settles into the canvas behind the sticky Start bar. */
 const SETUP_FLOOR = 112;
-
-// Material Symbols Rounded "Remove" (Apache-2.0, web/NOTICE): the design icon set has no minus.
-const MINUS = "M240-440q-17 0-28.5-11.5T200-480q0-17 11.5-28.5T240-520h480q17 0 28.5 11.5T760-480q0 17-11.5 28.5T720-440H240Z";
-
-function Stepper({ dir, label, onClick }: { dir: -1 | 1; label: string; onClick: () => void }) {
-  if (dir === 1) return <IconWell icon="Add" label={label} onClick={onClick} size={44} onCanvas={false} />;
-  return (
-    <button type="button" className={b.minus} aria-label={label} title={label} onClick={onClick}>
-      <svg width={20} height={20} viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
-        <path d={MINUS} fill="currentColor" />
-      </svg>
-    </button>
-  );
-}
+/** The same for the portrait timer's sticky transport, so its backdrop never shows as a band. */
+const DOCK_FLOOR = 150;
 
 // ---------------------------------------------------------------------- screen
 
-export function BrewScreen({ recipeId }: { recipeId: string }) {
-  const base = useRecipe(recipeId);
+export function BrewScreen({ recipeId, againUid }: { recipeId: string; againUid?: string }) {
+  const stored = useRecipe(recipeId);
+  const again = useBrew(againUid ?? "");
+  useCatalog(["brewers"]);
+  // A deleted recipe can still be brewed again: a one-off from the brew's own numbers (§4.10).
+  const oneOff = useMemo(() => (stored || !again ? null : oneOffRecipe(again, Brewers.resolve(again.brewerId ?? again.brewer))), [stored, again]);
+  const base = stored ?? oneOff;
   // Read once: a running brew is not re-seeded by its own kv writes.
   const [active, setActive] = useState<ActiveBrew | null>(() => getSnapshot().activeBrew);
   if (!base) {
@@ -97,12 +78,13 @@ export function BrewScreen({ recipeId }: { recipeId: string }) {
     const startedAt = active.startedAtWall - active.accumulatedMs;
     return (
       <>
-        <BrewSession recipe={base} resume={null} />
+        <BrewSession recipe={base} resume={null} again={again} oneOff={oneOff != null} />
         <ConfirmSheet
           title={`Finish the brew you started at ${timeLabel(startedAt)} first?`}
           body="It's still running. Discarding it keeps nothing from it."
           confirmText="Resume"
           cancelText="Discard"
+          safe="confirm"
           onClose={() => undefined}
           onDismiss={nav.back}
           onConfirm={() => nav.replace(`/brew/${encodeURIComponent(active.recipeId)}`)}
@@ -114,7 +96,7 @@ export function BrewScreen({ recipeId }: { recipeId: string }) {
       </>
     );
   }
-  return <BrewSession recipe={base} resume={active} />;
+  return <BrewSession recipe={base} resume={active} again={again} oneOff={oneOff != null} />;
 }
 
 /**
@@ -154,6 +136,16 @@ function MissingPane({ onDiscard }: { onDiscard: (() => void) | null }) {
   );
 }
 
+/** The polite live region the Announcer writes to (A4). */
+function LiveRegion({ announcer }: { announcer: Announcer }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    announcer.attach(ref.current);
+    return () => announcer.attach(null);
+  }, [announcer]);
+  return <p ref={ref} className="visually-hidden" aria-live="polite" />;
+}
+
 function useEngineState(engine: BrewEngine): EngineState {
   return useSyncExternalStore(
     (fn) => engine.subscribe(fn),
@@ -162,11 +154,14 @@ function useEngineState(engine: BrewEngine): EngineState {
   );
 }
 
-function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveBrew | null }) {
+function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; resume: ActiveBrew | null; again: BrewRow | null; oneOff: boolean }) {
   const settings = useSettings();
   const units = unitsOf(settings);
+  const wc = useWindowClass();
+  const runLayout = runLayoutFor(wc);
+  const setupLayout = setupLayoutFor(wc);
   // Lists read once at open, like BrewViewModel's init: the setup never reshuffles under a thumb.
-  const [data] = useState(() => {
+  const [data] = useState<SetupData>(() => {
     const snap = getSnapshot();
     return {
       beans: snap.beans.filter((x) => !x.isArchived),
@@ -175,22 +170,29 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
     };
   });
   const [setup, setSetup] = useState<Setup>(() => {
-    if (resume) return { ...resume.setup };
+    if (resume) return withSetupDefaults(resume.setup);
+    if (again) return againSetup(base, again, data.beans, data.grinders, settings, data.brews);
     return initialSetup(base, data.beans, data.grinders, settings, data.brews);
   });
-  const recipe = useMemo(() => scaledToDose(base, setup.doseG), [base, setup.doseG]);
+  const recipe = useMemo(() => setupRecipe(base, setup), [base, setup]);
   const [engine] = useState(() => {
-    const e = new BrewEngine(scaledToDose(base, setup.doseG), { autoAdvance: settings.autoAdvanceSteps });
+    const e = new BrewEngine(setupRecipe(base, setup), { autoAdvance: settings.autoAdvanceSteps });
     if (resume) e.restore(resume);
     return e;
   });
   const st = useEngineState(engine);
+  const espresso = base.brewer.method === "espresso";
+  const [shotOpen, setShotOpen] = useState(false);
+  const [shot, dispatchShot] = useReducer(shotReducer, recipe.waterG, initialShot);
   const [finishing, setFinishing] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const [announce, setAnnounce] = useState("");
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  const [cue, setCue] = useState<StepCueEvent | null>(null);
   const seek = useMotionValue(0);
   const cues = useRef<CuePlayer | null>(null);
   const lock = useRef<ScreenLock | null>(null);
+  const [announcer] = useState(() => new Announcer());
+  const firstBrew = data.brews.length === 0;
 
   useEffect(() => {
     engine.setRecipe(recipe);
@@ -201,7 +203,16 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
 
   // ------------------------------------------------------------ the clock's side effects
   // Step detection every frame while visible; a timer at the next boundary while hidden.
-  useFrame(() => engine.tick(), st.started && st.running);
+  // The same frame also says "10 seconds left" once in each step longer than 30 s (A4).
+  const tenSaid = useRef(new Set<number>());
+  useFrame(() => {
+    engine.tick();
+    const i = engine.state.clockStepIndex;
+    if (!tenSaid.current.has(i) && tenLeftDue(engine.getRecipe().steps[i], engine.elapsedMs() / 1000)) {
+      tenSaid.current.add(i);
+      announcer.say(TEN_LEFT);
+    }
+  }, st.started && st.running);
   useEffect(() => {
     if (!st.started || !st.running) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -210,10 +221,11 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
       timer = null;
       if (!document.hidden) return;
       const ms = engine.msToNextBoundary();
-      if (ms != null) timer = setTimeout(() => {
-        engine.tick();
-        arm();
-      }, ms + 20);
+      if (ms != null)
+        timer = setTimeout(() => {
+          engine.tick();
+          arm();
+        }, ms + 20);
     };
     const onVis = () => {
       if (!document.hidden) engine.reanchorToWall();
@@ -231,17 +243,38 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
     };
   }, [engine, st.started, st.running]);
 
-  // Cues on a step change: one buzz, one announcement.
+  // Cues on a step change: one buzz, one announcement, the flash and the banner (§3.5, A4).
   const hapticsOn = settings.haptics;
   useEffect(
     () =>
       engine.onStep((i) => {
         if (hapticsOn) vibrateStep();
-        const s = engine.getRecipe().steps[i];
-        if (s) setAnnounce(stepLead(s));
+        const steps = engine.getRecipe().steps;
+        announcer.say(stepAnnouncement(steps, i));
+        const s = steps[i];
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s)}` }));
       }),
-    [engine, hapticsOn],
+    [engine, hapticsOn, announcer],
   );
+  // The other two moments A4 names: auto-advance off reaching a boundary, and the end.
+  useEffect(() => {
+    let prev = engine.state;
+    return engine.subscribe((next) => {
+      const was = prev;
+      prev = next;
+      if (!next.started) return;
+      const waiting = next.clockStepIndex > next.stepIndex;
+      const wasWaiting = was.started && was.clockStepIndex > was.stepIndex;
+      if (waiting && !wasWaiting && next.running) {
+        if (hapticsOn) vibrateStep();
+        announcer.say(TIME_FOR_NEXT);
+        const s = engine.getRecipe().steps[next.stepIndex + 1];
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s)}` }));
+      }
+      if (next.done && !was.done) announcer.say(doneAnnouncement(engine.elapsedMs() / 1000));
+    });
+  }, [engine, hapticsOn, announcer]);
+  useEffect(() => () => announcer.dispose(), [announcer]);
 
   // Sound: scheduled on the audio clock, rescheduled on pause, resume and seek.
   const soundOn = settings.soundCues;
@@ -255,17 +288,19 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
     else cues.current.cancel();
   }, [engine, soundOn, st.started, st.running, st.seekSerial]);
 
-  // Wake lock follows running, with a minute's grace on pause.
+  // Wake lock follows running (or a shot on screen), with a minute's grace on pause.
   const keepOn = settings.keepScreenOn;
+  const awake = st.started || shotOpen;
+  const holding = st.running || shot.phase === "pulling";
   useEffect(() => {
-    if (!keepOn || !st.started) {
+    if (!keepOn || !awake) {
       lock.current?.release();
       return;
     }
     lock.current ??= new ScreenLock();
-    if (st.running) lock.current.hold();
+    if (holding) lock.current.hold();
     else lock.current.paused();
-  }, [keepOn, st.started, st.running]);
+  }, [keepOn, awake, holding]);
   useEffect(
     () => () => {
       cues.current?.close();
@@ -291,22 +326,30 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
   };
 
   const start = () => {
+    void settingsStore.set("lastRecipeId", base.id);
+    if (espresso) {
+      setShotOpen(true);
+      return;
+    }
     if (soundOn) (cues.current ??= new CuePlayer()).unlock();
     engine.start();
-    void settingsStore.set("lastRecipeId", base.id);
+    announcer.say(stepAnnouncement(engine.getRecipe().steps, engine.state.stepIndex));
   };
   const toggle = () => {
     if (!st.running && soundOn) (cues.current ??= new CuePlayer()).unlock();
     engine.toggle();
   };
+  const waitingForTap = st.started && !settings.autoAdvanceSteps && st.clockStepIndex > st.stepIndex;
+  const skip = () => (waitingForTap ? engine.advanceStep() : seekBy(() => engine.skipToNextStep()));
+  const drawdownNow = recipe.steps[st.stepIndex]?.kind === "Drawdown" && st.bedExposedSec == null;
 
-  const finish = async () => {
+  const finish = async (shotResult?: { sec: number; yieldG: number | null }) => {
     if (finishing) return;
     setFinishing(true);
-    const result = engine.finish();
+    const result = shotResult ? { totalTimeSec: shotResult.sec, drawdownSec: null } : engine.finish();
     const bean = data.beans.find((x) => x.id === setup.beanId) ?? null;
     const grinder = data.grinders.find((x) => x.id === setup.grinderId) ?? null;
-    const row = buildBrewRow({ recipe, setup, bean, grinder, settings, result });
+    const row = buildBrewRow({ recipe, setup, bean, grinder, settings, result, beverageG: shotResult?.yieldG ?? null });
     await repo.insertBrew(row);
     await repo.setActiveBrew(null);
     await storeHasBrew(row.uid);
@@ -314,6 +357,11 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
     lock.current?.release();
     cues.current?.close();
     nav.replace(`/review/${encodeURIComponent(row.uid)}`);
+  };
+  const askFinish = () => {
+    if (finishing) return;
+    if (st.done) void finish();
+    else setConfirmFinish(true);
   };
 
   /**
@@ -329,568 +377,120 @@ function BrewSession({ recipe: base, resume }: { recipe: Recipe; resume: ActiveB
     nav.back();
   };
 
-  const mood: BrewMood = !st.started ? "idle" : st.done ? "done" : stepMood(recipe.steps[st.stepIndex]?.kind ?? "Prep");
+  const toggleChime = () => {
+    const on = !soundOn;
+    void settingsStore.update({ soundCues: on, soundCuesAsked: true });
+    if (on) (cues.current ??= new CuePlayer()).unlock();
+    showToast({ text: on ? "Chime on for each step" : "Chime off", durationMs: 2500 });
+  };
+
+  // ------------------------------------------------------------ keyboard (§2.7)
+  const running = st.started && !shotOpen;
+  const runKeys: Binding[] = [
+    { keys: "space", label: "Play or pause", group: "Brewing", run: toggle },
+    { keys: "left", label: "Back 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(-5)) },
+    { keys: "right", label: "Forward 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(5)) },
+    { keys: "n", label: "Next step", group: "Brewing", run: skip },
+    { keys: "down", label: "Next step", group: "Brewing", run: skip, hidden: true },
+    { keys: "x", label: "Bed exposed (during the drawdown)", group: "Brewing", run: () => drawdownNow && engine.markBedExposed() },
+    { keys: "f", label: "Finish", group: "Brewing", run: askFinish },
+    { keys: "m", label: soundOn ? "Chime off" : "Chime on", group: "Brewing", run: toggleChime },
+    { keys: "escape", label: "Leave this brew", group: "Brewing", run: () => !finishing && setLeaving(true) },
+  ];
+  useShortcuts("brew", runKeys, running && !finishing);
+
+  const shotToggle = () => dispatchShot({ type: "toggle", now: performance.now() });
+  const shotClose = () => (shot.phase === "ready" ? setShotOpen(false) : setLeaving(true));
+  const shotKeys: Binding[] = [
+    { keys: "space", label: shot.phase === "pulling" ? "Stop shot" : "Start shot", group: "Brewing", run: shotToggle },
+    { keys: "escape", label: shot.phase === "ready" ? "Back to set up" : "Leave this shot", group: "Brewing", run: shotClose },
+  ];
+  useShortcuts("brew-shot", shotKeys, shotOpen && !finishing);
+
+  const mood: BrewMood = shotOpen ? (shot.phase === "pulling" ? "pouring" : shot.phase === "stopped" ? "done" : "idle") : !st.started ? "idle" : st.done ? "done" : stepMood(recipe.steps[st.stepIndex]?.kind ?? "Prep");
+  const pane = shotOpen ? "shot" : st.started ? "run" : "setup";
 
   return (
     <div className={b.screen}>
-      <MeshGradient mood={mood} intensity={st.started ? 0.6 : 0.3} floor={st.started ? 0 : SETUP_FLOOR} />
+      <MeshGradient mood={mood} intensity={pane === "setup" ? 0.3 : 0.6} floor={pane === "setup" && setupLayout === "single" ? SETUP_FLOOR : pane === "run" && runLayout === "portrait" ? DOCK_FLOOR : 0} />
       <AnimatePresence initial={false}>
-        {st.started ? (
-          <m.div key="run" className={b.pane} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={decel(320)}>
+        <m.div key={pane} className={b.pane} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={decel(320)}>
+          {pane === "run" ? (
             <RunningPane
               recipe={recipe}
               engine={engine}
               st={st}
               seek={seek}
+              layout={runLayout}
               finishing={finishing}
-              autoAdvance={settings.autoAdvanceSteps}
+              waitingForTap={waitingForTap}
+              hasScale={settings.hasScale}
+              fahrenheit={units.fahrenheit}
+              firstBrew={firstBrew}
+              experienceNew={settings.experience === "new"}
+              cue={cue}
               onClose={() => !finishing && setLeaving(true)}
               onFinish={() => void finish()}
               onToggle={toggle}
               onSeek={(d) => seekBy(() => engine.addSeconds(d))}
-              onSkip={() => seekBy(() => engine.skipToNextStep())}
+              onSkip={skip}
+              onAdvance={() => engine.advanceStep()}
+              onBed={() => engine.markBedExposed()}
             />
-          </m.div>
-        ) : (
-          <m.div key="setup" className={b.pane} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={decel(320)}>
-            <SetupPane recipe={recipe} base={base} setup={setup} setSetup={setSetup} data={data} settings={settings} unitsF={units.fahrenheit} onStart={start} />
-          </m.div>
-        )}
-      </AnimatePresence>
-      <p className="visually-hidden" aria-live="polite">
-        {announce}
-      </p>
-      {leaving && (
-        <ConfirmSheet
-          title="Leave this brew?"
-          body="Its timer keeps going, and Today shows the way back. Discarding keeps nothing from it."
-          confirmText="Keep it going"
-          cancelText="Discard"
-          onClose={() => setLeaving(false)}
-          onConfirm={nav.back}
-          onCancel={discard}
-        />
-      )}
-    </div>
-  );
-}
-
-function stepLead(s: RecipeStep): string {
-  if (s.kind === "Bloom" && s.targetWaterG != null) return `Bloom to ${s.targetWaterG} g`;
-  if (s.kind === "Pour" && s.targetWaterG != null) return `Pour to ${s.targetWaterG} g`;
-  if (s.kind === "Drawdown") return "Drawdown";
-  return s.title;
-}
-
-// ------------------------------------------------------------------------ setup
-
-interface SetupData {
-  beans: readonly BeanRow[];
-  grinders: readonly GrinderRow[];
-  brews: readonly BrewRow[];
-}
-
-function SetupPane({
-  recipe,
-  base,
-  setup,
-  setSetup,
-  data,
-  settings,
-  unitsF,
-  onStart,
-}: {
-  recipe: Recipe;
-  base: Recipe;
-  setup: Setup;
-  setSetup: (fn: (s: Setup) => Setup) => void;
-  data: SetupData;
-  settings: Settings;
-  unitsF: boolean;
-  onStart: () => void;
-}) {
-  const art = brewerArt(recipe.brewer);
-  const ready = setup.doseG > 0;
-  return (
-    <div className={b.setupScroll}>
-      <div className={`column ${b.setupColumn}`}>
-        <div className={b.setupTop}>
-          <IconWell icon="Close" label="Back" onClick={nav.back} />
-          <EyebrowLabel text="SET UP" />
-          <span className={`micro ${b.brewerPill}`}>{toCaps(recipe.brewer.label)}</span>
-        </div>
-        <div className={b.hero} aria-hidden="true">
-          {POUR_OVER.has(art) ? <Dripper waterLevel={0.55} size={104} /> : <CoffeeMug fill={0.65} size={104} />}
-        </div>
-        <h1 className={`t-headline-m ${b.center}`}>{recipe.name}</h1>
-        <p className={`t-body-s ink-mid ${b.center}`}>{recipe.author}</p>
-
-        <div className={b.cards}>
-          <DoseCard setup={setup} recipe={recipe} onDose={(d) => setSetup((s) => ({ ...s, doseG: Math.max(1, d) }))} />
-          <GrindCard recipe={recipe} base={base} setup={setup} setSetup={setSetup} data={data} />
-          <TempCard tempC={setup.tempC} fahrenheit={unitsF} onTemp={(c) => setSetup((s) => ({ ...s, tempC: Math.min(100, Math.max(60, c)) }))} />
-          <CoffeeCard
-            beans={data.beans}
-            selected={setup.beanId}
-            onSelect={(id) => {
-              setSetup((s) => ({ ...s, beanId: id }));
-              void settingsStore.set("defaultBeanId", id);
-            }}
-          />
-          {recipe.prep.length > 0 && (
-            <SoftCard>
-              <EyebrowLabel text="BEFORE YOU START" />
-              <ol className={b.prep}>
-                {recipe.prep.map((line, i) => (
-                  <li key={i}>
-                    <span className="num-inline ink-low">{i + 1}</span>
-                    <span className={b.prepText}>{line}</span>
-                  </li>
-                ))}
-              </ol>
-            </SoftCard>
-          )}
-          {settings.keepScreenOn && !wakeLockSupported() && <p className="t-body-s ink-low">Your browser may dim the screen during a brew.</p>}
-        </div>
-        <div className={b.sticky}>
-          {/* Ink, not crema: nothing is live yet. Crema arrives with the running dial. */}
-          <PrimaryButton text="Start brew" icon="Play" onClick={onStart} enabled={ready} className={b.inverse} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DoseCard({ setup, recipe, onDose }: { setup: Setup; recipe: Recipe; onDose: (d: number) => void }) {
-  return (
-    <SoftCard>
-      <EyebrowLabel text="DOSE" />
-      <div className={b.stepRow}>
-        <Stepper dir={-1} label="Less" onClick={() => onDose(Math.max(1, setup.doseG - 0.5))} />
-        <div className={b.stepMid}>
-          {/* Large, not Display: the grind below is the one hero on this screen. */}
-          <span className={b.nwu}>
-            <TickingNumber value={grams(setup.doseG)} numeral="num-large" label={`${grams(setup.doseG)} grams`} />
-            <span className={`num-unit ${b.unitL}`}>g</span>
-          </span>
-          <span className={`t-body-m ink-mid ${b.center}`}>
-            → {grams(recipe.waterG)} g water · {ratio(setup.doseG, recipe.waterG)}
-          </span>
-        </div>
-        <Stepper dir={1} label="More" onClick={() => onDose(setup.doseG + 0.5)} />
-      </div>
-    </SoftCard>
-  );
-}
-
-function GrindCard({ recipe, base, setup, setSetup, data }: { recipe: Recipe; base: Recipe; setup: Setup; setSetup: (fn: (s: Setup) => Setup) => void; data: SetupData }) {
-  const grinder = data.grinders.find((g) => g.id === setup.grinderId) ?? null;
-  const scale = useGrindScale(grinder);
-  const method = recipe.brewer.method;
-  const [typing, setTyping] = useState(false);
-  const recipeLogs = useMemo(() => data.brews.filter((l) => l.recipeId === base.id), [data.brews, base.id]);
-  const last = recipeLogs.find((l) => l.grinderId === setup.grinderId) ?? recipeLogs[0] ?? null;
-
-  const setGrinder = (id: number) => {
-    setTyping(false);
-    setSetup((s) => prefillGrind({ ...s, grinderId: id, grindClicks: null, grindSetting: "" }, base, data.grinders, data.brews));
-    void settingsStore.set("defaultGrinderId", id);
-  };
-  const adjust = (delta: number) =>
-    setSetup((s) => {
-      const g = data.grinders.find((x) => x.id === s.grinderId);
-      const pref = g ? grindPreference(base, g) : null;
-      const current = s.grindClicks ?? (pref != null ? Math.round(pref) : 0);
-      return { ...s, grindClicks: Math.max(minClicks(g), current + delta) };
-    });
-  const setClicks = (v: number | null) =>
-    setSetup((s) => {
-      const floor = minClicks(data.grinders.find((x) => x.id === s.grinderId));
-      return { ...s, grindClicks: v == null ? null : Math.min(Math.max(floor, Math.round(v)), Math.max(floor, 999)) };
-    });
-
-  return (
-    <SoftCard>
-      <div className={b.cardHead}>
-        <EyebrowLabel text="GRIND" />
-        {data.grinders.length === 1 && grinder && <span className={`micro ink-low ${b.ellipsis}`}>{toCaps(grinderDisplay(grinder))}</span>}
-      </div>
-      {data.grinders.length > 1 && (
-        <div className={b.chipRow} role="group" aria-label="Grinder">
-          {data.grinders.map((g) => (
-            <SelectableChip key={g.id} text={grinderDisplay(g)} selected={g.id === setup.grinderId} onClick={() => setGrinder(g.id!)} />
-          ))}
-        </div>
-      )}
-      <div className={b.gap12} />
-      {grinder && usesClicks(grinder) && scale ? (
-        typing ? (
-          <DialReadingInput scale={scale} value={setup.grindClicks} onValue={setClicks} />
-        ) : (
-          <ClickDial clicks={setup.grindClicks} grinder={grinder} caption={setup.grindClicks == null ? "Set your grind" : describe(scale, setup.grindClicks)} onAdjust={adjust} />
-        )
-      ) : (
-        <>
-          {data.grinders.length === 0 && <p className="t-body-s ink-mid">No grinders yet. Type a setting, or add one under Gear.</p>}
-          <FieldWell label="SETTING" value={setup.grindSetting} onChange={(v) => setSetup((s) => ({ ...s, grindSetting: v }))} placeholder={recipe.grind} />
-        </>
-      )}
-      {grinder && usesClicks(grinder) && scale && (
-        <QuietButton text={typing ? "Use the stepper" : "Type it as the dial reads"} onClick={() => setTyping((t) => !t)} className={b.quietLeft} />
-      )}
-      {scale && (
-        <GrindStartHint
-          scale={scale}
-          method={method}
-          onUse={(v) => (usesClicks(grinder) ? setClicks(v) : setSetup((s) => ({ ...s, grindSetting: formatGrind(scale, v) })))}
-          isCurrent={(v) => (usesClicks(grinder) ? setup.grindClicks === v : setup.grindSetting.trim() === formatGrind(scale, v))}
-        />
-      )}
-      {last && (
-        <>
-          <div className={b.gap12} />
-          <HairLine />
-          <div className={b.gap12} />
-          {/* The verdict takes the status colour; the grind that earned it is the detail. */}
-          <StatusLine
-            status={scoreStatus(last.overall)}
-            lead={last.overall > 0 ? `Last time ${last.overall}/10` : "Last time unrated"}
-            rest={`${last.grindClicks != null ? `${last.grindClicks} clicks` : last.grindSetting.trim() || "no grind"} on the ${brewerShortName(recipe.brewer)}`}
-          />
-        </>
-      )}
-      <p className={`t-body-s ink-low ${b.recipeSays}`}>Recipe says: {recipe.grind}</p>
-    </SoftCard>
-  );
-}
-
-/**
- * Grind position for click grinders: a number you can nudge with your thumb mid-setup. Stored as
- * an integer so a report can say "go three clicks finer" and mean something. An unset grind is a
- * dash, never 0 (0 is burr contact).
- */
-function ClickDial({ clicks, grinder, caption, onAdjust }: { clicks: number | null; grinder: GrinderRow; caption: string; onAdjust: (d: number) => void }) {
-  const down = grinder.lowerIsFiner ? "finer" : "coarser";
-  const up = grinder.lowerIsFiner ? "coarser" : "finer";
-  return (
-    <div className={b.dial}>
-      <div className={b.stepRow}>
-        <div className={b.stepSide}>
-          <Stepper dir={-1} label={`One click ${down}`} onClick={() => onAdjust(-1)} />
-          <span className="micro ink-low">{toCaps(down)}</span>
-        </div>
-        <div className={b.stepMid}>
-          <span className={b.nwu} style={{ color: clicks == null ? "var(--ink-low)" : undefined }}>
-            <TickingNumber value={clicks == null ? "—" : String(clicks)} numeral="num-display" label={clicks == null ? "Grind not set" : `${clicks} clicks`} />
-            {clicks != null && <span className={`num-unit ${b.unitXL}`}>clicks</span>}
-          </span>
-          <span className={`t-body-s ink-mid ${b.center}`}>{caption}</span>
-        </div>
-        <div className={b.stepSide}>
-          <Stepper dir={1} label={`One click ${up}`} onClick={() => onAdjust(1)} />
-          <span className="micro ink-low">{toCaps(up)}</span>
-        </div>
-      </div>
-      <div className={b.pills}>
-        {[-5, -1, 1, 5].map((d) => (
-          <PillButton key={d} text={d < 0 ? `−${-d}` : `+${d}`} onClick={() => onAdjust(d)} className={b.pill} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TempCard({ tempC, fahrenheit, onTemp }: { tempC: number; fahrenheit: boolean; onTemp: (c: number) => void }) {
-  const u = { fahrenheit, ounces: false };
-  // In °F mode the stepper still moves 1 °C and shows the rounded °F (A§7.8).
-  return (
-    <SoftCard>
-      <div className={b.tempRow}>
-        <div className={b.grow}>
-          <EyebrowLabel text="WATER TEMP" />
-          <span className={b.nwu}>
-            <TickingNumber value={temp(u, tempC)} numeral="num-large" label={`${temp(u, tempC)} ${tempUnit(u)}`} />
-            <span className={`num-unit ${b.unitL}`}>{tempUnit(u)}</span>
-          </span>
-        </div>
-        <Stepper dir={-1} label="Cooler" onClick={() => onTemp(tempC - 1)} />
-        <Stepper dir={1} label="Hotter" onClick={() => onTemp(tempC + 1)} />
-      </div>
-    </SoftCard>
-  );
-}
-
-function CoffeeCard({ beans, selected, onSelect }: { beans: readonly BeanRow[]; selected: number | null; onSelect: (id: number) => void }) {
-  // Read once: days off roast only needs to be right to the day while this screen is open.
-  const [today] = useState(() => epochDayOf(Date.now()));
-  return (
-    <SoftCard>
-      <EyebrowLabel text="COFFEE" />
-      {beans.length === 0 ? (
-        <p className={`t-body-m ink-mid ${b.gap8}`}>No beans yet. Add one under Gear.</p>
-      ) : (
-        <div role="radiogroup" aria-label="Coffee">
-          {beans.map((bean) => {
-            const days = bean.roastedOnEpochDay != null ? Math.max(0, today - bean.roastedOnEpochDay) : null;
-            const word = roastWord(days);
-            return (
-              <RadioRow
-                key={bean.id}
-                name="brew-bean"
-                title={bean.name}
-                selected={bean.id === selected}
-                onClick={() => onSelect(bean.id!)}
-                subtitle={[bean.roaster.trim() || null, days != null ? `${days} d off roast` : "roast date unknown"].filter(Boolean).join(" · ")}
-                note={word ?? undefined}
-                noteStatus={roastStatus(days) === "attention" ? "attention" : undefined}
-              />
-            );
-          })}
-        </div>
-      )}
-    </SoftCard>
-  );
-}
-
-// ---------------------------------------------------------------------- running
-
-const RunningPane = memo(function RunningPane({
-  recipe,
-  engine,
-  st,
-  seek,
-  finishing,
-  autoAdvance,
-  onClose,
-  onFinish,
-  onToggle,
-  onSeek,
-  onSkip,
-}: {
-  recipe: Recipe;
-  engine: BrewEngine;
-  st: EngineState;
-  seek: MotionValue<number>;
-  finishing: boolean;
-  autoAdvance: boolean;
-  onClose: () => void;
-  onFinish: () => void;
-  onToggle: () => void;
-  onSeek: (d: number) => void;
-  onSkip: () => void;
-}) {
-  const total = totalSec(recipe);
-  const step = recipe.steps[st.stepIndex];
-  const pouring = step?.kind === "Pour" || step?.kind === "Bloom";
-  const waterG = Math.max(1, recipe.waterG);
-  // One whole-brew timebase for the ring and the journey line, so the two drawings of progress
-  // never disagree with each other or with the clock.
-  const view: BrewEngineView = useMemo(
-    () => ({
-      elapsedMs: () => engine.elapsedMs(),
-      totalMs: () => Math.max(1, total) * 1000,
-      waterFractionAt: (ms: number) => waterAtF(recipe, ms) / waterG,
-    }),
-    [engine, recipe, total, waterG],
-  );
-  const trip = useMemo(() => () => (engine.elapsedMs() + seek.get()) / (Math.max(1, total) * 1000), [engine, seek, total]);
-  const boundaries = useMemo(() => stepBoundaries(recipe), [recipe]);
-  const nodes = useMemo<JourneyNode[]>(
-    () => [...journeyNodes(recipe), ...(st.bedExposedSec != null ? [{ fraction: Math.min(1, Math.max(0, st.bedExposedSec / Math.max(1, total))), kind: "actual" as const, status: "good" as const }] : [])],
-    [recipe, st.bedExposedSec, total],
-  );
-  const showBed = step?.kind === "Drawdown" || st.done;
-  const waitingForTap = !autoAdvance && st.clockStepIndex > st.stepIndex;
-
-  return (
-    <div className={`column ${b.run}`}>
-      <div className={b.runTop}>
-        <IconWell icon="Close" label="Leave this brew" onClick={onClose} />
-        <span className={`t-title-s ink-mid ${b.runTitle}`}>{recipe.name}</span>
-        <span className="micro ink-low">
-          STEP {st.stepIndex + 1}/{recipe.steps.length}
-        </span>
-      </div>
-
-      <BrewStatus st={st} step={step} engine={engine} finishing={finishing} />
-
-      <div className={b.ringBox}>
-        <BrewRing
-          engine={view}
-          accent="var(--crema-stroke)"
-          boundaries={boundaries}
-          seek={seek}
-          pouring={pouring}
-          running={st.running}
-          trackColor="var(--ink-faint)"
-          liquidColor="var(--ring-liquid)"
-          strokeFraction={0.035}
-          headCore="var(--bg)"
-          tickColor="var(--ink-low)"
-        >
-          <div className={b.ringInner}>
-            <ClockLeaf engine={engine} compact={total >= 600} />
-            {/* Names the clock's frame: the ring and the clock are both the whole brew. */}
-            <span className="micro ink-low">OF {clock(total)}</span>
-            <WaterLeaf engine={engine} recipe={recipe} target={step?.targetWaterG ?? Math.round(recipe.waterG)} />
-          </div>
-        </BrewRing>
-      </div>
-
-      <JourneyLine nodes={nodes} style="live" progress={trip} startLabel="0:00" endLabel={clock(total)} label={`Brew progress, ${clock(total)} planned`} />
-      <OverrunLeaf engine={engine} totalSec={total} />
-
-      <div className={b.stepCard}>
-        <AnimatePresence initial={false}>
-          <m.div
-            key={st.stepIndex}
-            className={b.stepLayer}
-            initial={{ opacity: 0, transform: "translateY(33%)" }}
-            animate={{ opacity: 1, transform: "translateY(0%)", transition: { opacity: decel(260), transform: spatialDefault } }}
-            exit={{ opacity: 0, transform: "translateY(-33%)", transition: decel(160) }}
-          >
-            <StepCardBody recipe={recipe} index={st.stepIndex} />
-          </m.div>
-        </AnimatePresence>
-        {waitingForTap && (
-          <button type="button" className={`${b.nextTap} t-label-l`} onClick={() => engine.advanceStep()}>
-            Next step
-          </button>
-        )}
-      </div>
-
-      {showBed && (
-        <m.div className={b.bedRow} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={effectsDefault}>
-          {st.bedExposedSec == null ? (
-            <SecondaryButton text="Bed exposed" onClick={() => engine.markBedExposed()} onCanvas />
+          ) : pane === "shot" ? (
+            <ShotPane
+              recipe={recipe}
+              shot={shot}
+              layout={runLayout}
+              finishing={finishing}
+              onToggle={shotToggle}
+              onAgain={() => dispatchShot({ type: "again" })}
+              onYield={(text) => dispatchShot({ type: "yield", text })}
+              onRate={() => void finish({ sec: shot.shotSec ?? 0, yieldG: shotYield(shot) })}
+              onClose={shotClose}
+            />
           ) : (
-            <StatusLine status="good" lead="Bed exposed" rest={`at ${clock(st.bedExposedSec)}`} />
+            <SetupPane
+              recipe={recipe}
+              base={base}
+              setup={setup}
+              setSetup={setSetup}
+              data={data}
+              settings={settings}
+              units={units}
+              layout={setupLayout}
+              title={oneOff ? AGAIN_TITLE : recipe.name}
+              eyebrow={again ? "BREW AGAIN" : "SET UP"}
+              onStart={start}
+            />
           )}
         </m.div>
-      )}
-
-      <div className={b.transport}>
-        <PillButton text="−5s" onClick={() => onSeek(-5)} className={b.seek} />
-        <PlayPause running={st.running} onClick={onToggle} />
-        <PillButton text="+5s" onClick={() => onSeek(5)} className={b.seek} />
-        <span className={b.grow} />
-        <IconWell icon="SkipNext" label="Skip to next step" onClick={onSkip} size={48} />
-      </div>
-
-      {/* The finish button turns crema when the brew completes, in step with the mesh. */}
-      <PrimaryButton
-        text={st.done ? "Rate this brew" : "Finish early"}
-        icon="Check"
-        height={52}
-        onClick={onFinish}
-        enabled={!finishing}
-        className={st.done ? b.finishDone : b.finishEarly}
-      />
-    </div>
-  );
-});
-
-function BrewStatus({ st, step, engine, finishing }: { st: EngineState; step: RecipeStep | undefined; engine: BrewEngine; finishing: boolean }) {
-  const pausedAt = clock(Math.floor(st.accumulatedMs / 1000));
-  if (finishing) return <StatusLine status="neutral" lead="Saving" rest={`at ${pausedAt}`} />;
-  if (st.done) return <StatusLine status="good" lead="Done" rest="rate this brew" />;
-  if (!st.running) return <StatusLine status="attention" lead="Paused" rest={`at ${pausedAt}`} />;
-  if (!step) return <StatusLine status="live" lead="Brewing" />;
-  return (
-    <div className={b.statusRow}>
-      <StatusLine status="live" lead={stepLead(step)} />
-      <CountdownLeaf engine={engine} endSec={step.endSec} />
-    </div>
-  );
-}
-
-function StepCardBody({ recipe, index }: { recipe: Recipe; index: number }) {
-  const s = recipe.steps[index];
-  const next = recipe.steps[index + 1];
-  if (!s) return null;
-  return (
-    <div className={b.stepBody}>
-      <div className={b.stepHead}>
-        <span className={`micro ${b.kindPill}`}>{toCaps(s.kind)}</span>
-        <span className={b.grow} />
-        <span className="t-body-s ink-low">
-          {clock(s.startSec)}–{clock(s.endSec)}
-        </span>
-      </div>
-      <h2 className={`step-title ${b.clamp2}`}>{s.title}</h2>
-      <p className={`t-body-m ink-mid ${b.clamp3}`}>{s.detail}</p>
-      <span className={b.grow} />
-      {next && (
-        <div className={b.next}>
-          <HairLine />
-          <span className="micro ink-low">NEXT · {clock(next.startSec)}</span>
-          <span className={`t-body-m ink-mid ${b.ellipsis}`}>{next.title}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PlayPause({ running, onClick }: { running: boolean; onClick: () => void }) {
-  return (
-    <button type="button" className={b.play} onClick={onClick} aria-label={running ? "Pause" : "Resume"}>
-      <AnimatePresence initial={false}>
-        <m.span
-          key={running ? "pause" : "play"}
-          className={b.playIcon}
-          initial={{ opacity: 0, transform: "scale(0.6)" }}
-          animate={{ opacity: 1, transform: "scale(1)" }}
-          exit={{ opacity: 0, transform: "scale(0.6)" }}
-          transition={{ transform: settle, opacity: decel(140) }}
-        >
-          <Icon name={running ? "Pause" : "Play"} size={30} />
-        </m.span>
       </AnimatePresence>
-    </button>
+      {/* A4: polite, written by the Announcer (cleared before each write). */}
+      <LiveRegion announcer={announcer} />
+      {leaving && (
+        <ConfirmSheet
+          title={shotOpen ? "Leave this shot?" : "Leave this brew?"}
+          body={shotOpen ? "Nothing from it is saved." : "Its timer keeps going, and Today shows the way back. Discarding keeps nothing from it."}
+          confirmText={shotOpen ? "Stay" : "Keep it going"}
+          cancelText="Discard"
+          safe="confirm"
+          onClose={() => setLeaving(false)}
+          onConfirm={shotOpen ? () => undefined : nav.back}
+          onCancel={shotOpen ? nav.back : discard}
+        />
+      )}
+      {confirmFinish && (
+        <ConfirmSheet
+          title="Finish now?"
+          body="The brew is saved with the time so far, and you rate it next."
+          confirmText="Finish"
+          cancelText="Keep brewing"
+          safe="cancel"
+          onClose={() => setConfirmFinish(false)}
+          onConfirm={() => void finish()}
+        />
+      )}
+    </div>
   );
 }
-
-// ------------------------------------------------------------------ timer leaves
-// Each writes textContent from the frame loop, so the digits change once a second (the water
-// readout once a gram) and nothing above them ever re-renders with the clock.
-
-function Leaf({ className, initial, update, ariaHidden = false, role }: { className: string; initial: string; update: (el: HTMLElement) => void; ariaHidden?: boolean; role?: string }): ReactNode {
-  const ref = useRef<HTMLSpanElement>(null);
-  useFrame(() => {
-    if (ref.current) update(ref.current);
-  });
-  return (
-    <span ref={ref} className={className} aria-hidden={ariaHidden || undefined} role={role} aria-live={role === "timer" ? "off" : undefined}>
-      {initial}
-    </span>
-  );
-}
-
-function ClockLeaf({ engine, compact }: { engine: BrewEngine; compact: boolean }) {
-  const text = () => clock(Math.floor(engine.elapsedMs() / 1000));
-  return <Leaf className={`${compact ? "num-clock-compact" : "num-clock"} ${b.clock}`} initial={text()} update={(el) => writeText(el, text())} role="timer" />;
-}
-
-function CountdownLeaf({ engine, endSec }: { engine: BrewEngine; endSec: number }) {
-  const text = () => `· ${clock(Math.max(0, endSec - Math.floor(engine.elapsedMs() / 1000)))} left`;
-  return <Leaf className={`t-body-m ink-mid ${b.countdown}`} initial={text()} update={(el) => writeText(el, text())} />;
-}
-
-function WaterLeaf({ engine, recipe, target }: { engine: BrewEngine; recipe: Recipe; target: number }) {
-  const text = () => `${waterAt(recipe, engine.elapsedMs())} g`;
-  return (
-    <span className={b.water}>
-      <Leaf className="num-small" initial={text()} update={(el) => writeText(el, text())} />
-      <span className={`t-body-m ink-low ${b.waterTarget}`}>/ {target}</span>
-    </span>
-  );
-}
-
-function OverrunLeaf({ engine, totalSec: total }: { engine: BrewEngine; totalSec: number }) {
-  const text = () => {
-    const s = Math.floor(engine.elapsedMs() / 1000);
-    return s > total ? `+${clock(s - total)}` : "";
-  };
-  return <Leaf className={`micro ${b.overrun}`} initial={text()} update={(el) => writeText(el, text())} />;
-}
-

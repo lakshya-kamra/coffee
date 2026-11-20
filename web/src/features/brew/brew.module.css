@@ -1,13 +1,13 @@
-/* Brew screen (port of BrewScreen.kt). The screen owns the whole detail layer: the mesh sits
-   behind, each pane is its own layer (setup scrolls; running fits the viewport). */
+/* Brew screen (port of BrewScreen.kt; v4 §3.4, §3.5, §4.9). The screen owns the whole focus
+   layer: the mesh sits behind, each pane is its own layer. Setup scrolls; the running timer picks
+   one of three layouts (data-layout on .run): portrait scrolls as a last resort with a sticky
+   transport, stage and short never scroll the page. Only transform, opacity and background-color
+   ever animate. */
 
 .screen { position: absolute; inset: 0; overflow: hidden; }
 .pane { position: absolute; inset: 0; }
 .grow { flex: 1; }
 .center { text-align: center; }
-.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.clamp2 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
-.clamp3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
 .gap8 { margin-top: 8px; }
 .gap12 { height: 12px; flex: none; }
 
@@ -31,20 +31,18 @@
 /* ---------------------------------------------------------------- setup */
 .setupScroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 .setupColumn { padding-top: env(safe-area-inset-top); min-height: 100%; display: flex; flex-direction: column; }
-.setupTop { position: relative; display: flex; align-items: center; justify-content: space-between; height: 56px; }
-.setupTop > :nth-child(2) { position: absolute; left: 50%; transform: translateX(-50%); }
+.setupTop { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 56px; gap: 8px; }
+.setupTop > :nth-child(2) { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
 .brewerPill {
   display: inline-flex;
   align-items: center;
-  height: 28px;
+  min-height: 28px;
   padding: 0 10px;
   max-width: 45%;
   border-radius: var(--r-pill);
   background: var(--surface2);
   color: var(--ink-mid);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 .hero { display: flex; justify-content: center; margin-bottom: 8px; }
 .cards { display: flex; flex-direction: column; gap: var(--card-gap); margin-top: 20px; }
@@ -59,52 +57,69 @@
   margin-top: auto;
   padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
   background: linear-gradient(to bottom, transparent, var(--bg) 40px);
+  display: flex;
+  justify-content: flex-end;
 }
+.sticky > * { width: 100%; }
 button.inverse { background: var(--inverse); color: var(--on-inverse); }
+
+/* Two columns (expanded and up, wide landscape) and the short split (§3.4). The left side stays
+   put while the right scrolls, so the dose is in view while the grind is set. */
+.setupTwo {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  column-gap: var(--pane-gap);
+  align-items: start;
+  max-width: 1200px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) var(--gutter) 0;
+}
+.setupTwo[data-layout="short"] { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.setupLeft { position: sticky; top: 0; padding-bottom: 24px; }
+.setupRight { display: flex; flex-direction: column; min-height: 100dvh; padding-top: 56px; }
+.setupTwo[data-layout="short"] .setupRight { padding-top: 8px; }
+.setupTwo[data-layout="short"] .hero { margin-bottom: 0; }
+/* Primary buttons never span a wide window (§2.5). */
+.setupRight .startBtn { max-width: var(--primary-max); }
 
 .stepRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .stepMid { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .stepSide { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.nwu { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.nwu { display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: 4px; }
 .unitL { font-size: 1.05rem; color: var(--ink-mid); }
 .unitXL { font-size: 1.68rem; color: var(--ink-mid); }
-.cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.chipRow { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding: 2px 0; scrollbar-width: none; }
-.chipRow > * { flex: none; }
-.dial { display: flex; flex-direction: column; }
+.cardHead { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.ratioLine { margin-top: 6px; }
+.servings { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+/* Chips wrap: no hidden horizontal scroller for a grinder you cannot see (§2.5). */
+.chipWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.dial { display: flex; flex-direction: column; gap: 4px; }
 .pills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
 .pill { width: 100%; }
 .quietLeft { align-self: flex-start; margin: 4px 0 0 -12px; }
 .recipeSays { margin-top: 8px; }
 .tempRow { display: flex; align-items: center; gap: 8px; }
+.chimeRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chimeBtn { flex: 1 1 140px; width: auto; }
 
-/* ---------------------------------------------------------------- running */
-.run {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  overflow-y: auto;
-}
-.runTop { display: flex; align-items: center; gap: 12px; height: 48px; flex: none; }
-.runTitle { flex: 1; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.statusRow { display: flex; align-items: flex-start; min-width: 0; }
+/* ---------------------------------------------------------------- running: shared */
+.run { position: absolute; inset: 0; overflow: hidden; --play: 64px; }
+.run[data-layout="portrait"] { overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; }
+.run[data-layout="stage"] { --play: 72px; }
+.run[data-layout="short"] { --play: 56px; }
+
+.runTop { display: flex; align-items: center; gap: 12px; min-height: 48px; flex: none; }
+.runTitle { flex: 1; min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.stepCount { white-space: nowrap; }
+.statusRow { display: flex; align-items: flex-start; flex-wrap: wrap; min-width: 0; }
 .statusRow > :first-child { min-width: 0; }
-/* The dial gives way on short screens so the step card keeps room for its words. */
-.ringBox {
-  flex: none;
-  align-self: center;
-  width: clamp(176px, calc(100dvh - 630px), 264px);
-  aspect-ratio: 1;
-  margin: 12px 0 20px;
-}
-.ringInner { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.countdown { margin-left: 0.3em; white-space: nowrap; flex: none; }
+
+.ringBox { flex: none; align-self: center; aspect-ratio: 1; }
+.ringInner { display: flex; flex-direction: column; align-items: center; gap: 0; text-align: center; }
 .clock { color: var(--ink-high); white-space: nowrap; }
-@media (max-height: 870px) {
-  .clock { font-size: 4.5rem; line-height: 4.5rem; letter-spacing: -2px; }
-}
+.ofLabel { margin-top: 2px; }
 .water {
   display: inline-flex;
   align-items: baseline;
@@ -113,55 +128,83 @@ button.inverse { background: var(--inverse); color: var(--on-inverse); }
   border-radius: var(--r-pill);
   background: rgb(from var(--surface1) r g b / 0.72);
   white-space: nowrap;
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 @supports not (color: rgb(from red r g b)) {
   .water { background: var(--surface1); }
 }
-.countdown { margin-left: 0.3em; white-space: nowrap; flex: none; }
-.waterTarget { margin-left: 0.3em; }
+.waterNow { font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.waterTarget { margin-left: 0.3em; font-size: 0.75em; font-weight: 400; }
 .overrun { align-self: flex-end; min-height: 12px; color: var(--attention); }
+
 .stepCard {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 168px;
-  margin-top: 8px;
   border-radius: var(--r-card);
   background: var(--surface1);
-  overflow: hidden;
+  padding: var(--card-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
-.stepLayer { position: absolute; inset: 0; padding: var(--card-padding); }
-.stepBody { display: flex; flex-direction: column; height: 100%; gap: 6px; }
-.stepHead { display: flex; align-items: center; margin-bottom: 4px; }
+.stepBody { display: flex; flex-direction: column; gap: 6px; }
+.stepHead { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 4px; }
+.stepTitle { overflow-wrap: anywhere; }
 .kindPill {
   display: inline-flex;
   align-items: center;
-  height: 22px;
+  min-height: 22px;
   padding: 0 8px;
   border-radius: var(--r-pill);
   background: var(--surface2);
   color: var(--ink-mid);
 }
-.next { display: flex; flex-direction: column; gap: 2px; }
+.kindChip { letter-spacing: 0.08em; }
+.glossLine { padding: 8px 10px; border-radius: var(--r-well); background: var(--surface2); color: var(--ink-high); }
+.next { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 .next > :first-child { margin-bottom: 8px; }
 .nextTap {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  min-height: 40px;
-  padding: 0 14px;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 16px;
   border-radius: var(--r-pill);
   background: var(--inverse);
   color: var(--on-inverse);
+  flex: none;
 }
 .bedRow { display: flex; align-items: center; min-height: 48px; margin-top: 12px; }
 .bedRow > * { width: 100%; }
-.transport { display: flex; align-items: center; gap: 12px; height: 64px; margin: 12px 0; flex: none; }
-.seek { min-height: 44px; }
+.bedBtn, .bedPill {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: var(--r-button);
+  background: var(--surface2);
+  color: var(--ink-high);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.bedPill { min-height: 44px; border-radius: var(--r-pill); margin-left: auto; }
+.bedBtn:active, .bedPill:active { transform: scale(0.97); }
+
+.transport { display: flex; align-items: center; gap: 12px; min-height: 64px; flex: none; }
+.seekBtn {
+  flex: none;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-high);
+  white-space: nowrap;
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.seekBtn:active { transform: scale(0.96); }
 .play {
   flex: none;
   position: relative;
-  width: var(--play-button);
-  height: var(--play-button);
+  width: var(--play);
+  height: var(--play);
   border-radius: 50%;
   background: var(--inverse);
   color: var(--on-inverse);
@@ -169,5 +212,200 @@ button.inverse { background: var(--inverse); color: var(--on-inverse); }
 }
 .play:active { transform: scale(0.92); }
 .playIcon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-button.finishEarly { background: var(--surface1); color: var(--ink-high); transition: background-color 400ms var(--ease-emphasized), color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
-button.finishDone { background: var(--crema); color: var(--on-crema); transition: background-color 400ms var(--ease-emphasized), color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+button.finishEarly { background: var(--surface1); color: var(--ink-high); transition: background-color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+button.finishDone { background: var(--crema); color: var(--on-crema); transition: background-color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+
+/* The step-change cue (§3.5): drawn above everything in the layer, never hit-testable. The
+   animations are Web Animations on opacity and transform (RunningPane StepCue). */
+.flash { position: fixed; inset: 0; background: var(--crema); opacity: 0; pointer-events: none; z-index: 5; }
+.banner {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 6;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: var(--r-pill);
+  background: var(--inverse);
+  color: var(--on-inverse);
+  opacity: 0;
+  transform: translate(-50%, -16px);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- portrait */
+.portrait {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+/* Never smaller than the phone ring (240), up to 360 where there is room (§3.5). */
+.portrait .ringBox { width: max(min(240px, 100%), min(100%, 100dvh - 520px, 360px)); margin: 12px 0 16px; }
+.portrait .stepCard { margin-top: 8px; max-height: max(220px, 52dvh); }
+/* The transport stays reachable when the pane has to scroll (200% text, short phones). */
+.dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  padding: 16px 0 calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* The backdrop spans the window, not the column, over the mesh's floor (DOCK_FLOOR). */
+.dock::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vw;
+  z-index: -1;
+  background: linear-gradient(to bottom, transparent, var(--bg) 20px);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- stage */
+.stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 34vw, 480px);
+  column-gap: max(24px, var(--gutter));
+  padding: max(16px, env(safe-area-inset-top)) var(--gutter) max(16px, env(safe-area-inset-bottom));
+}
+.stageLeft {
+  container-type: size;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+/* The counter-at-a-metre ring: min(70vh, 45vw, 560) and never past its own column (§3.5). */
+.stage .ringBox { width: min(70vh, 45vw, 560px, 100cqw, 100cqh - 80px); }
+.stageJourney { width: min(100%, 720px); display: flex; flex-direction: column; }
+.stage .clock { font-size: clamp(96px, 16vh, 200px); line-height: 1; letter-spacing: -0.03em; }
+.stage .clock:global(.num-clock-compact) { font-size: clamp(76px, 12.8vh, 160px); }
+.stage .ofLabel { margin-top: 6px; }
+.stage .water { font-size: clamp(40px, 7vh, 64px); line-height: 1.05; margin-top: 10px; padding: 2px 16px; }
+.stage .waterTarget { font-size: 0.55em; }
+.stageRight { min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+.stage .stepCard { flex: 0 1 auto; max-height: 48%; }
+.stage .stepTitle { font-size: clamp(28px, 4vh, 40px); line-height: 1.15; }
+.stepList {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 72px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.listItem {
+  display: grid;
+  grid-template-columns: 3.2em minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-well);
+  transition: background-color 160ms var(--ease-emphasized);
+}
+.listItem[data-state="done"] { opacity: 0.55; }
+.listItem[data-state="current"] { background: var(--surface2); }
+.listTime { color: var(--ink-mid); }
+.listTitle { overflow-wrap: anywhere; }
+.stageDock { flex: none; display: flex; flex-direction: column; gap: 10px; }
+.stage .transport { justify-content: flex-start; }
+.stage .transport > :last-child { margin-left: auto; }
+
+/* ---------------------------------------------------------------- short */
+.short {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: min(45vw, 100dvh - 16px) minmax(0, 1fr);
+  column-gap: 16px;
+  padding: 10px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+}
+.shortLeft { container-type: size; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.short .ringBox { width: min(100cqw, 100cqh); }
+.short .clock { font-size: clamp(48px, 22vh, 96px); line-height: 1; letter-spacing: -0.03em; }
+.short .clock:global(.num-clock-compact) { font-size: clamp(40px, 17vh, 76px); }
+.short .water { font-size: clamp(15px, 4.6vh, 22px); margin-top: 4px; }
+.shortRight { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.short .runTop { min-height: 40px; gap: 8px; }
+.short .stepCard { flex: 1 1 auto; min-height: 0; padding: 12px 14px; }
+.short .stepTitle { font-size: 1.25rem; line-height: 1.5rem; }
+.nextLine { flex: none; overflow-wrap: anywhere; }
+.short .transport { min-height: 56px; gap: 6px; flex-wrap: wrap; }
+.short .seekBtn { min-width: 44px; padding: 0 8px; }
+.finishPill {
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-high);
+  white-space: nowrap;
+  transition: background-color 400ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
+}
+.finishPill[data-done] { background: var(--crema); color: var(--on-crema); }
+.finishPill:active { transform: scale(0.96); }
+.strip { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--ink-faint); z-index: 1; }
+.stripBar { height: 100%; background: var(--crema-stroke); transform-origin: left center; transform: scaleX(0); }
+
+/* ---------------------------------------------------------------- espresso shot (§4.9) */
+.shot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: max(8px, env(safe-area-inset-top)) var(--gutter) calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.shot[data-layout="stage"],
+.shot[data-layout="short"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 32px;
+  max-width: 1200px;
+}
+.shot[data-layout="stage"] > .runTop,
+.shot[data-layout="short"] > .runTop { grid-column: 1 / -1; }
+.shotHero { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+.shotNumber { display: inline-flex; align-items: baseline; font-size: clamp(112px, 24vh, 240px); font-weight: 500; line-height: 1; letter-spacing: -0.04em; color: var(--ink-high); }
+.shot[data-layout="short"] .shotNumber { font-size: clamp(64px, 30vh, 140px); }
+.shotDigits { font-variant-numeric: tabular-nums; }
+.shotUnit { font-size: 0.28em; color: var(--ink-mid); margin-left: 0.12em; letter-spacing: 0; }
+.preLabel { color: var(--ink-mid); min-height: 1.25rem; }
+.shotControls { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.shotButton {
+  min-height: 88px;
+  width: 100%;
+  border-radius: var(--r-primary);
+  background: var(--inverse);
+  color: var(--on-inverse);
+  transition: background-color 300ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
+}
+.shot[data-layout="short"] .shotButton { min-height: 64px; }
+/* Crema only while the shot is live. */
+.shotButton[data-live] { background: var(--crema); color: var(--on-crema); }
+.shotButton:active { transform: scale(0.98); }
+
+/* ---------------------------------------------------------------- forced colours (A1) */
+@media (forced-colors: active) {
+  .play, .minus, .seekBtn, .bedBtn, .bedPill, .finishPill, .shotButton, .nextTap { border: 1px solid ButtonBorder; }
+  .kindPill, .brewerPill, .banner, .stepCard, .glossLine { border: 1px solid CanvasText; }
+  .flash { display: none; }
+  .strip { background: Canvas; border-bottom: 1px solid CanvasText; }
+  .stripBar { background: Highlight; forced-color-adjust: none; }
+  .listItem[data-state="current"] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .shotButton[data-live], .finishPill[data-done] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+}

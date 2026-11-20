@@ -5,7 +5,7 @@ import { DEFAULT_SETTINGS } from "@/data/settings";
 import { makeBrewer } from "@/domain/core/brewer";
 import { epochDayOf } from "@/domain/core/format";
 import type { Recipe } from "@/domain/core/recipe";
-import { buildBrewRow, describeClicks, initialSetup, lastTrustedClicks, minClicks, prefillGrind } from "./setup";
+import { AS_BOUGHT, buildBrewRow, describeClicks, grindKindOf, initialSetup, lastTrustedClicks, minClicks, prefillGrind, setupRecipe, withBean, withDose, withSetupDefaults, type Setup } from "./setup";
 
 beforeAll(async () => {
   await catalog.load(["grinders"]);
@@ -26,6 +26,7 @@ function recipe(p: Partial<Recipe> = {}): Recipe {
 const legacyKUltra = (): GrinderRow => ({ ...newGrinder({ brand: "1Zpresso", model: "K-Ultra", settingStyle: "clicks", clicksPerRotation: 10, micronsPerClick: 20, maxSetting: 200 }), id: 1 });
 const linkedKUltra = (): GrinderRow => ({ ...newGrinder({ brand: "1Zpresso", model: "K-Ultra", settingStyle: "clicks", clicksPerRotation: 100, micronsPerClick: 20, maxSetting: 200, catalogId: "1zpresso-k-ultra" }), id: 2 });
 const log = (p: Partial<BrewRow>, at: number): BrewRow => ({ ...newBrew({ startedAt: at, ...p }, at), id: at });
+const blank = (p: Partial<Setup> = {}): Setup => withSetupDefaults({ doseG: 15, tempC: 94, ...p });
 
 describe("describeClicks (GrinderEntity.describeClicks)", () => {
   it("1.x row reads in turns, the catalog-linked K-Ultra reads the dial (lead decision 2)", () => {
@@ -66,7 +67,7 @@ describe("grind prefill (BrewViewModel)", () => {
 
   it("falls back to the grinder's own go-to setting, espresso or filter", () => {
     const g = { ...linkedKUltra(), defaultFilterSetting: 70, defaultEspressoSetting: 25 };
-    const base = { doseG: 15, tempC: 94, beanId: null, grinderId: 2, grindClicks: null, grindSetting: "" };
+    const base = blank({ grinderId: 2 });
     expect(prefillGrind(base, recipe(), [g], []).grindClicks).toBe(70);
     expect(prefillGrind(base, recipe({ brewer: ESPRESSO }), [g], []).grindClicks).toBe(25);
     expect(prefillGrind(base, recipe(), [linkedKUltra()], []).grindClicks).toBeNull();
@@ -74,7 +75,7 @@ describe("grind prefill (BrewViewModel)", () => {
 
   it("stepless grinders prefill the typed setting", () => {
     const g = { ...newGrinder({ brand: "Baratza", model: "Vario", settingStyle: "numbers", defaultFilterSetting: 5.5 }), id: 9 };
-    const s = prefillGrind({ doseG: 15, tempC: 94, beanId: null, grinderId: 9, grindClicks: null, grindSetting: "" }, recipe(), [g], []);
+    const s = prefillGrind(blank({ grinderId: 9 }), recipe(), [g], []);
     expect(s.grindSetting).toBe("5.5");
   });
 
@@ -110,5 +111,64 @@ describe("initial setup and the finished row (A§2.5 finish())", () => {
     });
     const clicks = buildBrewRow({ recipe: recipe(), setup: { ...setup, grinderId: 2, grindClicks: 75 }, bean: null, grinder: linkedKUltra(), settings: DEFAULT_SETTINGS, result: { totalTimeSec: 1, drawdownSec: null }, now });
     expect(clicks).toMatchObject({ grindClicks: 75, grindSetting: "75 clicks (dial 7.5)", grindValue: null, waterId: null, beanId: null });
+  });
+});
+
+describe("v4 grind kinds (§4.2)", () => {
+  const now = Date.UTC(2026, 10, 19, 8, 0);
+  const blade = (): GrinderRow => ({ ...newGrinder({ brand: "Any", model: "Blade grinder", settingStyle: "stepless", settingUnit: "s", catalogId: "blade-grinder" }), id: 7 });
+  const vario = (): GrinderRow => ({ ...newGrinder({ brand: "Baratza", model: "Vario", settingStyle: "numbers" }), id: 9, isDefault: true });
+  const groundBag = { ...newBean({ name: "Supermarket", roaster: "Folgers", form: "ground" }), id: 5 };
+  const wholeBag = { ...newBean({ name: "Red Brick", roaster: "Square Mile", form: "whole" }), id: 6 };
+
+  it("pre-ground is chosen for a ground coffee, or when buying ground with no grinder", () => {
+    expect(initialSetup(recipe(), [groundBag], [vario()], DEFAULT_SETTINGS, []).preground).toBe(true);
+    expect(initialSetup(recipe(), [wholeBag], [vario()], DEFAULT_SETTINGS, []).preground).toBe(false);
+    expect(initialSetup(recipe(), [], [], { ...DEFAULT_SETTINGS, buysGround: true }, []).preground).toBe(true);
+    // Buying ground but owning a grinder: the grinder stays the default until the coffee says otherwise.
+    expect(initialSetup(recipe(), [], [vario()], { ...DEFAULT_SETTINGS, buysGround: true }, []).preground).toBe(false);
+  });
+
+  it("switching coffee follows its form", () => {
+    const s = initialSetup(recipe(), [wholeBag, groundBag], [vario()], DEFAULT_SETTINGS, []);
+    const toGround = withBean(s, groundBag, DEFAULT_SETTINGS, [vario()]);
+    expect(toGround).toMatchObject({ beanId: 5, preground: true });
+    expect(withBean(toGround, wholeBag, DEFAULT_SETTINGS, [vario()])).toMatchObject({ beanId: 6, preground: false });
+  });
+
+  it("stores grindKind, grindSetting and grindValue on save", () => {
+    const settings = DEFAULT_SETTINGS;
+    const result = { totalTimeSec: 200, drawdownSec: null };
+    const pre = buildBrewRow({ recipe: recipe(), setup: blank({ grinderId: 9, preground: true, grindSetting: "5" }), bean: groundBag, grinder: vario(), settings, result, now });
+    expect(pre).toMatchObject({ grindKind: "preground", grindSetting: AS_BOUGHT, grindValue: null, grindClicks: null, grinderId: null, grinderLabel: "" });
+
+    const bl = buildBrewRow({ recipe: recipe(), setup: blank({ grinderId: 7, bladeSec: 12 }), bean: wholeBag, grinder: blade(), settings, result, now });
+    expect(bl).toMatchObject({ grindKind: "blade", grindSetting: "12 s", grindValue: 12, grindClicks: null, grinderId: 7 });
+
+    const dial = buildBrewRow({ recipe: recipe(), setup: blank({ grinderId: 9, grindSetting: "5.5" }), bean: null, grinder: vario(), settings, result, now });
+    expect(dial).toMatchObject({ grindKind: "dial", grindSetting: "5.5", grindValue: 5.5 });
+
+    const clicks = buildBrewRow({ recipe: recipe(), setup: blank({ grinderId: 2, grindClicks: 75 }), bean: null, grinder: linkedKUltra(), settings, result, now });
+    expect(clicks).toMatchObject({ grindKind: "dial", grindClicks: 75 });
+
+    const typed = buildBrewRow({ recipe: recipe(), setup: blank({ grinderId: null, grindSetting: "medium" }), bean: null, grinder: null, settings, result, now });
+    expect(typed).toMatchObject({ grindKind: "", grindSetting: "medium", grinderId: null });
+    expect(grindKindOf({ preground: false }, blade())).toBe("blade");
+  });
+
+  it("a blade grinder prefills 12 s, else the last time for this recipe", () => {
+    expect(prefillGrind(blank({ grinderId: 7 }), recipe(), [blade()], []).bladeSec).toBe(12);
+    const brews = [log({ recipeId: "hoffmann-v60", grinderId: 7, grindKind: "blade", grindValue: 15 }, 3)];
+    expect(prefillGrind(blank({ grinderId: 7 }), recipe(), [blade()], brews).bladeSec).toBe(15);
+  });
+
+  it("an explicit water scales every target; a new dose keeps that ratio", () => {
+    const r = recipe({ steps: [{ kind: "Pour", title: "Pour", detail: "", startSec: 0, endSec: 120, targetWaterG: 250 }] });
+    expect(setupRecipe(r, { doseG: 15, waterG: null }).waterG).toBe(250);
+    const given = setupRecipe(r, { doseG: 15, waterG: 270 });
+    expect(given.waterG).toBe(270);
+    expect(given.steps[0]!.targetWaterG).toBe(270);
+    expect(withDose(blank({ doseG: 15, waterG: 270 }), 20)).toMatchObject({ doseG: 20, waterG: 360 });
+    expect(withDose(blank({ doseG: 15 }), 20).waterG).toBeNull();
   });
 });

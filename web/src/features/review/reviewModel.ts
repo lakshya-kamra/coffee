@@ -4,7 +4,8 @@
  * word, so an impossible number is caught before it is saved). Pure.
  */
 import type { BrewRow, GrinderRow } from "@/data/schema";
-import { isFilterStyle, type BrewMethod } from "@/domain/core/brewer";
+import type { ReviewMode } from "@/data/settings";
+import { isFilterStyle, type BrewMethod, type ReviewSections } from "@/domain/core/brewer";
 import { clock } from "@/domain/core/format";
 import { DEFAULT_TASTE, type TasteProfile } from "@/domain/core/evaluation";
 import { finerThanEspresso, format, rangeFor, underOneLegacyTurn, type GrindScale } from "@/domain/grind";
@@ -96,6 +97,62 @@ export function grindWarning(log: Pick<BrewRow, "grindClicks" | "totalTimeSec">,
     return `${clicks} is finer than this grinder's espresso starting range (${format(scale, range.from)}–${format(scale, range.to)}${who}). For a filter brew that is almost certainly the dial reading typed the wrong way.${stored}`;
   }
   return null;
+}
+
+// ------------------------------------------------------------------ v4 quick review (§4.4)
+
+/** "ANYTHING OFF?": the four toggles and the faults they store (two are labels new in backup 2.1). */
+export const QUICK_FAULTS: readonly { readonly label: string; readonly fault: string }[] = [
+  { label: "Too sour", fault: "Sour" },
+  { label: "Too bitter", fault: "Bitter" },
+  { label: "Too weak", fault: "Too weak" },
+  { label: "Too strong", fault: "Too strong" },
+];
+
+export function quickOn(faults: readonly string[], label: string): boolean {
+  const q = QUICK_FAULTS.find((x) => x.label === label);
+  return q != null && faults.includes(q.fault);
+}
+
+/** Toggles the toggle's fault in the brew's faults; the other faults are left alone. */
+export function toggleQuick(faults: readonly string[], label: string): string[] {
+  const q = QUICK_FAULTS.find((x) => x.label === label);
+  return q ? toggleIn(faults, q.fault) : [...faults];
+}
+
+/** What Review shows, from the method's sections (CORE reviewSections), the mode and "More detail". */
+export interface ReviewPlan {
+  /** Taste sliders, descriptors and the full fault list. */
+  readonly taste: boolean;
+  /** Drawdown time, In cup and Flow (pour-over cones, flat-bottoms, hybrids). */
+  readonly drawdown: boolean;
+  /** Shape, surface, channelling (the same, plus drip machines). */
+  readonly bed: boolean;
+  /** "Retained by the bed", next to wherever In cup is. */
+  readonly retained: boolean;
+  /** In cup lives under Advanced when there is no Drawdown section (and espresso keeps it as YIELD). */
+  readonly inCupInAdvanced: boolean;
+  /** The "More detail" disclosure is offered (quick mode only). */
+  readonly moreDetail: boolean;
+}
+
+export function reviewPlan(sections: Pick<ReviewSections, "drawdown" | "bed" | "retained" | "style">, mode: ReviewMode, moreOpen: boolean): ReviewPlan {
+  const open = mode === "detailed" || moreOpen;
+  return {
+    taste: open,
+    drawdown: open && sections.drawdown,
+    bed: open && sections.bed,
+    retained: sections.retained,
+    inCupInAdvanced: !sections.drawdown && sections.style !== "espresso",
+    moreDetail: mode === "quick",
+  };
+}
+
+/** The newest brew without a score, for "Rate your last brew"; `brews` newest first. */
+export function newestUnrated<T extends Pick<BrewRow, "overall" | "startedAt">>(brews: readonly T[]): T | null {
+  let best: T | null = null;
+  for (const b of brews) if (b.overall <= 0 && (best == null || b.startedAt > best.startedAt)) best = b;
+  return best;
 }
 
 /** Every slider still at its default: the analysis treats taste as missing. */
