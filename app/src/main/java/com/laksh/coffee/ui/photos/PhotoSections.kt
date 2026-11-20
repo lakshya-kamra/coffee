@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,6 +40,7 @@ import com.laksh.coffee.ui.components.QuietButton
 import com.laksh.coffee.ui.components.SectionLabel
 import com.laksh.coffee.ui.components.SoftCard
 import com.laksh.coffee.ui.theme.CoffeeTheme
+import com.laksh.coffee.ui.theme.LocalWindowClass
 import com.laksh.coffee.ui.theme.Motion
 import kotlinx.coroutines.delay
 
@@ -102,9 +104,11 @@ private fun ViewerHost(
     openUid: String?,
     onClose: () -> Unit,
     kinds: List<String>,
+    onStep: (String) -> Unit,
 ) {
     if (openUid == null) return
-    val photo = ui.photos.firstOrNull { it.uid == openUid }
+    val index = ui.photos.indexOfFirst { it.uid == openUid }
+    val photo = ui.photos.getOrNull(index)
     if (photo == null) {
         if (ui.loaded) LaunchedEffect(openUid) { onClose() }
         return
@@ -113,6 +117,10 @@ private fun ViewerHost(
         photo = photo,
         kinds = kinds,
         canSend = vm.owner is PhotoOwner.Brew,
+        position = index,
+        count = ui.photos.size,
+        // Clamped, so a key held past either end stays on the last photo.
+        onStep = { by -> ui.photos.getOrNull((index + by).coerceIn(0, ui.photos.lastIndex))?.let { onStep(it.uid) } },
         onDismiss = onClose,
         onKind = { vm.setKind(photo, it) },
         onCaption = { vm.setCaption(photo, it) },
@@ -168,19 +176,22 @@ fun ReviewPhotos(brewLogId: Long, modifier: Modifier = Modifier) {
     Column(modifier) {
         SectionLabel("PHOTOS")
         SoftCard {
-            Text(
-                "A photo of the bed says more than any shape on this list.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = c.inkHigh,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Kept on this phone, saved without location or camera details. Bed and cup photos " +
-                    "go with an analysis of this brew when your model can see images; open one to keep it out.",
-                style = MaterialTheme.typography.bodySmall,
-                color = c.inkMid,
-            )
-            Spacer(Modifier.height(12.dp))
+            // A short window has no room for the explainer (v4 §3.6 S): the strip says enough.
+            if (!LocalWindowClass.current.isShort) {
+                Text(
+                    "A photo of the bed says more than any shape on this list.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = c.inkHigh,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Kept on this phone, saved without location or camera details. Bed and cup photos " +
+                        "go with an analysis of this brew when your model can see images; open one to keep it out.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = c.inkMid,
+                )
+                Spacer(Modifier.height(12.dp))
+            }
             PhotoStrip(
                 photos = ui.photos,
                 onAdd = add.takeIf { !ui.full },
@@ -191,7 +202,7 @@ fun ReviewPhotos(brewLogId: Long, modifier: Modifier = Modifier) {
             PhotoMessage(ui.message, vm::clearMessage)
         }
     }
-    ViewerHost(vm, ui, open, { open = null }, PhotoKinds.FOR_BREW)
+    ViewerHost(vm, ui, open, { open = null }, PhotoKinds.FOR_BREW, onStep = { open = it })
 }
 
 private val REVIEW_KINDS = listOf(PhotoKinds.BED, PhotoKinds.CUP)
@@ -206,6 +217,7 @@ fun BrewDetailPhotos(
     openUid: String?,
     onOpen: (String?) -> Unit,
     modifier: Modifier = Modifier,
+    gutter: Dp = 16.dp,
 ) {
     val owner = remember(brewLogId) { PhotoOwner.Brew(brewLogId) }
     val vm = photosViewModel(owner)
@@ -215,19 +227,19 @@ fun BrewDetailPhotos(
 
     Column(modifier.fillMaxWidth()) {
         if (ui.photos.isNotEmpty() || ui.adding > 0) {
-            SectionLabel("PHOTOS", Modifier.padding(horizontal = 16.dp))
+            SectionLabel("PHOTOS", Modifier.padding(horizontal = gutter))
             PhotoStrip(
                 photos = ui.photos,
                 onAdd = add.takeIf { !ui.full },
                 onOpen = { onOpen(it.uid) },
                 allowedKinds = PhotoKinds.FOR_BREW,
                 adding = ui.adding,
-                contentPadding = PaddingValues(horizontal = 16.dp),
+                contentPadding = PaddingValues(horizontal = gutter),
                 onCanvas = true,
             )
         } else if (ui.loaded) {
             Spacer(Modifier.height(8.dp))
-            Box(Modifier.padding(horizontal = 8.dp)) {
+            Box(Modifier.padding(horizontal = (gutter - 8.dp).coerceAtLeast(0.dp))) {
                 QuietButton(text = "Add photo", onClick = { menu = true }, icon = Icons.Rounded.AddAPhoto)
                 AddPhotoMenu(
                     expanded = menu,
@@ -241,9 +253,9 @@ fun BrewDetailPhotos(
                 )
             }
         }
-        PhotoMessage(ui.message, vm::clearMessage, Modifier.padding(horizontal = 16.dp))
+        PhotoMessage(ui.message, vm::clearMessage, Modifier.padding(horizontal = gutter))
     }
-    ViewerHost(vm, ui, openUid, { onOpen(null) }, PhotoKinds.FOR_BREW)
+    ViewerHost(vm, ui, openUid, { onOpen(null) }, PhotoKinds.FOR_BREW, onStep = { onOpen(it) })
 }
 
 /** The bean editor's bag photo row. Only for a bean that is already saved: a photo needs a row to belong to. */
@@ -274,7 +286,7 @@ fun BagPhotos(beanId: Long, modifier: Modifier = Modifier) {
         )
         PhotoMessage(ui.message, vm::clearMessage)
     }
-    ViewerHost(vm, ui, open, { open = null }, PhotoKinds.FOR_BEAN)
+    ViewerHost(vm, ui, open, { open = null }, PhotoKinds.FOR_BEAN, onStep = { open = it })
 }
 
 /** For callers that show a photo they hold (the analysis card's thumbnails). */

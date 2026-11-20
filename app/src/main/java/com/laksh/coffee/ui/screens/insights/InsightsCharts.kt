@@ -2,6 +2,11 @@ package com.laksh.coffee.ui.screens.insights
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import com.laksh.coffee.core.screenDate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,17 +61,40 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-private val AXIS_DAY_MONTH: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
-
-/** "6 SEP", or "TODAY" when the brew was on [today]; pass null where TODAY must not appear. */
+/** "SEP 6" or "6 SEP" by locale, or "TODAY" when the brew was on [today]; pass null where TODAY must not appear. */
 private fun axisDate(epochMs: Long, today: LocalDate?): String {
     val date = Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()).toLocalDate()
-    return if (date == today) "TODAY" else AXIS_DAY_MONTH.format(date).uppercase()
+    return if (date == today) "TODAY" else screenDate(epochMs).uppercase()
+}
+
+/**
+ * Which points get a date under the x-axis: the first, the last, and evenly spaced ones between,
+ * at most [max]. Pure, so the spacing is tested without a canvas.
+ */
+internal fun tickIndices(count: Int, max: Int): List<Int> {
+    if (count <= 0) return emptyList()
+    if (count <= max) return (0 until count).toList()
+    val steps = (max - 1).coerceAtLeast(1)
+    return (0..steps).map { i -> ((count - 1) * i / steps.toFloat()).roundToInt() }.distinct()
+}
+
+/** The index of the point nearest [x], given each point's x as a fraction of [width]. */
+internal fun nearestIndex(fractions: List<Float>, x: Float, width: Float): Int? {
+    if (fractions.isEmpty() || width <= 0f) return null
+    var best = 0
+    var bestD = Float.MAX_VALUE
+    fractions.forEachIndexed { i, f ->
+        val d = abs(f * width - x)
+        if (d < bestD) {
+            bestD = d
+            best = i
+        }
+    }
+    return best
 }
 
 /**
@@ -101,15 +130,19 @@ private fun gridSteps(lo: Float, hi: Float): List<Int> {
  * reading each bar's Animatable in draw.
  */
 @Composable
-internal fun ScoreBars(points: List<ScorePoint>, modifier: Modifier = Modifier) {
+internal fun ScoreBars(points: List<ScorePoint>, modifier: Modifier = Modifier, maxTicks: Int = 4, onOpen: ((Long) -> Unit)? = null) {
     val c = CoffeeTheme.colors
     val measurer = rememberTextMeasurer()
     val ink = chartInks()
     // Remembered: a fresh list per recomposition would defeat drawWithCache below.
     val barColors = remember(points, ink) { points.map { ink.getValue(scoreStatus(it.score)) } }
     val today = LocalToday.current
-    val startText = remember(points, today) { points.firstOrNull()?.let { axisDate(it.at, today.takeIf { points.size == 1 }) } }
-    val endText = remember(points, today) { if (points.size > 1) axisDate(points.last().at, today) else null }
+    // Dates under the bars at even steps (v4 §3.9): first, last and a few between.
+    val ticks = remember(points, today, maxTicks) {
+        tickIndices(points.size, maxTicks).map { i -> i to axisDate(points[i].at, today.takeIf { i == points.lastIndex }) }
+    }
+    val fractions = remember(points) { points.indices.map { i -> (i + 0.5f) / points.size } }
+    val tapLabel = "Open a brew"
 
     // Bars grow once. Keyed on the count, so a new brew regrows the set but a re-emission of
     // the same brews leaves them standing. "Played" is saved, so scrolling the card away and
@@ -131,18 +164,34 @@ internal fun ScoreBars(points: List<ScorePoint>, modifier: Modifier = Modifier) 
     Spacer(
         modifier
             .fillMaxWidth()
-            .height(112.dp)
+            .height(120.dp)
+            .then(
+                if (onOpen != null && points.isNotEmpty()) {
+                    // Tap a bar to open that brew; the bars sit in the plot left of the score labels.
+                    Modifier
+                        .pointerInput(points) {
+                            detectTapGestures { pos ->
+                                val plotW = size.width - 22.dp.toPx()
+                                nearestIndex(fractions, pos.x, plotW)?.let { onOpen(points[it].id) }
+                            }
+                        }
+                        .semantics { onClick(label = tapLabel) { onOpen(points.last().id); true } }
+                } else {
+                    Modifier
+                },
+            )
             .drawWithCache {
                 val labelStyle = Micro.copy(color = c.inkLow)
                 val ten = measurer.measure("10", labelStyle)
                 val five = measurer.measure("5", labelStyle)
-                val start = startText?.let { measurer.measure(it, labelStyle) }
-                val end = endText?.let { measurer.measure(it, labelStyle) }
+                val tickLabels = ticks.map { (i, text) -> i to measurer.measure(text, labelStyle) }
 
                 val plotRight = size.width - 22.dp.toPx()
                 // Half a label of headroom so the "10" tick is not clipped at the top edge.
                 val plotTop = ten.size.height / 2f
-                val plotBottom = size.height - 16.dp.toPx()
+                // Room under the plot for the dates at whatever text size is set.
+                val dateBand = (tickLabels.maxOfOrNull { it.second.size.height } ?: 0) + 4.dp.toPx()
+                val plotBottom = size.height - dateBand
                 val plotH = plotBottom - plotTop
                 val y10 = plotTop
                 val y5 = plotTop + plotH / 2f
@@ -175,8 +224,18 @@ internal fun ScoreBars(points: List<ScorePoint>, modifier: Modifier = Modifier) 
                     }
 
                     drawLine(c.hairline, Offset(0f, plotBottom), Offset(plotRight, plotBottom), strokeWidth = 1f)
-                    start?.let { drawText(it, topLeft = Offset(0f, size.height - it.size.height)) }
-                    end?.let { drawText(it, topLeft = Offset(plotRight - it.size.width, size.height - it.size.height)) }
+                    // Each date centred under its bar, kept inside the plot, and skipped where it
+                    // would touch the one before it.
+                    var lastRight = Float.NEGATIVE_INFINITY
+                    val gap = 6.dp.toPx()
+                    tickLabels.forEach { (i, label) ->
+                        val cx = slot * (i + 0.5f)
+                        val x = (cx - label.size.width / 2f).coerceIn(0f, (plotRight - label.size.width).coerceAtLeast(0f))
+                        if (x >= lastRight + gap) {
+                            drawText(label, topLeft = Offset(x, size.height - label.size.height))
+                            lastRight = x + label.size.width
+                        }
+                    }
                 }
             }
     )
@@ -187,10 +246,27 @@ internal fun ScoreBars(points: List<ScorePoint>, modifier: Modifier = Modifier) 
  * sits behind the points, so "where the good cups were" reads before any number does.
  */
 @Composable
-internal fun GrindJourneyChart(series: GrindSeries, modifier: Modifier = Modifier) {
+internal fun GrindJourneyChart(series: GrindSeries, modifier: Modifier = Modifier, maxTicks: Int = 3, onOpen: ((Long) -> Unit)? = null) {
     val c = CoffeeTheme.colors
     val measurer = rememberTextMeasurer()
     val points = series.points
+    val today = LocalToday.current
+    // Where each point sits across the plot, by time (0..1); shared by drawing and tapping.
+    val fractions = remember(points) {
+        val t0 = points.firstOrNull()?.at ?: 0L
+        val span = ((points.lastOrNull()?.at ?: 0L) - t0).toFloat()
+        points.indices.map { i ->
+            when {
+                span > 0f -> (points[i].at - t0) / span
+                points.size > 1 -> i / (points.size - 1f)
+                else -> 0.5f
+            }
+        }
+    }
+    val ticks = remember(points, today, maxTicks) {
+        tickIndices(points.size, maxTicks).map { i -> i to axisDate(points[i].at, today.takeIf { i == points.lastIndex }) }
+    }
+    val tapLabel = "Open a brew"
     val ink = chartInks()
     val pointColors = remember(points, ink) { points.map { ink.getValue(scoreStatus(it.score)) } }
     val bandColor = c.good.copy(alpha = if (c.isDark) 0.12f else 0.10f)
@@ -213,21 +289,39 @@ internal fun GrindJourneyChart(series: GrindSeries, modifier: Modifier = Modifie
     Spacer(
         modifier
             .fillMaxWidth()
-            .height(176.dp)
+            .height(196.dp)
+            .then(
+                if (onOpen != null && points.isNotEmpty()) {
+                    Modifier
+                        .pointerInput(points) {
+                            detectTapGestures { pos ->
+                                val inset = 8.dp.toPx()
+                                val plotW = size.width - 28.dp.toPx() - inset * 2
+                                nearestIndex(fractions, pos.x - inset, plotW)?.let { onOpen(points[it].id) }
+                            }
+                        }
+                        .semantics { onClick(label = tapLabel) { onOpen(points.last().id); true } }
+                } else {
+                    Modifier
+                },
+            )
             .drawWithCache {
                 val axisStyle = Micro.copy(color = c.inkLow)
                 val valueStyle = Num.Inline.copy(fontSize = 11.sp, lineHeight = 14.sp, color = c.inkLow)
                 val coarser = measurer.measure("COARSER ↑", axisStyle)
                 val finer = measurer.measure("FINER ↓", axisStyle)
+                val tickLabels = ticks.map { (i, text) -> i to measurer.measure(text, axisStyle) }
+                val dateBand = (tickLabels.maxOfOrNull { it.second.size.height } ?: 0) + 4.dp.toPx()
 
                 val minClicks = points.minOfOrNull { it.clicks } ?: 0
                 val maxClicks = points.maxOfOrNull { it.clicks } ?: 0
                 val lo = (minClicks - 3).toFloat()
                 val hi = (maxClicks + 3).toFloat()
 
-                // The axis words live in their own top and bottom gutters, never over a point.
+                // The axis words live in their own top and bottom gutters, never over a point;
+                // the dates get a row of their own under "FINER".
                 val plotTop = coarser.size.height + 4.dp.toPx()
-                val plotBottom = size.height - finer.size.height - 4.dp.toPx()
+                val plotBottom = size.height - dateBand - finer.size.height - 4.dp.toPx()
                 val plotH = plotBottom - plotTop
                 val rightGutter = 28.dp.toPx()
                 val plotRight = size.width - rightGutter
@@ -241,16 +335,7 @@ internal fun GrindJourneyChart(series: GrindSeries, modifier: Modifier = Modifie
                     return if (series.lowerIsFiner) plotBottom - f * plotH else plotTop + f * plotH
                 }
 
-                val t0 = points.firstOrNull()?.at ?: 0L
-                val span = ((points.lastOrNull()?.at ?: 0L) - t0).toFloat()
-                val xs = FloatArray(points.size) { i ->
-                    val f = when {
-                        span > 0f -> (points[i].at - t0) / span
-                        points.size > 1 -> i / (points.size - 1f)
-                        else -> 0.5f
-                    }
-                    xLeft + f * (xRight - xLeft)
-                }
+                val xs = FloatArray(points.size) { i -> xLeft + fractions[i] * (xRight - xLeft) }
                 val ys = FloatArray(points.size) { i -> yOf(points[i].clicks.toFloat()) }
                 val line = Path().apply {
                     xs.indices.forEach { i -> if (i == 0) moveTo(xs[i], ys[i]) else lineTo(xs[i], ys[i]) }
@@ -302,7 +387,16 @@ internal fun GrindJourneyChart(series: GrindSeries, modifier: Modifier = Modifie
                         drawText(bandLabel, topLeft = Offset(bandLabelX, mid - bandLabel.size.height / 2f))
                     }
                     drawText(coarser, topLeft = Offset.Zero)
-                    drawText(finer, topLeft = Offset(0f, size.height - finer.size.height))
+                    drawText(finer, topLeft = Offset(0f, plotBottom + 2.dp.toPx()))
+                    var lastRight = Float.NEGATIVE_INFINITY
+                    val gap = 6.dp.toPx()
+                    tickLabels.forEach { (i, label) ->
+                        val x = (xs[i] - label.size.width / 2f).coerceIn(0f, (plotRight - label.size.width).coerceAtLeast(0f))
+                        if (x >= lastRight + gap) {
+                            drawText(label, topLeft = Offset(x, size.height - label.size.height))
+                            lastRight = x + label.size.width
+                        }
+                    }
 
                     // The line arrives with the first point rather than ahead of every point. It
                     // is no heavier than a neutral point, so the coloured points read first.
@@ -350,7 +444,7 @@ internal fun RankedList(items: List<Ranked>, modifier: Modifier = Modifier, max:
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .heightIn(min = 56.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(

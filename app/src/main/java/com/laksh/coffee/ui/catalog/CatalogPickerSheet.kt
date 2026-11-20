@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.domain.catalog.CatalogKind
 import com.laksh.coffee.domain.catalog.SearchDoc
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.FieldWell
 import com.laksh.coffee.ui.components.IconWell
@@ -97,7 +98,8 @@ fun CatalogPickerSheet(
         scope.launch { sheetState.hide() }.invokeOnCompletion { action() }
     }
 
-    CoffeeSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    // A picker: a sheet on phones, a dialog at expanded and up (v4 §2.4).
+    CoffeeSheet(onDismissRequest = onDismiss, sheetState = sheetState, role = SheetRole.Picker) {
         SheetTitle(title)
         Spacer(Modifier.height(8.dp))
         CatalogPickerContent(

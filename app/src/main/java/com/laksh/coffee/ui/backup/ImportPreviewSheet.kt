@@ -31,6 +31,7 @@ import com.laksh.coffee.domain.backup.MergeMode
 import com.laksh.coffee.ui.catalog.SheetNote
 import com.laksh.coffee.ui.catalog.SheetTitle
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.HairLine
 import com.laksh.coffee.ui.components.PrimaryButton
 import com.laksh.coffee.ui.components.SecondaryButton
@@ -58,7 +59,8 @@ fun ImportPreviewSheet(
         skipPartiallyExpanded = true,
         confirmValueChange = { it != SheetValue.Hidden || !locked },
     )
-    CoffeeSheet(onDismissRequest = { if (!importing) onDismiss() }, sheetState = sheetState) {
+    // Something to read before acting: the content role (a centred dialog when wide, v4 §2.4).
+    CoffeeSheet(onDismissRequest = { if (!importing) onDismiss() }, sheetState = sheetState, role = SheetRole.Content) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             SheetTitle("Restore from a backup")
             Spacer(Modifier.height(8.dp))

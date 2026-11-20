@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.RadioRow
 import com.laksh.coffee.ui.components.Status
@@ -81,7 +82,7 @@ internal fun ProviderPickerSheet(
     onDismiss: () -> Unit,
 ) {
     val c = CoffeeTheme.colors
-    CoffeeSheet(onDismissRequest = onDismiss) {
+    CoffeeSheet(onDismissRequest = onDismiss, role = SheetRole.Picker) {
         Text("Provider", style = MaterialTheme.typography.headlineSmall, color = c.inkHigh)
         Spacer(Modifier.height(4.dp))
         Text(

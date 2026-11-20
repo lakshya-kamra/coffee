@@ -343,12 +343,14 @@ private fun LazyListScope.startFrom(state: HomeUiState, a: TodayActions, layout:
     rows.forEachIndexed { i, row ->
         item(key = "experts-$i-${row.first().id}", contentType = "experts-row") {
             Centered(max, gutter, Modifier.appear(this).padding(bottom = 16.dp)) {
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Top-aligned, not intrinsic height: the card's route row is a BoxWithConstraints,
+                // and asking it for intrinsics crashed the medium layout on rotation (V4-AND3 glue).
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     row.forEach { recipe ->
                         RecipeCard(
                             recipe = recipe,
                             onClick = { a.openRecipe(recipe.id, SharedKeys.FROM_HOME) },
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            modifier = Modifier.weight(1f),
                             compact = true,
                             sharedKeyPrefix = SharedKeys.FROM_HOME,
                         )

@@ -114,6 +114,7 @@ import com.laksh.coffee.ui.recipes.RecipeEditorScreen
 import com.laksh.coffee.ui.screens.brew.BrewScreen
 import com.laksh.coffee.ui.screens.gear.GearScreen
 import com.laksh.coffee.ui.screens.history.BrewDetailScreen
+import com.laksh.coffee.ui.screens.history.CompareScreen
 import com.laksh.coffee.ui.screens.history.HistoryScreen
 import com.laksh.coffee.ui.screens.home.HomeScreen
 import com.laksh.coffee.ui.screens.insights.InsightsScreen
@@ -153,6 +154,8 @@ object Routes {
     const val REVIEW = "review/{logId}"
     const val HISTORY = "history"
     const val BREW_DETAIL = "brewDetail/{logId}"
+    // Two brews side by side (v4 §3.8): the one you came from first.
+    const val COMPARE = "compare/{a}/{b}"
     const val GEAR = "gear"
     const val ASK = "ask"
 
@@ -168,6 +171,7 @@ object Routes {
         "brew/${segment(id)}" + (if (againLogId > 0L) "?again=$againLogId" else "")
     fun review(logId: Long) = "review/$logId"
     fun brewDetail(logId: Long) = "brewDetail/$logId"
+    fun compare(a: Long, b: Long) = "compare/$a/$b"
 
     fun recipeEdit(id: String?, mode: EditorMode, from: String = SharedKeys.FROM_RECIPES): String =
         "recipeEdit?mode=${mode.name.lowercase()}&from=$from" + (id?.let { "&id=${Uri.encode(it)}" } ?: "")
@@ -291,6 +295,7 @@ private fun AppShell(
     val panes = rememberSaveable(saver = PaneController.Saver) { PaneController() }
     val gearPane = rememberSaveable(saver = GearPaneState.Saver) { GearPaneState() }
     val searchFocus = remember { ListSearchFocus() }
+    val tabKeys = remember { TabKeyHandlers() }
     var showShortcuts by rememberSaveable { mutableStateOf(false) }
 
     val navKind = windowClass.nav(sidebarCollapsed)
@@ -328,8 +333,14 @@ private fun AppShell(
     }
 
     // Only ever set by the debug adb hook; lets the emulator open any screen directly.
+    // Applied once: a rotation recreates the activity with the same intent, and re-applying the
+    // route would push a second copy of the page and lose its state (V4-AND3 glue).
+    var routeApplied by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(startRoute) {
-        if (startRoute != null) go(startRoute)
+        if (startRoute != null && !routeApplied) {
+            routeApplied = true
+            go(startRoute)
+        }
     }
 
     // Saved, so a rotation in the middle of setup does not ask the question (and open it) again.
@@ -432,6 +443,7 @@ private fun AppShell(
                 LocalSharedTransitionScope provides this,
                 LocalGearPane provides gearPane,
                 LocalListSearchFocus provides searchFocus,
+                LocalTabKeyHandlers provides tabKeys,
                 LocalNavInset provides navInset,
             ) {
                 Box(
@@ -440,7 +452,8 @@ private fun AppShell(
                         // Ctrl chords before the focused field sees them; plain keys after it, so
                         // a field that takes the character keeps it.
                         .onPreviewKeyEvent { e -> ShortcutKeys.chord(e)?.let(onShortcut) ?: false }
-                        .onKeyEvent { e -> ShortcutKeys.plain(e)?.let(onShortcut) ?: false }
+                        // The tab on screen gets first say (Log's J/K, Gear's N), then the globals.
+                        .onKeyEvent { e -> (atBase && tabKeys.handle(selected, e)) || (ShortcutKeys.plain(e)?.let(onShortcut) ?: false) }
                         .onFocusChanged { if (!it.hasFocus) scope.launch { runCatching { rootFocus.requestFocus() } } }
                         .focusRequester(rootFocus)
                         .focusTarget(),
@@ -488,7 +501,7 @@ private fun AppShell(
                                 visible = baseScope != null || atBase,
                             ) { tab ->
                                 CompositionLocalProvider(LocalCurrentTab provides tab) {
-                                    TabContent(tab, nav, go, panes, windowClass)
+                                    TabContent(tab, nav, go, panes, windowClass, startBrew)
                                 }
                             }
                         }
@@ -567,6 +580,7 @@ private fun TabContent(
     go: (String) -> Unit,
     panes: PaneController,
     windowClass: WindowClass,
+    startBrew: () -> Unit,
 ) {
     when (tab) {
         // Home passes its own shared-key prefix: the carousel and the next-brew pass can show the
@@ -581,8 +595,8 @@ private fun TabContent(
             onPersonalise = { nav.navigate(Routes.ONBOARDING) { launchSingleTop = true } },
         )
         AppTab.Recipes -> RecipesTab(nav, go, panes, windowClass)
-        AppTab.Log -> LogTab(nav, go, panes, windowClass)
-        AppTab.Insights -> InsightsScreen(onOpenLog = { go(Routes.brewDetail(it)) })
+        AppTab.Log -> LogTab(nav, go, panes, windowClass, startBrew)
+        AppTab.Insights -> InsightsScreen(onOpenLog = { go(Routes.brewDetail(it)) }, onBrewNow = startBrew)
         AppTab.Gear -> GearScreen(
             onRunSetup = { nav.navigate(Routes.ONBOARDING) { launchSingleTop = true } },
         )
@@ -642,29 +656,50 @@ private fun RecipesTab(nav: NavHostController, go: (String) -> Unit, panes: Pane
 
 /** Log: the brews alone on narrow windows; at expanded and up beside the chosen or newest brew. */
 @Composable
-private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneController, windowClass: WindowClass) {
+private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneController, windowClass: WindowClass, startBrew: () -> Unit) {
     val history: HistoryViewModel = viewModel(factory = HistoryViewModel.Factory)
     val historyState = history.state.collectAsStateWithLifecycle()
-    val newest by remember(historyState) { derivedStateOf { historyState.value.logs.firstOrNull()?.id } }
+    // The newest brew the list shows, so a filter never leaves the pane on a brew it hides.
+    val newest by remember(historyState) { derivedStateOf { historyState.value.shown.firstOrNull()?.id } }
     val shown = panes.selections.log ?: newest
     val showDetail = windowClass.usesPanes
     val close: () -> Unit = remember(panes) { { panes.clear(AppTab.Log) } }
+    // In the pane, Compare takes the detail's place beside the list. Saved, so a rotation keeps it.
+    var comparing by rememberSaveable { mutableStateOf(0L) }
+    var comparingFor by rememberSaveable { mutableStateOf(0L) }
+    // A compare belongs to the brew it was opened from; choosing another brew drops it.
+    val activeCompare = if (comparingFor == (shown ?: 0L)) comparing else 0L
+    val brewAgain: (String, Long) -> Unit = remember(nav) { { recipeId, logId -> nav.navigate(Routes.brew(recipeId, logId)) } }
     CompositionLocalProvider(LocalPaneSelection provides if (showDetail) shown?.let { PaneDetail.Brew(it) } else null) {
         ListDetailLayout(
             showDetail = showDetail,
             listWidth = windowClass.listPaneWidth,
-            detailKey = shown ?: 0L,
+            detailKey = (shown ?: 0L) to activeCompare,
             backProgress = { panes.backProgress.value },
-            list = { HistoryScreen(onOpenLog = { go(Routes.brewDetail(it)) }, vm = history) },
-        ) { logId ->
-            if (logId <= 0L) {
-                EmptyPane("Your brews show up here. Brew something and rate it to start your log.")
-            } else {
-                CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = close, canClose = panes.selections.log != null)) {
+            list = {
+                HistoryScreen(
+                    onOpenLog = { go(Routes.brewDetail(it)) },
+                    onBrewAgain = brewAgain,
+                    onBrewFirst = startBrew,
+                    vm = history,
+                )
+            },
+        ) { (logId, other) ->
+            when {
+                logId <= 0L -> EmptyPane("Your brews show up here. Brew something and rate it to start your log.")
+                other > 0L -> CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = { comparing = 0L }, canClose = true)) {
+                    CompareScreen(a = logId, b = other, onBack = { comparing = 0L }, onPickOther = { comparing = it })
+                }
+                else -> CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = close, canClose = panes.selections.log != null)) {
                     BrewDetailScreen(
                         logId = logId,
                         onBack = close,
                         onEdit = { nav.navigate(Routes.review(it)) },
+                        onBrewAgain = brewAgain,
+                        onCompare = {
+                            comparingFor = logId
+                            comparing = it
+                        },
                     )
                 }
             }
@@ -874,6 +909,11 @@ private fun DetailNavHost(
                 OnboardingScreen(
                     // Wherever setup was opened from, finishing it lands on Today.
                     onFinished = { go(Routes.HOME) },
+                    // "Start my first brew": Today under the brew, so leaving the brew lands there.
+                    onStartBrew = { id ->
+                        go(Routes.HOME)
+                        nav.navigate(Routes.brew(id)) { launchSingleTop = true }
+                    },
                     onOpenAiSettings = { aiSheet = true },
                 )
                 if (aiSheet) AiSettingsSheet(onDismiss = { aiSheet = false })
@@ -942,11 +982,35 @@ private fun DetailNavHost(
             Routes.BREW_DETAIL,
             arguments = listOf(navArgument("logId") { type = NavType.LongType }),
         ) { entry ->
+            val logId = entry.arguments?.getLong("logId") ?: 0L
             DetailPage(besideNav = true) {
                 BrewDetailScreen(
-                    logId = entry.arguments?.getLong("logId") ?: 0L,
+                    logId = logId,
                     onBack = { nav.popBackStack() },
                     onEdit = { nav.navigate(Routes.review(it)) },
+                    onBrewAgain = { recipeId, id -> nav.navigate(Routes.brew(recipeId, id)) },
+                    onCompare = { other -> nav.navigate(Routes.compare(logId, other)) },
+                )
+            }
+        }
+
+        composable(
+            Routes.COMPARE,
+            arguments = listOf(
+                navArgument("a") { type = NavType.LongType },
+                navArgument("b") { type = NavType.LongType },
+            ),
+        ) { entry ->
+            val a = entry.arguments?.getLong("a") ?: 0L
+            DetailPage(besideNav = true) {
+                CompareScreen(
+                    a = a,
+                    b = entry.arguments?.getLong("b") ?: 0L,
+                    onBack = { nav.popBackStack() },
+                    // Another brew replaces this page, so back still lands on the detail.
+                    onPickOther = { other ->
+                        nav.navigate(Routes.compare(a, other)) { popUpTo(Routes.COMPARE) { inclusive = true } }
+                    },
                 )
             }
         }

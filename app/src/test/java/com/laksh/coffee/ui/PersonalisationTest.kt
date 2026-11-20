@@ -114,8 +114,9 @@ class PersonalisationTest {
 
     @Test
     fun theEditorKnowsWhatIsBelowTheFoldAndCleansUp() {
-        assertFalse(hasDetails(BeanEntity(name = "New", roaster = "Square Mile", origin = "Kenya", region = "Nyeri", farm = "X")))
-        assertTrue(hasDetails(BeanEntity(name = "Old", roastedOnEpochDay = today)))
+        // v4 §4.7: name, roaster, form, roast date, level and bag size sit above the fold.
+        assertFalse(hasDetails(BeanEntity(name = "New", roaster = "Square Mile", roastedOnEpochDay = today, roastLevelId = "light", bagSizeG = 250.0)))
+        assertTrue(hasDetails(BeanEntity(name = "Old", origin = "Kenya", region = "Nyeri", farm = "X")))
         assertTrue(hasDetails(BeanEntity(name = "Old", processId = "washed")))
         assertTrue(hasDetails(BeanEntity(name = "Old", tastingNotes = "peach")))
 
@@ -197,13 +198,14 @@ class PersonalisationTest {
     }
 
     @Test
-    fun brewerChipsLeadWithTheNineMostCommon() {
+    fun brewerChipsLeadWithTheTenMostCommon() {
         val groups = Onboarding.brewerGroups(Catalog.brewers)
         assertEquals("Most common", groups.first().title)
+        // v4 §4.1: what most people own, drip machine first.
         assertEquals(
             listOf(
-                "hario-v60-02", "chemex", "kalita-wave-185", "hario-switch", "aeropress",
-                "french-press", "moka-pot", "espresso-machine", "cold-brew-jar",
+                "drip-machine", "french-press", "hario-v60-02", "aeropress", "moka-pot",
+                "espresso-machine", "drip-bag", "south-indian-filter", "phin", "cold-brew-jar",
             ),
             groups.first().brewers.map { it.first },
         )

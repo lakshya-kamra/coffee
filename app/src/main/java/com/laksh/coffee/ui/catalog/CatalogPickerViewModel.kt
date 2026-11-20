@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.laksh.coffee.app
 import com.laksh.coffee.data.catalog.CatalogRepository
 import com.laksh.coffee.data.prefs.Settings
+import com.laksh.coffee.domain.catalog.Catalog
 import com.laksh.coffee.domain.catalog.CatalogKind
 import com.laksh.coffee.domain.catalog.SearchDoc
 import kotlinx.coroutines.Dispatchers
@@ -84,15 +85,22 @@ class CatalogPickerViewModel(
         }
         val docs = index.browse.map { it.doc }
         val rows = ArrayList<PickerRow>(docs.size + 16)
-        var ordered = docs
+        val ordered = docs
         if (kind == CatalogKind.Roaster) {
-            val favourites = docs.filter { it.id in prefs.favourites }
-            if (favourites.isNotEmpty()) {
-                rows += PickerRow.Header("Your roasters")
-                favourites.forEach { rows += PickerRow.Item(it, pinned = true) }
+            // v4 §4.7: favourites and your region, then supermarket brands, then specialty A-Z.
+            val byId = docs.associateBy { it.id }
+            val roasters = Catalog.roasters.filter { it.id in byId }.map {
+                RoasterLike(it.id, it.name, it.area, it.mainstream, it.regions)
             }
-            // Where you buy coffee comes first; sortedBy is stable, so the rest keep their order.
-            if (prefs.homeArea.isNotBlank()) ordered = docs.sortedBy { if (it.group == prefs.homeArea) 0 else 1 }
+            RoasterOrder.groups(roasters, prefs.homeArea, prefs.favourites).forEach { g ->
+                rows += PickerRow.Header(g.name)
+                val pinned = g.name == RoasterOrder.FAVOURITES
+                g.ids.forEach { id -> byId[id]?.let { rows += PickerRow.Item(it, pinned = pinned) } }
+            }
+            // Anything the catalog index has that the roaster list does not (never expected).
+            val listed = roasters.map { it.id }.toSet()
+            docs.filter { it.id !in listed }.forEach { rows += PickerRow.Item(it) }
+            return PickerState(false, "", rows, titles)
         }
         if (kind == CatalogKind.Brewer) {
             // The brewers you own are the ones you are most likely to mean.

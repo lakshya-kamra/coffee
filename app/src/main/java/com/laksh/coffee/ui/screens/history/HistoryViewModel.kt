@@ -11,14 +11,22 @@ import com.laksh.coffee.data.db.entity.BeanEntity
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
 import com.laksh.coffee.data.repo.CoffeeRepository
+import com.laksh.coffee.data.db.CoffeeDatabase
 import com.laksh.coffee.domain.BrewReport
+import com.laksh.coffee.domain.LogFilter
+import com.laksh.coffee.domain.LogQuery
+import com.laksh.coffee.domain.LogSort
 import com.laksh.coffee.domain.Recipe
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -33,8 +41,22 @@ data class HistoryState(
     val analysedIds: Set<Long> = emptySet(),
     /** Planned total seconds per recipe id, so each row can show how far off target it ran. */
     val targetSecByRecipe: Map<String, Int> = emptyMap(),
+    /** The search and filter chips (v4 §4.11). */
+    val filter: LogFilter = LogFilter(),
+    /** Brews with at least one photo, for "With photos". */
+    val photoIds: Set<Long> = emptySet(),
 ) {
     // Built once per state (off the main thread for every update), never on a read in composition.
+
+    /** What the list shows: the search, the chips and the sort applied. */
+    val shown: List<BrewLogEntity> = if (filter == LogFilter()) logs else LogQuery.filter(logs, filter, photoIds)
+
+    /** Shown logs bucketed by day, newest first, for the day eyebrows. Best rated is one block. */
+    val shownByDay: List<Pair<LocalDate?, List<BrewLogEntity>>> = if (filter.sort == LogSort.Best) {
+        if (shown.isEmpty()) emptyList() else listOf(null to shown)
+    } else {
+        shown.groupBy { localDate(it.startedAt) }.toList().sortedByDescending { it.first }
+    }
 
     /** Logs bucketed by day, newest first, for the day eyebrows. */
     val byDay: List<Pair<LocalDate, List<BrewLogEntity>>> = logs
@@ -65,19 +87,41 @@ private fun localDate(epochMs: Long): LocalDate =
 class HistoryViewModel(
     private val repo: CoffeeRepository,
     analysis: AnalysisRepository,
+    /** Ids of brews that have a photo; read again whenever the log changes. */
+    private val photoBrewIds: suspend () -> Set<Long> = { emptySet() },
+    /** Where a delete still runs after this screen's scope is gone (the app's scope). */
+    private val commitScope: CoroutineScope? = null,
 ) : ViewModel() {
 
+    private val filter = MutableStateFlow(LogFilter())
+
+    /** Brews deleted but still undoable: hidden at once, really deleted when the undo runs out. */
+    private val pending = MutableStateFlow<Map<Long, BrewLogEntity>>(emptyMap())
+    private val pendingJobs = mutableMapOf<Long, Job>()
+
+    /** The brew just deleted, for the undo bar; null when there is nothing to undo. */
+    private val _undo = MutableStateFlow<BrewLogEntity?>(null)
+    val undo: StateFlow<BrewLogEntity?> = _undo
+
+    private val photos = repo.allLogs.map { runCatching { photoBrewIds() }.getOrDefault(emptySet()) }
+
+    private data class Base(val logs: List<BrewLogEntity>, val beans: List<BeanEntity>, val ids: Set<Long>, val targets: Map<String, Int>)
+
     val state: StateFlow<HistoryState> = combine(
-        repo.allLogs,
-        repo.activeBeans,
-        analysis.analysedBrewIds,
-        repo.recipes,
-    ) { logs, beans, ids, recipes ->
+        combine(repo.allLogs, repo.activeBeans, analysis.analysedBrewIds, repo.recipes) { logs, beans, ids, recipes ->
+            Base(logs, beans, ids, recipes.associate { it.id to it.totalSec })
+        },
+        filter,
+        pending,
+        photos,
+    ) { base, f, hidden, photoIds ->
         HistoryState(
-            logs = logs,
-            beans = beans,
-            analysedIds = ids,
-            targetSecByRecipe = recipes.associate { it.id to it.totalSec },
+            logs = if (hidden.isEmpty()) base.logs else base.logs.filter { it.id !in hidden },
+            beans = base.beans,
+            analysedIds = base.ids,
+            targetSecByRecipe = base.targets,
+            filter = f,
+            photoIds = photoIds,
         )
     }.flowOn(Dispatchers.Default).stateIn(
         viewModelScope,
@@ -94,9 +138,66 @@ class HistoryViewModel(
         viewModelScope.launch { repo.deleteLog(log) }
     }
 
+    fun setFilter(f: LogFilter) {
+        filter.value = f
+    }
+
+    fun updateFilter(change: (LogFilter) -> LogFilter) {
+        filter.value = change(filter.value)
+    }
+
+    /**
+     * Delete with undo (v4 §2.7): the row goes at once, the brew (and its photos) only after
+     * [UNDO_MS], so "Undo" brings back everything. A later delete commits the earlier one.
+     */
+    fun deleteWithUndo(log: BrewLogEntity) {
+        _undo.value?.let { commit(it.id) }
+        pending.value = pending.value + (log.id to log)
+        _undo.value = log
+        pendingJobs[log.id] = viewModelScope.launch {
+            delay(UNDO_MS)
+            commit(log.id)
+        }
+    }
+
+    fun undoDelete() {
+        val log = _undo.value ?: return
+        pendingJobs.remove(log.id)?.cancel()
+        pending.value = pending.value - log.id
+        _undo.value = null
+    }
+
+    private fun commit(id: Long) {
+        pendingJobs.remove(id)?.cancel()
+        val log = pending.value[id] ?: return
+        if (_undo.value?.id == id) _undo.value = null
+        // The app's scope, so a delete started just before the screen goes still happens.
+        (commitScope ?: viewModelScope).launch {
+            repo.deleteLog(log)
+            pending.value = pending.value - id
+        }
+    }
+
+    override fun onCleared() {
+        pending.value.keys.toList().forEach(::commit)
+        super.onCleared()
+    }
+
     companion object {
+        const val UNDO_MS = 8_000L
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer { HistoryViewModel(this.app.repository, this.app.analysis) }
+            initializer {
+                val app = this.app
+                HistoryViewModel(
+                    app.repository,
+                    app.analysis,
+                    photoBrewIds = {
+                        CoffeeDatabase.get(app).photoDao().all().mapNotNullTo(HashSet()) { it.brewLogId }
+                    },
+                    commitScope = app.appScope,
+                )
+            }
         }
     }
 }

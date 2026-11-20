@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,15 +45,16 @@ import com.laksh.coffee.ui.catalog.ChipGroup
 import com.laksh.coffee.ui.catalog.Expandable
 import com.laksh.coffee.ui.catalog.PickerField
 import com.laksh.coffee.ui.catalog.SheetNote
-import com.laksh.coffee.ui.catalog.SheetTitle
+import com.laksh.coffee.ui.catalog.StepperRow
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.EditorChrome
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.DialReadingInput
 import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.FieldWell
 import com.laksh.coffee.ui.components.GrindRangeCard
 import com.laksh.coffee.ui.components.GrindRanges
 import com.laksh.coffee.ui.components.PillButton
-import com.laksh.coffee.ui.components.PrimaryButton
 import com.laksh.coffee.ui.components.QuietButton
 import com.laksh.coffee.ui.components.SelectableChip
 import com.laksh.coffee.ui.components.SoftCard
@@ -63,9 +65,10 @@ import com.laksh.coffee.ui.theme.CoffeeTheme
 import kotlinx.coroutines.launch
 
 /**
- * Add or edit a grinder. Picking one from the list fills its identity and its scale from the
- * catalog; the scale stays editable, and a row that no longer matches the list says "Edited".
- * [method] is what this grinder is brewed with most, so its starting range sits on top.
+ * Add or edit a grinder in a sheet (editor role, v4 §2.4). Picking one from the list fills its
+ * identity and its scale from the catalog; the scale stays editable, and a row that no longer
+ * matches the list says "Edited". [method] is what this grinder is brewed with most, so its
+ * starting range sits on top.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,152 +78,203 @@ fun GrinderEditorSheet(
     onDismiss: () -> Unit,
     onSave: (GrinderEntity) -> Unit,
     onDelete: (() -> Unit)?,
+    start: GrinderEntity = initial,
+    onDraft: (GrinderEntity) -> Unit = {},
 ) {
     val colors = CoffeeTheme.colors
-    var g by remember { mutableStateOf(initial) }
+    // [start] is a draft kept across a rotation; [initial] is what "unsaved" is measured against.
+    var g by remember { mutableStateOf(start) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-    var picking by remember { mutableStateOf(false) }
-    // A grinder typed by hand opens with its fields showing; a listed one keeps them folded.
-    var custom by remember { mutableStateOf(initial.catalogId == null && initial.id != 0L) }
-    var scaleOpen by remember { mutableStateOf(false) }
-    // Bumped whenever the row is refilled from the list, so the text fields re-read their numbers.
-    var fill by remember { mutableIntStateOf(0) }
-
-    val entry: CatalogGrinder? = remember(g.catalogId) { Catalog.grinder(g.catalogId) }
-    val scale: GrindScale = remember(g) { g.scale() }
 
     // Slide the sheet away first; removing it from composition would cut it off in one frame.
     fun dismissThen(action: () -> Unit) {
         scope.launch { sheetState.hide() }.invokeOnCompletion { action() }
     }
 
-    CoffeeSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    CoffeeSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        role = SheetRole.Editor,
+        editor = EditorChrome(
+            title = if (initial.id == 0L) "New grinder" else "Edit grinder",
+            onSave = { if (InlineEdit.canSave(g)) dismissThen { onSave(InlineEdit.tidy(g)) } },
+            canSave = InlineEdit.canSave(g),
+            dirty = InlineEdit.dirty(initial, g),
+            discardBody = DISCARD_GRINDER,
+        ),
+    ) {
         Column(
-            Modifier.verticalScroll(rememberScrollState()),
+            Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SheetTitle(if (initial.id == 0L) "New grinder" else "Edit grinder")
-
-            PickerField(
-                label = "WHICH GRINDER?",
-                value = entry?.display.orEmpty(),
-                onClick = { picking = true },
-                placeholder = "Pick it from the list",
-                helper = when {
-                    entry != null -> CatalogDocs.grinderSubtitle(entry)
-                    custom -> "Not on the list, so you describe it below."
-                    else -> "The list knows how each dial reads, so your numbers mean something."
+            GrinderEditorForm(
+                g = g,
+                savedId = initial.id,
+                method = method,
+                onChange = {
+                    g = it
+                    onDraft(it)
                 },
             )
-
-            if (entry == null && !custom) {
+            if (onDelete != null) {
                 QuietButton(
-                    text = "Not listed? Add it yourself",
-                    onClick = { custom = true },
-                    modifier = Modifier.offset(x = (-8).dp),
+                    text = "Delete this grinder",
+                    onClick = { dismissThen(onDelete) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = colors.fault,
                 )
             }
+        }
+    }
+}
 
-            Expandable(visible = entry == null && custom) {
-                key(fill) { IdentityFields(g = g, onChange = { g = it }) }
+internal const val DISCARD_GRINDER = "You've changed this grinder and haven't saved it."
+
+/**
+ * The grinder editor's fields, shared by the sheet and the inline pane. A blade grinder (setting
+ * unit "s", v4 §4.2) is timed in seconds and has no dial to describe.
+ */
+@Composable
+internal fun GrinderEditorForm(
+    g: GrinderEntity,
+    savedId: Long,
+    method: BrewMethod?,
+    onChange: (GrinderEntity) -> Unit,
+) {
+    val colors = CoffeeTheme.colors
+    var picking by remember { mutableStateOf(false) }
+    // A grinder typed by hand opens with its fields showing; a listed one keeps them folded.
+    var custom by remember { mutableStateOf(g.catalogId == null && savedId != 0L) }
+    var scaleOpen by remember { mutableStateOf(false) }
+    // Bumped whenever the row is refilled from the list, so the text fields re-read their numbers.
+    var fill by remember { mutableIntStateOf(0) }
+    val latest by rememberUpdatedState(g)
+    val set: (GrinderEntity) -> Unit = onChange
+
+    val entry: CatalogGrinder? = remember(g.catalogId) { Catalog.grinder(g.catalogId) }
+    val scale: GrindScale = remember(g) { g.scale() }
+    val blade = g.settingUnit == "s"
+
+    PickerField(
+        label = "WHICH GRINDER?",
+        value = entry?.display.orEmpty(),
+        onClick = { picking = true },
+        placeholder = "Pick it from the list",
+        helper = when {
+            blade -> "Timed in seconds: brew setup asks how long you ground for."
+            entry != null -> CatalogDocs.grinderSubtitle(entry)
+            custom -> "Not on the list, so you describe it below."
+            else -> "The list knows how each dial reads, so your numbers mean something."
+        },
+    )
+
+    if (entry == null && !custom) {
+        QuietButton(
+            text = "Not listed? Add it yourself",
+            onClick = { custom = true },
+            modifier = Modifier.offset(x = (-8).dp),
+        )
+    }
+
+    if (blade) {
+        // A blade grinder: one number, how long it runs (v4 §4.2).
+        StepperRow(
+            label = "USUAL GRIND TIME",
+            value = (g.defaultFilterSetting?.toInt() ?: 0).takeIf { it > 0 }?.toString() ?: "—",
+            unit = "s",
+            onMinus = { set(latest.copy(defaultFilterSetting = ((latest.defaultFilterSetting ?: 12.0) - 1).coerceAtLeast(1.0))) },
+            onPlus = { set(latest.copy(defaultFilterSetting = ((latest.defaultFilterSetting ?: 11.0) + 1).coerceAtMost(60.0))) },
+            minusDescription = "One second less",
+            plusDescription = "One second more",
+        )
+        SheetNote("Pulse in short bursts and shake the grinder between them.")
+        ToggleRow(
+            label = "Use this one by default",
+            checked = g.isDefault,
+            onChange = { set(latest.copy(isDefault = it)) },
+        )
+    }
+
+    Expandable(visible = !blade && entry == null && custom) {
+        key(fill) { IdentityFields(g = g, onChange = set) }
+    }
+
+    // ------------------------------------------------------- the scale
+    Expandable(visible = !blade && (entry != null || custom)) {
+        SoftCard(Modifier.fillMaxWidth(), color = colors.surface2) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                EyebrowLabel("THE SCALE", Modifier.weight(1f))
+                val confidence = GrindRanges.confidence(entry?.confidence)
+                when {
+                    entry != null && GrinderMapping.edited(g, entry) -> StatusChip(Status.Attention, "Edited")
+                    confidence != null -> StatusChip(confidence.first, confidence.second)
+                }
             }
-
-            // ------------------------------------------------------- the scale
-            Expandable(visible = entry != null || custom) {
-                SoftCard(Modifier.fillMaxWidth(), color = colors.surface2) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        EyebrowLabel("THE SCALE", Modifier.weight(1f))
-                        val confidence = GrindRanges.confidence(entry?.confidence)
-                        when {
-                            entry != null && GrinderMapping.edited(g, entry) -> StatusChip(Status.Attention, "Edited")
-                            confidence != null -> StatusChip(confidence.first, confidence.second)
-                        }
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        GrinderMapping.scaleWords(g),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.inkHigh,
-                    )
-                    Row(Modifier.offset(x = (-8).dp), verticalAlignment = Alignment.CenterVertically) {
-                        QuietButton(
-                            text = if (scaleOpen) "Done with the scale" else "Edit the scale",
-                            onClick = { scaleOpen = !scaleOpen },
-                        )
-                        if (entry != null && GrinderMapping.edited(g, entry)) {
-                            QuietButton(
-                                text = "Use the list's numbers",
-                                onClick = {
-                                    g = GrinderMapping.withScale(g, entry)
-                                    fill++
-                                },
-                            )
-                        }
-                    }
-                }
-                Expandable(visible = scaleOpen) {
-                    key(fill) { ScaleFields(g = g, onChange = { g = it }) }
-                }
-
-                if (entry != null && entry.setting.dialReading.isNotBlank()) {
-                    Column {
-                        EyebrowLabel("HOW TO READ YOUR DIAL")
-                        Spacer(Modifier.height(4.dp))
-                        SheetNote(entry.setting.dialReading)
-                    }
-                }
-                if (entry != null && entry.setting.entryHint.isNotBlank()) {
-                    Column {
-                        EyebrowLabel("WHAT TO TYPE")
-                        Spacer(Modifier.height(4.dp))
-                        SheetNote(entry.setting.entryHint)
-                    }
-                }
-
-                GrindRangeCard(scale = scale, method = method, inSheet = true)
-
-                key(fill) {
-                    UsualSetting(
-                        label = "USUAL FILTER",
-                        scale = scale,
-                        value = g.defaultFilterSetting,
-                        onValue = { g = g.copy(defaultFilterSetting = it) },
-                    )
-                    UsualSetting(
-                        label = "USUAL ESPRESSO",
-                        scale = scale,
-                        value = g.defaultEspressoSetting,
-                        onValue = { g = g.copy(defaultEspressoSetting = it) },
-                    )
-                }
-                SheetNote("Both optional. Brew setup starts from them; the list never fills them in for you.")
-
-                ToggleRow(
-                    label = "Use this one by default",
-                    checked = g.isDefault,
-                    onChange = { g = g.copy(isDefault = it) },
+            Spacer(Modifier.height(6.dp))
+            Text(
+                GrinderMapping.scaleWords(g),
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.inkHigh,
+            )
+            Row(Modifier.offset(x = (-8).dp), verticalAlignment = Alignment.CenterVertically) {
+                QuietButton(
+                    text = if (scaleOpen) "Done with the scale" else "Edit the scale",
+                    onClick = { scaleOpen = !scaleOpen },
                 )
-            }
-
-            Column(Modifier.padding(top = 8.dp)) {
-                PrimaryButton(
-                    text = "Save",
-                    onClick = { dismissThen { onSave(g.copy(brand = g.brand.trim(), model = g.model.trim())) } },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = g.brand.isNotBlank() || g.model.isNotBlank(),
-                )
-                if (onDelete != null) {
-                    Spacer(Modifier.height(4.dp))
+                if (entry != null && GrinderMapping.edited(g, entry)) {
                     QuietButton(
-                        text = "Delete",
-                        onClick = { dismissThen(onDelete) },
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = colors.fault,
+                        text = "Use the list's numbers",
+                        onClick = {
+                            set(GrinderMapping.withScale(latest, entry))
+                            fill++
+                        },
                     )
                 }
             }
         }
+        Expandable(visible = scaleOpen) {
+            key(fill) { ScaleFields(g = g, onChange = set) }
+        }
+
+        if (entry != null && entry.setting.dialReading.isNotBlank()) {
+            Column {
+                EyebrowLabel("HOW TO READ YOUR DIAL")
+                Spacer(Modifier.height(4.dp))
+                SheetNote(entry.setting.dialReading)
+            }
+        }
+        if (entry != null && entry.setting.entryHint.isNotBlank()) {
+            Column {
+                EyebrowLabel("WHAT TO TYPE")
+                Spacer(Modifier.height(4.dp))
+                SheetNote(entry.setting.entryHint)
+            }
+        }
+
+        GrindRangeCard(scale = scale, method = method, inSheet = true)
+
+        key(fill) {
+            UsualSetting(
+                label = "USUAL FILTER",
+                scale = scale,
+                value = g.defaultFilterSetting,
+                onValue = { set(latest.copy(defaultFilterSetting = it)) },
+            )
+            UsualSetting(
+                label = "USUAL ESPRESSO",
+                scale = scale,
+                value = g.defaultEspressoSetting,
+                onValue = { set(latest.copy(defaultEspressoSetting = it)) },
+            )
+        }
+        SheetNote("Both optional. Brew setup starts from them; the list never fills them in for you.")
+
+        ToggleRow(
+            label = "Use this one by default",
+            checked = g.isDefault,
+            onChange = { set(latest.copy(isDefault = it)) },
+        )
     }
 
     if (picking) {
@@ -232,13 +286,13 @@ fun GrinderEditorSheet(
             onPick = { pick ->
                 when (pick) {
                     is CatalogPick.Entry -> Catalog.grinder(pick.id)?.let { c ->
-                        g = GrinderMapping.fill(g, c)
+                        set(GrinderMapping.fill(latest, c))
                         custom = false
                     }
                     is CatalogPick.Custom -> {
                         val (brand, model) = splitBrandModel(pick.text)
                         // Their own grinder: the link goes, the numbers they already had stay.
-                        g = g.copy(brand = brand, model = model, catalogId = null)
+                        set(latest.copy(brand = brand, model = model, catalogId = null, settingUnit = ""))
                         custom = true
                     }
                 }

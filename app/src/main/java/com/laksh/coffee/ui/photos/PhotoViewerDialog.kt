@@ -2,6 +2,24 @@ package com.laksh.coffee.ui.photos
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.runtime.key
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import com.laksh.coffee.core.screenDate
+import com.laksh.coffee.core.screenTime
+import com.laksh.coffee.ui.components.CoffeeConfirm
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -18,15 +36,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,8 +66,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.laksh.coffee.core.dayLabel
-import com.laksh.coffee.core.timeLabel
 import com.laksh.coffee.data.db.entity.PhotoEntity
 import com.laksh.coffee.data.photos.PhotoKinds
 import com.laksh.coffee.data.photos.PhotoPick
@@ -83,39 +96,67 @@ fun PhotoViewerDialog(
     onCaption: (String) -> Unit,
     onSendToAi: (Boolean) -> Unit,
     onDelete: () -> Unit,
+    position: Int = 0,
+    count: Int = 1,
+    onStep: (Int) -> Unit = {},
 ) {
     val c = CoffeeTheme.colors
     val image by rememberFullPhoto(photo)
     var confirmDelete by remember { mutableStateOf(false) }
     val missing = image is PhotoImage.Missing
+    // The phone's own date and clock style (v4 §4.15).
     val title = remember(photo.kind, photo.takenAt) {
-        "${PhotoKinds.label(photo.kind)} · ${dayLabel(photo.takenAt)} ${timeLabel(photo.takenAt)}"
+        "${PhotoKinds.label(photo.kind)} · ${screenDate(photo.takenAt)} ${screenTime(photo.takenAt)}"
     }
+    val many = count > 1
+    val keys = remember { FocusRequester() }
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        // Holds focus so Left/Right step through the photos and Esc closes (v4 §3.13).
+        LaunchedEffect(Unit) { runCatching { keys.requestFocus() } }
         Column(
             Modifier
                 .fillMaxSize()
                 .background(c.bg)
                 .systemBarsPadding()
-                .imePadding(),
+                .imePadding()
+                .onPreviewKeyEvent { e ->
+                    if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when (e.key) {
+                        Key.DirectionLeft -> many.also { if (it) onStep(-1) }
+                        Key.DirectionRight -> many.also { if (it) onStep(1) }
+                        Key.Escape -> true.also { onDismiss() }
+                        else -> false
+                    }
+                }
+                .focusRequester(keys)
+                .focusable(),
         ) {
             Row(
-                Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
+                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconWell(Icons.Rounded.Close, "Close", onDismiss)
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = c.inkHigh,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                )
+                IconWell(Icons.Rounded.Close, "Close", onDismiss, shortcut = "Esc")
+                Column(Modifier.weight(1f).padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = c.inkHigh,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                    )
+                    if (many) {
+                        Text(
+                            "${position + 1} of $count",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = c.inkMid,
+                            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                    }
+                }
                 IconWell(Icons.Rounded.Delete, if (missing) "Remove photo" else "Delete photo", { confirmDelete = true }, tint = c.fault)
             }
 
@@ -124,9 +165,30 @@ fun PhotoViewerDialog(
                 contentAlignment = Alignment.Center,
             ) {
                 when (val img = image) {
-                    is PhotoImage.Ready -> ZoomablePhoto(img.bitmap, photoDescription(photo, missing = false))
+                    is PhotoImage.Ready -> key(photo.uid) { ZoomablePhoto(img.bitmap, photoDescription(photo, missing = false)) }
                     PhotoImage.Missing -> NotOnThisPhone(onRemove = { confirmDelete = true })
                     PhotoImage.Loading -> Unit
+                }
+                if (many) {
+                    // Always there and focusable, not only on hover: touch and keyboard need them too.
+                    IconWell(
+                        Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                        "Previous photo",
+                        { onStep(-1) },
+                        modifier = Modifier.align(Alignment.CenterStart).padding(start = 12.dp),
+                        size = 48.dp,
+                        enabled = position > 0,
+                        shortcut = "Left",
+                    )
+                    IconWell(
+                        Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        "Next photo",
+                        { onStep(1) },
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 12.dp),
+                        size = 48.dp,
+                        enabled = position < count - 1,
+                        shortcut = "Right",
+                    )
                 }
             }
 
@@ -176,38 +238,17 @@ fun PhotoViewerDialog(
         }
 
         if (confirmDelete) {
-            AlertDialog(
-                onDismissRequest = { confirmDelete = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            confirmDelete = false
-                            onDelete()
-                        },
-                    ) {
-                        Text(if (missing) "Remove" else "Delete", color = c.fault)
-                    }
+            // "Keep it" takes focus first, so Enter never deletes a photo by accident.
+            CoffeeConfirm(
+                title = if (missing) "Remove this photo?" else "Delete this photo?",
+                body = if (missing) "Its file is not on this phone, so only the empty tile goes." else "It can't be undone.",
+                confirmLabel = if (missing) "Remove" else "Delete",
+                dismissLabel = "Keep it",
+                onConfirm = {
+                    confirmDelete = false
+                    onDelete()
                 },
-                dismissButton = {
-                    TextButton(onClick = { confirmDelete = false }) { Text("Keep it", color = c.inkHigh) }
-                },
-                title = {
-                    Text(
-                        if (missing) "Remove this photo?" else "Delete this photo?",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = c.inkHigh,
-                    )
-                },
-                text = {
-                    Text(
-                        if (missing) "Its file is not on this phone, so only the empty tile goes." else "It can't be undone.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = c.inkMid,
-                    )
-                },
-                shape = RoundedCornerShape(22.dp),
-                containerColor = c.surface1,
-                tonalElevation = 0.dp,
+                onDismiss = { confirmDelete = false },
             )
         }
     }

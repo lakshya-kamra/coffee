@@ -65,6 +65,7 @@ import com.laksh.coffee.data.ai.AiSettings
 import com.laksh.coffee.domain.ai.AiProvider
 import com.laksh.coffee.domain.ai.ModelCatalog
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.FieldWell
 import com.laksh.coffee.ui.components.HairLine
@@ -261,6 +262,8 @@ fun AiSettingsSheet(onDismiss: () -> Unit) {
     CoffeeSheet(
         onDismissRequest = onDismiss,
         properties = ModalBottomSheetProperties(securePolicy = SecureFlagPolicy.SecureOn, shouldDismissOnBackPress = true),
+        // A form: a side sheet at expanded and up (v4 §2.4). It saves as you go, so no header.
+        role = SheetRole.Editor,
     ) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             Text("AI analysis", style = MaterialTheme.typography.headlineSmall, color = c.inkHigh)
@@ -476,7 +479,7 @@ private fun ModelList(s: AiSettingsUi, provider: AiProvider, vm: AiSettingsViewM
 private fun ModelPickerSheet(s: AiSettingsUi, vm: AiSettingsViewModel, onDismiss: () -> Unit) {
     val c = CoffeeTheme.colors
     val shown = remember(s.models, s.modelQuery) { s.filteredModels }
-    CoffeeSheet(onDismissRequest = onDismiss) {
+    CoffeeSheet(onDismissRequest = onDismiss, role = SheetRole.Picker) {
         Text("All models", style = MaterialTheme.typography.headlineSmall, color = c.inkHigh)
         Spacer(Modifier.height(4.dp))
         Text(

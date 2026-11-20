@@ -91,7 +91,12 @@ object KeyboardShortcuts {
                 Shortcut("/", "Search the list", AndroidKeyEvent.KEYCODE_SLASH),
                 Shortcut("Ctrl F", "Search the list", AndroidKeyEvent.KEYCODE_F, AndroidKeyEvent.META_CTRL_ON),
                 Shortcut("Up / Down", "Move between rows", AndroidKeyEvent.KEYCODE_DPAD_DOWN),
+                Shortcut("J / K", "Next or previous brew in the log", AndroidKeyEvent.KEYCODE_J),
                 Shortcut("Enter", "Open", AndroidKeyEvent.KEYCODE_ENTER),
+                Shortcut("B", "Brew the selected brew again (Log)", AndroidKeyEvent.KEYCODE_B),
+                Shortcut("Delete", "Delete the selected brew (asks first)", AndroidKeyEvent.KEYCODE_FORWARD_DEL),
+                Shortcut("N", "Add a coffee or grinder (Gear)", AndroidKeyEvent.KEYCODE_N),
+                Shortcut("Ctrl S", "Save the open editor", AndroidKeyEvent.KEYCODE_S, AndroidKeyEvent.META_CTRL_ON),
             ),
         ),
     )
@@ -168,6 +173,41 @@ val LocalListSearchFocus = staticCompositionLocalOf { ListSearchFocus() }
 
 /** The tab a composable sits in (null outside the tabs). */
 val LocalCurrentTab = staticCompositionLocalOf<AppTab?> { null }
+
+/**
+ * Keys a tab's own screen handles (Log's J/K, Enter, B, Delete; Gear's N). The root holds focus
+ * whenever nothing else does, so a screen never sees a key on its own: the root asks the tab on
+ * screen first, then falls back to the global shortcuts.
+ */
+@Stable
+class TabKeyHandlers {
+    private val handlers = mutableMapOf<AppTab, (KeyEvent) -> Boolean>()
+
+    fun register(tab: AppTab, handler: (KeyEvent) -> Boolean) {
+        handlers[tab] = handler
+    }
+
+    fun unregister(tab: AppTab, handler: (KeyEvent) -> Boolean) {
+        if (handlers[tab] === handler) handlers.remove(tab)
+    }
+
+    fun handle(tab: AppTab, e: KeyEvent): Boolean = handlers[tab]?.invoke(e) ?: false
+}
+
+val LocalTabKeyHandlers = staticCompositionLocalOf { TabKeyHandlers() }
+
+/** Registers [handler] for the tab this composable sits in, for as long as it is composed. */
+@Composable
+fun TabKeys(handler: (KeyEvent) -> Boolean) {
+    val registry = LocalTabKeyHandlers.current
+    val tab = LocalCurrentTab.current ?: return
+    val latest = androidx.compose.runtime.rememberUpdatedState(handler)
+    val stable = remember { { e: KeyEvent -> latest.value(e) } }
+    DisposableEffect(registry, tab, stable) {
+        registry.register(tab, stable)
+        onDispose { registry.unregister(tab, stable) }
+    }
+}
 
 /** Makes this text field the target of `/` and Ctrl+F for the tab it sits in. */
 @Composable

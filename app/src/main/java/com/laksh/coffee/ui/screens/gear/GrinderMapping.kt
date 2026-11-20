@@ -58,6 +58,8 @@ object GrinderMapping {
             step = s.step.takeIf { it > 0 } ?: 1.0,
             // Auto: the catalog's own dial format applies once the turn size agrees.
             dialFormat = "",
+            // "s" for the blade grinder: its setting is seconds of grinding (v4 §4.2).
+            settingUnit = s.settingUnit,
         )
     }
 

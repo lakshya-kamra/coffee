@@ -6,15 +6,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -22,9 +30,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,149 +54,173 @@ import com.laksh.coffee.ui.catalog.ChipGroup
 import com.laksh.coffee.ui.catalog.Expandable
 import com.laksh.coffee.ui.catalog.PickerField
 import com.laksh.coffee.ui.catalog.SheetNote
-import com.laksh.coffee.ui.catalog.SheetTitle
 import com.laksh.coffee.ui.catalog.StepperRow
 import com.laksh.coffee.ui.components.CoffeeSheet
+import com.laksh.coffee.ui.components.EditorChrome
+import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.FieldWell
 import com.laksh.coffee.ui.components.HairLine
 import com.laksh.coffee.ui.components.LocalToday
-import com.laksh.coffee.ui.components.PrimaryButton
 import com.laksh.coffee.ui.components.QuietButton
 import com.laksh.coffee.ui.components.SectionLabel
+import com.laksh.coffee.ui.components.SegmentedControl
 import com.laksh.coffee.ui.components.SelectableChip
+import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.Status
 import com.laksh.coffee.ui.components.StatusLine
 import com.laksh.coffee.ui.components.ToggleRow
+import com.laksh.coffee.ui.components.focusRing
+import com.laksh.coffee.ui.components.hoverTint
 import com.laksh.coffee.ui.photos.BagPhotos
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.LocalUnits
+import com.laksh.coffee.ui.theme.WellShape
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Currency
 import java.util.Locale
 
-private val BEAN_DATE = DateTimeFormatter.ofPattern("d MMM yyyy")
-
 /** A change to the bean being edited. One stable instance, so sections skip when their fields did not change. */
-private typealias BeanUpdate = ((BeanEntity) -> BeanEntity) -> Unit
+internal typealias BeanUpdate = ((BeanEntity) -> BeanEntity) -> Unit
 
 private enum class BeanPicker { Roaster, Origin, Varietals }
 
+/** "Ground for" choices (v4 §4.2), stored ids and the words on the chips. */
+private val GROUND_FOR = listOf("filter" to "Filter", "press" to "Press", "espresso" to "Espresso", "moka" to "Moka")
+
 /**
- * Add or edit a bag of coffee. Only the name is required. Each section is its own composable and
- * takes only the fields it shows, so a keystroke recomposes one section rather than the sheet.
+ * Add or edit a bag of coffee in a sheet (phones and medium windows; v4 §2.4 editor role, a side
+ * sheet if it is ever opened wide). Only the name is required. The header carries Cancel and Save;
+ * leaving with changes asks first.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeanEditorSheet(
     initial: BeanEntity,
     onDismiss: () -> Unit,
     onSave: (BeanEntity) -> Unit,
     onDelete: (() -> Unit)?,
+    start: BeanEntity = initial,
+    onDraft: (BeanEntity) -> Unit = {},
 ) {
     val colors = CoffeeTheme.colors
-    var bean by remember { mutableStateOf(initial) }
-    val update: BeanUpdate = remember { { change -> bean = change(bean) } }
+    // [start] is a draft kept across a rotation; [initial] is what "unsaved" is measured against.
+    var bean by remember { mutableStateOf(start) }
+    val draftTo by rememberUpdatedState(onDraft)
+    val update: BeanUpdate = remember {
+        { change ->
+            bean = change(bean)
+            draftTo(bean)
+        }
+    }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-    var picker by remember { mutableStateOf<BeanPicker?>(null) }
-    val openPicker: (BeanPicker) -> Unit = remember { { picker = it } }
-    // Anything already recorded below the fold starts unfolded, so it is never hidden from you.
-    var more by remember { mutableStateOf(hasDetails(initial)) }
-    val today = LocalToday.current.toEpochDay()
 
     // Slide the sheet away first; removing it from composition would cut it off in one frame.
     fun dismissThen(action: () -> Unit) {
         scope.launch { sheetState.hide() }.invokeOnCompletion { action() }
     }
 
-    CoffeeSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    CoffeeSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        role = SheetRole.Editor,
+        editor = EditorChrome(
+            title = if (initial.id == 0L) "New coffee" else "Edit coffee",
+            onSave = { if (InlineEdit.canSave(bean)) dismissThen { onSave(cleaned(bean)) } },
+            canSave = InlineEdit.canSave(bean),
+            dirty = InlineEdit.dirty(initial, bean),
+        ),
+    ) {
         Column(
-            Modifier.verticalScroll(rememberScrollState()),
+            Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SheetTitle(if (initial.id == 0L) "New coffee" else "Edit coffee")
-
-            CoffeeSection(bean.name, bean.roaster, bean.lotTypeId, update, openPicker)
-            OriginSection(
-                origin = bean.origin,
-                originId = bean.originId,
-                region = bean.region,
-                farm = bean.farm,
-                producer = bean.producer,
-                washingStation = bean.washingStation,
-                altitudeMasl = bean.altitudeMasl,
-                harvest = bean.harvest,
-                update = update,
-                openPicker = openPicker,
-            )
-
-            HairLine()
-            ToggleRow(
-                label = "More details",
-                checked = more,
-                onChange = { more = it },
-                subtitle = "Plant, process, roast date and the bag.",
-            )
-
-            Expandable(visible = more) {
-                PlantSection(bean.speciesId, bean.varietalIds, bean.varietal, bean.originId, update, openPicker)
-                ProcessSection(bean.processId, bean.isDecaf, bean.decafMethodId, bean.originId, update)
-                RoastSection(
-                    roastLevelId = bean.roastLevelId,
-                    roastIntentId = bean.roastIntentId,
-                    roastedOn = bean.roastedOnEpochDay,
-                    restDays = bean.restDays,
-                    openedOn = bean.openedOnEpochDay,
-                    today = today,
-                    update = update,
+            BeanEditorForm(bean = bean, savedId = initial.id, update = update)
+            if (onDelete != null) {
+                QuietButton(
+                    text = "Delete this coffee",
+                    onClick = { dismissThen(onDelete) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = colors.fault,
                 )
-                BagSection(
-                    bagSizeG = bean.bagSizeG,
-                    priceAmount = bean.priceAmount,
-                    currency = bean.currency,
-                    legacyPrice = bean.price,
-                    tastingNotes = bean.tastingNotes,
-                    notes = bean.notes,
-                    update = update,
-                )
-            }
-
-            // Outside "More details", so a photo that exists is never folded away.
-            if (initial.id != 0L) {
-                BagPhotos(beanId = initial.id)
-            } else {
-                SheetNote("Once this coffee is saved, open it again to add a photo of the bag.")
-            }
-
-            if (initial.id != 0L) {
-                ToggleRow(
-                    label = "Finished this bag",
-                    checked = bean.isArchived,
-                    onChange = { on -> update { it.copy(isArchived = on) } },
-                    subtitle = "Hidden from brew setup. Its brews stay in the log.",
-                )
-            }
-
-            Column(Modifier.padding(top = 8.dp)) {
-                PrimaryButton(
-                    text = "Save",
-                    onClick = { dismissThen { onSave(cleaned(bean)) } },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = bean.name.isNotBlank(),
-                )
-                if (onDelete != null) {
-                    Spacer(Modifier.height(4.dp))
-                    QuietButton(
-                        text = "Delete",
-                        onClick = { dismissThen(onDelete) },
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = colors.fault,
-                    )
-                }
             }
         }
+    }
+}
+
+/**
+ * The bean editor's fields in the §4.7 order: name, roaster, whole or ground, roast date, roast
+ * level, bag size, then "More details". Each section takes only the fields it shows, so a
+ * keystroke recomposes one section rather than the form. Owns its pickers.
+ */
+@Composable
+internal fun BeanEditorForm(bean: BeanEntity, savedId: Long, update: BeanUpdate) {
+    var picker by remember { mutableStateOf<BeanPicker?>(null) }
+    val openPicker: (BeanPicker) -> Unit = remember { { picker = it } }
+    // Anything already recorded below the fold starts unfolded, so it is never hidden from you.
+    var more by remember { mutableStateOf(hasDetails(bean)) }
+    val today = LocalToday.current.toEpochDay()
+
+    CoffeeSection(bean.name, bean.roaster, update, openPicker)
+    FormSection(bean.form, bean.groundFor, update)
+    RoastedSection(bean.roastedOnEpochDay, bean.roastLevelId, today, update)
+    BagSizeField(bean.bagSizeG, update)
+
+    HairLine()
+    Disclosure(
+        title = "More details",
+        subtitle = "Origin, farm, process, lot",
+        open = more,
+        onToggle = { more = !more },
+    )
+
+    Expandable(visible = more) {
+        LotChips(bean.lotTypeId, update)
+        OriginSection(
+            origin = bean.origin,
+            originId = bean.originId,
+            region = bean.region,
+            farm = bean.farm,
+            producer = bean.producer,
+            washingStation = bean.washingStation,
+            altitudeMasl = bean.altitudeMasl,
+            harvest = bean.harvest,
+            update = update,
+            openPicker = openPicker,
+        )
+        ProcessSection(bean.processId, bean.isDecaf, bean.decafMethodId, bean.originId, update)
+        PlantSection(bean.speciesId, bean.varietalIds, bean.varietal, bean.originId, update, openPicker)
+        RestSection(
+            roastIntentId = bean.roastIntentId,
+            roastedOn = bean.roastedOnEpochDay,
+            restDays = bean.restDays,
+            openedOn = bean.openedOnEpochDay,
+            today = today,
+            update = update,
+        )
+        PriceAndNotes(
+            priceAmount = bean.priceAmount,
+            currency = bean.currency,
+            legacyPrice = bean.price,
+            tastingNotes = bean.tastingNotes,
+            notes = bean.notes,
+            update = update,
+        )
+    }
+
+    // Outside "More details", so a photo that exists is never folded away.
+    if (savedId != 0L) {
+        BagPhotos(beanId = savedId)
+        ToggleRow(
+            label = "Finished this bag",
+            checked = bean.isArchived,
+            onChange = { on -> update { it.copy(isArchived = on) } },
+            subtitle = "Hidden from brew setup. Its brews stay in the log.",
+        )
+    } else {
+        SheetNote("Once this coffee is saved, open it again to add a photo of the bag.")
     }
 
     when (picker) {
@@ -235,12 +274,39 @@ fun BeanEditorSheet(
     }
 }
 
+/** A row that folds a section open and shut; TalkBack reads "expanded" or "collapsed". */
+@Composable
+internal fun Disclosure(title: String, subtitle: String?, open: Boolean, onToggle: () -> Unit) {
+    val c = CoffeeTheme.colors
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .focusRing(interaction, WellShape)
+            .clip(WellShape)
+            .hoverTint(interaction, c.inkHigh.copy(alpha = 0.04f), WellShape)
+            .semantics { stateDescription = if (open) "Expanded" else "Collapsed" }
+            .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onToggle)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = c.inkHigh)
+            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = c.inkLow)
+        }
+        Icon(if (open) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null, tint = c.inkMid)
+    }
+}
+
 /** Anything in the folded sections already recorded. */
 internal fun hasDetails(b: BeanEntity): Boolean =
-    b.speciesId != null || b.varietalIds.isNotEmpty() || b.varietal.isNotBlank() ||
-        b.processId.isNotBlank() || b.isDecaf || b.roastLevelId.isNotBlank() || b.roastIntentId != null ||
-        b.roastedOnEpochDay != null || b.restDays != null || b.openedOnEpochDay != null ||
-        b.bagSizeG != null || b.priceAmount != null || b.price.isNotBlank() ||
+    b.lotTypeId != null || b.origin.isNotBlank() || b.region.isNotBlank() || b.farm.isNotBlank() ||
+        b.producer.isNotBlank() || b.washingStation.isNotBlank() || b.altitudeMasl.isNotBlank() || b.harvest.isNotBlank() ||
+        b.speciesId != null || b.varietalIds.isNotEmpty() || b.varietal.isNotBlank() ||
+        b.processId.isNotBlank() || b.isDecaf || b.roastIntentId != null ||
+        b.restDays != null || b.openedOnEpochDay != null ||
+        b.priceAmount != null || b.price.isNotBlank() ||
         b.tastingNotes.isNotBlank() || b.notes.isNotBlank()
 
 /** Trimmed text; a decaf method without decaf makes no sense and is dropped. */
@@ -256,6 +322,8 @@ internal fun cleaned(b: BeanEntity): BeanEntity = b.copy(
     varietal = b.varietal.trim(),
     decafMethodId = b.decafMethodId.takeIf { b.isDecaf },
     currency = b.currency.trim().uppercase(Locale.ROOT).takeIf { b.priceAmount != null }.orEmpty(),
+    // "Ground for" only means something for ground coffee.
+    groundFor = b.groundFor.takeIf { b.form == "ground" }.orEmpty(),
 )
 
 // ------------------------------------------------------------------ 1. the coffee
@@ -264,11 +332,9 @@ internal fun cleaned(b: BeanEntity): BeanEntity = b.copy(
 private fun CoffeeSection(
     name: String,
     roaster: String,
-    lotTypeId: String?,
     update: BeanUpdate,
     openPicker: (BeanPicker) -> Unit,
 ) {
-    val lots = Catalog.beans.lotTypes
     FieldWell(
         label = "COFFEE NAME",
         value = name,
@@ -280,16 +346,104 @@ private fun CoffeeSection(
         label = "ROASTER",
         value = roaster,
         onClick = { openPicker(BeanPicker.Roaster) },
-        placeholder = "Pick a roaster",
+        placeholder = "Pick a roaster or brand",
         onClear = { update { it.copy(roasterId = null, roaster = "") } },
+        helper = "Supermarket brands are on the list too.",
     )
-    if (lots.isNotEmpty()) {
-        ChipGroup(label = "LOT", note = lots.firstOrNull { it.id == lotTypeId }?.description) {
-            lots.forEach { t ->
-                SelectableChip(t.label, lotTypeId == t.id, {
-                    update { it.copy(lotTypeId = if (it.lotTypeId == t.id) null else t.id) }
+}
+
+/** Whole beans or ground, right under the roaster (v4 §4.2); ground coffee says what it is ground for. */
+@Composable
+private fun FormSection(form: String, groundFor: String, update: BeanUpdate) {
+    val ground = form == "ground"
+    Column {
+        EyebrowLabel("WHOLE BEANS OR GROUND")
+        Spacer(Modifier.height(6.dp))
+        SegmentedControl(
+            options = listOf("Whole beans", "Ground"),
+            selectedIndex = if (ground) 1 else 0,
+            onSelect = { i -> update { it.copy(form = if (i == 1) "ground" else "whole") } },
+            onCard = true,
+        )
+    }
+    Expandable(visible = ground) {
+        ChipGroup("GROUND FOR", note = "As the bag says. Pre-ground coffee skips grind settings when you brew.") {
+            GROUND_FOR.forEach { (id, label) ->
+                SelectableChip(label, groundFor == id, { update { it.copy(groundFor = if (it.groundFor == id) "" else id) } })
+            }
+        }
+    }
+}
+
+/** The roast date (a date, or "about n days ago"), then the roast level. */
+@Composable
+private fun RoastedSection(roastedOn: Long?, roastLevelId: String, today: Long, update: BeanUpdate) {
+    val levels = Catalog.beans.roastLevels
+    val daysAgo = roastedOn?.let { (today - it).coerceAtLeast(0L) }
+    DateField(
+        label = "ROASTED ON",
+        day = roastedOn,
+        today = today,
+        onDay = { d -> update { it.copy(roastedOnEpochDay = d) } },
+    )
+    // For a bag without a printed date: step the days instead (v4 §4.7).
+    StepperRow(
+        label = "OR DAYS AGO",
+        value = daysAgo?.toString() ?: "—",
+        unit = daysAgo?.let { unitWord(it.toInt(), "day") },
+        onMinus = { update { it.copy(roastedOnEpochDay = it.roastedOnEpochDay?.let { d -> (d + 1).coerceAtMost(today) }) } },
+        onPlus = { update { it.copy(roastedOnEpochDay = (it.roastedOnEpochDay ?: (today + 1)) - 1) } },
+        onLongMinus = { update { it.copy(roastedOnEpochDay = it.roastedOnEpochDay?.let { d -> (d + 7).coerceAtMost(today) }) } },
+        onLongPlus = { update { it.copy(roastedOnEpochDay = (it.roastedOnEpochDay ?: today) - 7) } },
+        minusDescription = "One day more recent",
+        plusDescription = "One day longer ago",
+    )
+    if (daysAgo != null) {
+        Text(
+            "Roasted about $daysAgo ${if (daysAgo == 1L) "day" else "days"} ago",
+            style = MaterialTheme.typography.bodyMedium,
+            color = CoffeeTheme.colors.inkHigh,
+        )
+    } else {
+        SheetNote("Roast date is the one field that pays for itself. You will not remember it later.")
+    }
+    if (levels.isNotEmpty()) {
+        ChipGroup(label = "ROAST LEVEL", note = levels.firstOrNull { it.id == roastLevelId }?.description) {
+            levels.forEach { r ->
+                SelectableChip(r.label, roastLevelId == r.id, {
+                    update { it.copy(roastLevelId = if (it.roastLevelId == r.id) "" else r.id) }
                 })
             }
+        }
+    }
+}
+
+@Composable
+private fun BagSizeField(bagSizeG: Double?, update: BeanUpdate) {
+    val units = LocalUnits.current
+    var size by remember(units) { mutableStateOf(bagSizeG?.let { units.bigWeight(it).first }.orEmpty()) }
+    FieldWell(
+        label = "BAG SIZE",
+        value = size,
+        onChange = { v ->
+            size = v.take(7)
+            val n = size.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
+            update { it.copy(bagSizeG = n?.let(units::bigWeightToGrams)) }
+        },
+        suffix = units.bigWeightUnit,
+        numeric = true,
+    )
+}
+
+@Composable
+private fun LotChips(lotTypeId: String?, update: BeanUpdate) {
+    val lots = Catalog.beans.lotTypes
+    if (lots.isEmpty()) return
+    ChipGroup(label = "LOT", note = lots.firstOrNull { it.id == lotTypeId }?.description) {
+        lots.forEach { t ->
+            SelectableChip(t.label, lotTypeId == t.id, {
+                update { it.copy(lotTypeId = if (it.lotTypeId == t.id) null else t.id) }
+            })
         }
     }
 }
@@ -312,9 +466,15 @@ private fun OriginSection(
     val regions = remember(originId) { Catalog.origin(originId)?.growingRegions.orEmpty() }
     // "Other…" is open when the region typed is not one of the list's.
     var otherRegion by remember(originId) { mutableStateOf(region.isNotBlank() && region !in regions) }
-    val parts = BeanWords.altitudeParts(altitudeMasl)
-    var low by remember { mutableStateOf(parts.first) }
-    var high by remember { mutableStateOf(parts.second) }
+    // Metres are stored; feet are only how the fields read (v4 §4.7).
+    var feet by remember { mutableStateOf(false) }
+    val parts = if (feet) BeanWords.altitudeInFeet(altitudeMasl) else BeanWords.altitudeParts(altitudeMasl)
+    var low by remember(feet) { mutableStateOf(parts.first) }
+    var high by remember(feet) { mutableStateOf(parts.second) }
+    val store: () -> Unit = {
+        val text = if (feet) BeanWords.altitudeFromFeet(low, high) else BeanWords.altitudeText(low, high)
+        update { it.copy(altitudeMasl = text) }
+    }
 
     SectionLabel("ORIGIN", topGap = 8.dp)
     PickerField(
@@ -364,16 +524,27 @@ private fun OriginSection(
             modifier = Modifier.weight(1f),
         )
     }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        EyebrowLabel("ALTITUDE", Modifier.weight(1f))
+        SegmentedControl(
+            options = listOf("m", "ft"),
+            selectedIndex = if (feet) 1 else 0,
+            onSelect = { feet = it == 1 },
+            modifier = Modifier.width(120.dp),
+            onCard = true,
+        )
+    }
+    val unit = if (feet) "ft" else "m"
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         FieldWell(
-            label = "ALTITUDE FROM",
+            label = "FROM",
             value = low,
             onChange = { v ->
-                low = v.filter { c -> c.isDigit() }.take(4)
-                update { it.copy(altitudeMasl = BeanWords.altitudeText(low, high)) }
+                low = v.filter { c -> c.isDigit() }.take(5)
+                store()
             },
             modifier = Modifier.weight(1f),
-            suffix = "m",
+            suffix = unit,
             numeric = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
@@ -381,11 +552,11 @@ private fun OriginSection(
             label = "TO",
             value = high,
             onChange = { v ->
-                high = v.filter { c -> c.isDigit() }.take(4)
-                update { it.copy(altitudeMasl = BeanWords.altitudeText(low, high)) }
+                high = v.filter { c -> c.isDigit() }.take(5)
+                store()
             },
             modifier = Modifier.weight(1f),
-            suffix = "m",
+            suffix = unit,
             numeric = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
@@ -416,7 +587,7 @@ private fun PlantSection(
     }
     val chosen = remember(varietalIds) { varietalIds.mapNotNull { Catalog.varietal(it) } }
 
-    SectionLabel("PLANT", topGap = 8.dp)
+    SectionLabel("VARIETAL", topGap = 8.dp)
     if (species.isNotEmpty()) {
         ChipGroup("SPECIES") {
             species.forEach { s ->
@@ -499,11 +670,10 @@ private fun ProcessSection(
     }
 }
 
-// ----------------------------------------------------------------------- 5. roast
+// ------------------------------------------------------------- 5. rest and opening
 
 @Composable
-private fun RoastSection(
-    roastLevelId: String,
+private fun RestSection(
     roastIntentId: String?,
     roastedOn: Long?,
     restDays: Int?,
@@ -511,20 +681,8 @@ private fun RoastSection(
     today: Long,
     update: BeanUpdate,
 ) {
-    val levels = Catalog.beans.roastLevels
     val intents = Catalog.beans.roastIntents
-    var daysAgo by remember { mutableStateOf(roastedOn?.let { (today - it).coerceAtLeast(0).toString() }.orEmpty()) }
-
-    SectionLabel("ROAST", topGap = 8.dp)
-    if (levels.isNotEmpty()) {
-        ChipGroup(label = "ROAST LEVEL", note = levels.firstOrNull { it.id == roastLevelId }?.description) {
-            levels.forEach { r ->
-                SelectableChip(r.label, roastLevelId == r.id, {
-                    update { it.copy(roastLevelId = if (it.roastLevelId == r.id) "" else r.id) }
-                })
-            }
-        }
-    }
+    SectionLabel("ROAST AND REST", topGap = 8.dp)
     if (intents.isNotEmpty()) {
         ChipGroup("ROASTED FOR") {
             intents.forEach { r ->
@@ -534,34 +692,6 @@ private fun RoastSection(
             }
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        DateField(
-            label = "ROASTED ON",
-            day = roastedOn,
-            today = today,
-            onDay = { d ->
-                daysAgo = d?.let { (today - it).coerceAtLeast(0).toString() }.orEmpty()
-                update { it.copy(roastedOnEpochDay = d) }
-            },
-            modifier = Modifier.weight(1.3f),
-        )
-        FieldWell(
-            label = "OR DAYS AGO",
-            value = daysAgo,
-            onChange = { v ->
-                val digits = v.filter { c -> c.isDigit() }.take(3)
-                daysAgo = digits
-                update { it.copy(roastedOnEpochDay = digits.toLongOrNull()?.let { n -> today - n }) }
-            },
-            modifier = Modifier.weight(1f),
-            placeholder = "12",
-            suffix = unitWord(daysAgo.toIntOrNull() ?: 0, "day"),
-            numeric = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        )
-    }
-    if (roastedOn == null) SheetNote("The one field that pays for itself. You will not remember it later.")
-
     StepperRow(
         label = "REST BEFORE OPENING",
         value = restDays?.toString() ?: "—",
@@ -593,11 +723,10 @@ private fun RoastSection(
 
 private const val MAX_REST_DAYS = 90
 
-// --------------------------------------------------------------------- 6. the bag
+// ------------------------------------------------------------ 6. price and notes
 
 @Composable
-private fun BagSection(
-    bagSizeG: Double?,
+private fun PriceAndNotes(
     priceAmount: Double?,
     currency: String,
     legacyPrice: String,
@@ -605,24 +734,11 @@ private fun BagSection(
     notes: String,
     update: BeanUpdate,
 ) {
-    val units = LocalUnits.current
-    var size by remember(units) { mutableStateOf(bagSizeG?.let { units.bigWeight(it).first }.orEmpty()) }
     var price by remember { mutableStateOf(priceAmount?.let(::priceText).orEmpty()) }
     // The phone's own currency until you say otherwise.
     val localCurrency = remember { runCatching { Currency.getInstance(Locale.getDefault()).currencyCode }.getOrDefault("") }
 
-    SectionLabel("THE BAG", topGap = 8.dp)
-    FieldWell(
-        label = "BAG SIZE",
-        value = size,
-        onChange = { v ->
-            size = v.take(7)
-            val n = size.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
-            update { it.copy(bagSizeG = n?.let(units::bigWeightToGrams)) }
-        },
-        suffix = units.bigWeightUnit,
-        numeric = true,
-    )
+    SectionLabel("PRICE AND NOTES", topGap = 8.dp)
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         FieldWell(
             label = "PRICE",
@@ -675,13 +791,16 @@ private fun DateField(
     modifier: Modifier = Modifier,
 ) {
     var open by remember { mutableStateOf(false) }
+    val latest by rememberUpdatedState(onDay)
+    // The phone's own date style (v4 §4.15).
+    val format = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
     PickerField(
         label = label,
-        value = day?.let { LocalDate.ofEpochDay(it).format(BEAN_DATE) }.orEmpty(),
+        value = day?.let { LocalDate.ofEpochDay(it).format(format) }.orEmpty(),
         onClick = { open = true },
         modifier = modifier,
         placeholder = "Pick a date",
-        onClear = { onDay(null) },
+        onClear = { latest(null) },
     )
     if (open) {
         val limit = today * MILLIS_PER_DAY
@@ -721,7 +840,7 @@ private fun DateField(
                 QuietButton(
                     text = "Use this date",
                     onClick = {
-                        state.selectedDateMillis?.let { onDay(Math.floorDiv(it, MILLIS_PER_DAY)) }
+                        state.selectedDateMillis?.let { latest(Math.floorDiv(it, MILLIS_PER_DAY)) }
                         open = false
                     },
                     color = CoffeeTheme.colors.inkHigh,

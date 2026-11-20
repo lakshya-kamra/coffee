@@ -5,8 +5,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.rounded.CompareArrows
+import androidx.compose.material.icons.rounded.Replay
+import com.laksh.coffee.core.formatDuration
+import com.laksh.coffee.core.screenDate
+import com.laksh.coffee.core.screenTime
+import com.laksh.coffee.domain.BrewMethod
+import com.laksh.coffee.domain.Brewers
+import com.laksh.coffee.domain.MethodLabels
+import com.laksh.coffee.ui.components.CoffeeConfirm
+import com.laksh.coffee.ui.components.PrimaryButton
+import com.laksh.coffee.ui.components.SecondaryButton
+import com.laksh.coffee.ui.components.brewerFromLabel
+import com.laksh.coffee.ui.theme.Dimens
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,13 +43,11 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,11 +71,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.clock
-import com.laksh.coffee.core.dayLabel
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.core.oneDp
 import com.laksh.coffee.core.ratio
-import com.laksh.coffee.core.timeLabel
 import com.laksh.coffee.core.unitWord
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
@@ -124,46 +136,34 @@ import com.laksh.coffee.ui.theme.Units
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+/**
+ * One brew. [onBrewAgain] gets the recipe id and this brew (v4 §4.10); [onCompare] gets the brew
+ * picked in "Compare with…" (§3.8). In a pane at least 880 wide it reads in two columns.
+ */
 @Composable
 fun BrewDetailScreen(
     logId: Long,
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
+    onBrewAgain: (String, Long) -> Unit = { _, _ -> },
+    onCompare: (Long) -> Unit = {},
     vm: BrewDetailViewModel = viewModel(factory = BrewDetailViewModel.factory(logId)),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
-    val c = CoffeeTheme.colors
     var confirmDelete by remember { mutableStateOf(false) }
 
     if (confirmDelete) {
-        AlertDialog(
-            onDismissRequest = { confirmDelete = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        confirmDelete = false
-                        vm.delete(onBack)
-                    },
-                ) {
-                    Text("Delete", color = c.fault)
-                }
+        // The safe answer takes focus first, so Enter never deletes by accident.
+        CoffeeConfirm(
+            title = "Delete this brew?",
+            body = "It will not be in the log or in anything you export after this. Any analysis of it goes too.",
+            confirmLabel = "Delete",
+            dismissLabel = "Keep it",
+            onConfirm = {
+                confirmDelete = false
+                vm.delete(onBack)
             },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = false }) { Text("Keep it", color = c.inkHigh) }
-            },
-            title = {
-                Text("Delete this brew?", style = MaterialTheme.typography.headlineSmall, color = c.inkHigh)
-            },
-            text = {
-                Text(
-                    "It will not be in the log or in anything you export after this. Any analysis of it goes too.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = c.inkMid,
-                )
-            },
-            shape = RoundedCornerShape(22.dp),
-            containerColor = c.surface1,
-            tonalElevation = 0.dp,
+            onDismiss = { confirmDelete = false },
         )
     }
 
@@ -182,6 +182,8 @@ fun BrewDetailScreen(
                 onBack = onBack,
                 onEdit = onEdit,
                 onDelete = { confirmDelete = true },
+                onBrewAgain = onBrewAgain,
+                onCompare = onCompare,
             )
             state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { TumblingBeans() }
             else -> Column(Modifier.fillMaxSize()) {
@@ -204,6 +206,8 @@ private fun BrewDetailContent(
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
     onDelete: () -> Unit,
+    onBrewAgain: (String, Long) -> Unit,
+    onCompare: (Long) -> Unit,
 ) {
     val c = CoffeeTheme.colors
     val context = LocalContext.current
@@ -213,8 +217,12 @@ private fun BrewDetailContent(
     val grinder = state.grinder
     val bean = state.bean
     var menu by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
     // Hoisted so both the strip and the analysis card's thumbnails open the same viewer.
     var openPhoto by rememberSaveable { mutableStateOf<String?>(null) }
+    val gutter = Dimens.gutter
+    val canBrewAgain = log.recipeId.isNotBlank()
+    val brewAgain = { onBrewAgain(log.recipeId, log.id) }
 
     // Fields the local log check distrusts. Their numbers stay visible but are marked, and nothing
     // derived from them (the bed-exposed node and row) is drawn as if it were true.
@@ -240,14 +248,14 @@ private fun BrewDetailContent(
         scope.launch { scroll.animateScrollTo((analysisY.intValue - topInset).coerceAtLeast(0)) }
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(scroll),
-    ) {
+    val header: @Composable () -> Unit = {
         DetailTopBar(
             onBack = onBack,
             actions = {
+                if (canBrewAgain) {
+                    IconWell(Icons.Rounded.Replay, "Brew again", brewAgain, shortcut = "B")
+                    Spacer(Modifier.width(8.dp))
+                }
                 IconWell(Icons.Rounded.Edit, "Edit brew", { onEdit(log.id) })
                 Spacer(Modifier.width(8.dp))
                 Box {
@@ -261,6 +269,14 @@ private fun BrewDetailContent(
                         shadowElevation = 0.dp,
                         border = BorderStroke(Dp.Hairline, c.hairline),
                     ) {
+                        DropdownMenuItem(
+                            text = { Text("Compare with…", color = c.inkHigh) },
+                            onClick = {
+                                menu = false
+                                picking = true
+                            },
+                            leadingIcon = { Icon(Icons.Rounded.CompareArrows, null, tint = c.inkMid) },
+                        )
                         DropdownMenuItem(
                             text = { Text("Share report", color = c.inkHigh) },
                             onClick = {
@@ -289,164 +305,241 @@ private fun BrewDetailContent(
                 }
             },
         )
+    }
 
-        BoardingPass(
-            log = log,
-            recipe = recipe,
-            grinder = grinder,
-            ts = ts,
-            distrusted = distrusted,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
+    val pass: @Composable (Modifier) -> Unit = { m ->
+        Column(m) {
+            BoardingPass(
+                log = log,
+                recipe = recipe,
+                grinder = grinder,
+                ts = ts,
+                distrusted = distrusted,
+            )
 
-        // The answer before the details: the verdict when there is one, else how the timing went.
-        Spacer(Modifier.height(10.dp))
-        val verdict = rememberBrewVerdict(log.id)
-        val lineModifier = Modifier.padding(horizontal = 16.dp)
-        when {
-            verdict != null -> StatusLine(
-                status = verdict.status,
-                lead = verdict.lead,
-                modifier = lineModifier,
-                detail = verdict.detail,
-                live = verdict.live,
-                onClick = scrollToAnalysis,
-            )
-            Fields.TIME in distrusted && log.totalTimeSec > 0 -> StatusLine(
-                status = Status.Attention,
-                lead = "Time looks wrong",
-                modifier = lineModifier,
-                detail = "left out of the analysis",
-                onClick = scrollToAnalysis,
-            )
-            recipe == null && log.totalTimeSec > 0 -> StatusLine(
-                status = Status.Neutral,
-                lead = "Finished in ${clock(log.totalTimeSec)}",
-                modifier = lineModifier,
-                detail = bedWords(log.bedShape),
-                onClick = scrollToAnalysis,
-            )
-            else -> StatusLine(
-                status = ts.first,
-                lead = ts.second,
-                modifier = lineModifier,
-                detail = listOfNotNull(
-                    recipe?.takeIf { log.totalTimeSec > 0 }
-                        ?.let { "${clock(log.totalTimeSec)} against ${clock(it.totalSec)}" },
-                    bedWords(log.bedShape),
-                ).joinToString(" · ").ifBlank { null },
-                onClick = scrollToAnalysis,
-            )
+            // The answer before the details: the verdict when there is one, else how the timing went.
+            Spacer(Modifier.height(10.dp))
+            val verdict = rememberBrewVerdict(log.id)
+            when {
+                verdict != null -> StatusLine(
+                    status = verdict.status,
+                    lead = verdict.lead,
+                    detail = verdict.detail,
+                    live = verdict.live,
+                    onClick = scrollToAnalysis,
+                )
+                Fields.TIME in distrusted && log.totalTimeSec > 0 -> StatusLine(
+                    status = Status.Attention,
+                    lead = "Time looks wrong",
+                    detail = "left out of the analysis",
+                    onClick = scrollToAnalysis,
+                )
+                recipe == null && log.totalTimeSec > 0 -> StatusLine(
+                    status = Status.Neutral,
+                    lead = "Finished in ${clock(log.totalTimeSec)}",
+                    detail = bedWords(log.bedShape),
+                    onClick = scrollToAnalysis,
+                )
+                else -> StatusLine(
+                    status = ts.first,
+                    lead = ts.second,
+                    detail = listOfNotNull(
+                        recipe?.takeIf { log.totalTimeSec > 0 }
+                            ?.let { "${clock(log.totalTimeSec)} against ${clock(it.totalSec)}" },
+                        bedWords(log.bedShape),
+                    ).joinToString(" · ").ifBlank { null },
+                    onClick = scrollToAnalysis,
+                )
+            }
         }
+    }
 
-        // No section label: the card's own eyebrow says ANALYSIS, and saying it twice was noise.
-        Spacer(Modifier.height(20.dp))
+    val analysis: @Composable (Modifier) -> Unit = { m ->
         BrewAnalysisSection(
             logId = log.id,
             onEditLog = { onEdit(log.id) },
             onOpenPhoto = { openPhoto = it.uid },
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .onGloballyPositioned { analysisY.intValue = it.positionInParent().y.roundToInt() },
+            modifier = m.onGloballyPositioned { analysisY.intValue = it.positionInParent().y.roundToInt() },
         )
+    }
 
-        TheBrew(
-            log = log,
-            recipe = recipe,
-            ts = ts,
-            timeTrusted = timeTrusted,
-            bedExposedSec = bedExposedSec,
-        )
-
-        SectionLabel("COFFEE & GEAR", Modifier.padding(horizontal = 16.dp))
-        SoftCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
-            val days = log.daysOffRoast
-            DataGrid(
-                cells = listOf(
-                    Cell(
-                        label = "COFFEE",
-                        value = bean?.name?.ifBlank { null } ?: beanShortName(log.beanLabel).ifBlank { null },
-                        sub = bean?.roaster?.ifBlank { null },
-                        textValue = true,
+    val coffeeAndGear: @Composable (Modifier) -> Unit = { m ->
+        Column(m) {
+            SectionLabel("COFFEE & GEAR")
+            SoftCard(Modifier.fillMaxWidth()) {
+                val days = log.daysOffRoast
+                DataGrid(
+                    cells = listOf(
+                        Cell(
+                            label = "COFFEE",
+                            value = bean?.name?.ifBlank { null } ?: beanShortName(log.beanLabel).ifBlank { null },
+                            sub = bean?.roaster?.ifBlank { null },
+                            textValue = true,
+                        ),
+                        Cell(
+                            label = "OFF ROAST",
+                            value = days?.toString(),
+                            unit = "d",
+                            sub = roastWord(days),
+                            status = roastStatus(days).takeIf { it == Status.Attention },
+                        ),
+                        Cell(
+                            label = "GRINDER",
+                            value = grinder?.model?.ifBlank { null } ?: log.grinderLabel.ifBlank { null },
+                            sub = grinder?.brand?.ifBlank { null },
+                            textValue = true,
+                        ),
+                        Cell(label = "BREWER", value = log.brewer.ifBlank { null }, textValue = true),
                     ),
-                    Cell(
-                        label = "OFF ROAST",
-                        value = days?.toString(),
-                        unit = "d",
-                        sub = roastWord(days),
-                        status = roastStatus(days).takeIf { it == Status.Attention },
-                    ),
-                    Cell(
-                        label = "GRINDER",
-                        value = grinder?.model?.ifBlank { null } ?: log.grinderLabel.ifBlank { null },
-                        sub = grinder?.brand?.ifBlank { null },
-                        textValue = true,
-                    ),
-                    Cell(label = "BREWER", value = log.brewer.ifBlank { null }, textValue = true),
-                ),
-                columns = 2,
-            )
+                    columns = 2,
+                )
+            }
         }
+    }
 
-        TheBed(log)
-        BrewDetailPhotos(brewLogId = log.id, openUid = openPhoto, onOpen = { openPhoto = it })
-
-        SectionLabel("TASTE", Modifier.padding(horizontal = 16.dp))
-        SoftCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
-            if (Fields.TASTE in distrusted) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    StatusChip(Status.Attention, "Ignored")
-                    Spacer(Modifier.width(8.dp))
+    val taste: @Composable (Modifier) -> Unit = { m ->
+        Column(m) {
+            SectionLabel("TASTE")
+            SoftCard(Modifier.fillMaxWidth()) {
+                if (Fields.TASTE in distrusted) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        StatusChip(Status.Attention, "Ignored")
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Sliders never moved from 5",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = c.inkMid,
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
+                TasteStrip(log.taste)
+                if (log.descriptors.isNotEmpty() || log.faults.isNotEmpty()) Spacer(Modifier.height(14.dp))
+                if (log.descriptors.isNotEmpty()) {
                     Text(
-                        "Sliders never moved from 5",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = c.inkMid,
+                        log.descriptors.joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = c.inkHigh,
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-            }
-            TasteStrip(log.taste)
-            if (log.descriptors.isNotEmpty() || log.faults.isNotEmpty()) Spacer(Modifier.height(14.dp))
-            if (log.descriptors.isNotEmpty()) {
-                Text(
-                    log.descriptors.joinToString(" · "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = c.inkHigh,
-                )
-            }
-            if (log.faults.isNotEmpty()) {
-                Text(
-                    log.faults.joinToString(" · "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = c.fault,
-                )
-            }
-            if (log.notes.isNotBlank()) {
-                Spacer(Modifier.height(12.dp))
-                val rule = c.inkFaint
-                Text(
-                    log.notes,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
-                    color = c.inkMid,
-                    modifier = Modifier
-                        .drawBehind { drawRect(rule, size = Size(2.dp.toPx(), size.height)) }
-                        .padding(start = 10.dp),
-                )
-            }
-            if (log.nextTime.isNotBlank()) {
-                Spacer(Modifier.height(12.dp))
-                Text("NEXT TIME", style = Micro, color = c.inkLow)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    log.nextTime,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
-                    color = c.inkHigh,
-                )
+                if (log.faults.isNotEmpty()) {
+                    Text(
+                        log.faults.joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = c.fault,
+                    )
+                }
+                if (log.notes.isNotBlank()) {
+                    Spacer(Modifier.height(12.dp))
+                    val rule = c.inkFaint
+                    Text(
+                        log.notes,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                        color = c.inkMid,
+                        modifier = Modifier
+                            .drawBehind { drawRect(rule, size = Size(2.dp.toPx(), size.height)) }
+                            .padding(start = 10.dp),
+                    )
+                }
+                if (log.nextTime.isNotBlank()) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("NEXT TIME", style = Micro, color = c.inkLow)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        log.nextTime,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                        color = c.inkHigh,
+                    )
+                }
             }
         }
+    }
 
-        Spacer(Modifier.height(32.dp))
-        Spacer(Modifier.navigationBarsPadding())
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Two columns once the pane (or page) has room for a 340 supporting column (§3.8 L/XL).
+        val twoColumns = maxWidth >= 880.dp
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(scroll),
+        ) {
+            header()
+            if (twoColumns) {
+                Row(
+                    Modifier
+                        .padding(horizontal = gutter)
+                        .widthIn(max = 1080.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        pass(Modifier.fillMaxWidth())
+                        TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, gutter = 0.dp)
+                        taste(Modifier.fillMaxWidth())
+                        coffeeAndGear(Modifier.fillMaxWidth())
+                        TheBed(log, gutter = 0.dp)
+                    }
+                    Column(Modifier.width(340.dp)) {
+                        if (canBrewAgain) {
+                            PrimaryButton(
+                                "Brew again",
+                                brewAgain,
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = Icons.Rounded.Replay,
+                                height = Dimens.PrimaryInCard,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Same coffee, grind and dose",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = c.inkLow,
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                            )
+                            Spacer(Modifier.height(16.dp))
+                        }
+                        BrewDetailPhotos(brewLogId = log.id, openUid = openPhoto, onOpen = { openPhoto = it }, gutter = 0.dp)
+                        Spacer(Modifier.height(20.dp))
+                        analysis(Modifier.fillMaxWidth())
+                    }
+                }
+            } else {
+                pass(Modifier.padding(horizontal = gutter).widthIn(max = 760.dp))
+                // No section label: the card's own eyebrow says ANALYSIS, and saying it twice was noise.
+                Spacer(Modifier.height(20.dp))
+                analysis(Modifier.padding(horizontal = gutter).widthIn(max = 760.dp))
+                Column(Modifier.widthIn(max = 760.dp + gutter * 2)) {
+                    TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, gutter = gutter)
+                    coffeeAndGear(Modifier.padding(horizontal = gutter))
+                    TheBed(log, gutter = gutter)
+                    BrewDetailPhotos(brewLogId = log.id, openUid = openPhoto, onOpen = { openPhoto = it }, gutter = gutter)
+                    taste(Modifier.padding(horizontal = gutter))
+                    if (canBrewAgain) {
+                        Spacer(Modifier.height(20.dp))
+                        SecondaryButton(
+                            "Brew again",
+                            brewAgain,
+                            modifier = Modifier.padding(horizontal = gutter).fillMaxWidth().widthIn(max = 420.dp),
+                            icon = Icons.Rounded.Replay,
+                            onCanvas = true,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.navigationBarsPadding())
+        }
+    }
+
+    if (picking) {
+        CompareWithPicker(
+            base = log,
+            logs = rememberAllLogs(),
+            current = null,
+            onPick = {
+                picking = false
+                onCompare(it)
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 
@@ -466,14 +559,18 @@ private fun BoardingPass(
     val c = CoffeeTheme.colors
     val nodes = remember(recipe) { recipe?.pourNodes() ?: emptyList() }
     val units = LocalUnits.current
-    val cells = remember(log, recipe, grinder, ts, distrusted, units) {
-        passCells(log, recipe, grinder, ts, distrusted, units)
+    val labels = remember(log.brewerId, log.brewer, recipe) {
+        MethodLabels.of(recipe?.brewer?.method ?: (Brewers.byId(log.brewerId) ?: brewerFromLabel(log.brewer))?.method ?: BrewMethod.PourOver)
+    }
+    val cells = remember(log, recipe, grinder, ts, distrusted, units, labels) {
+        passCells(log, recipe, grinder, ts, distrusted, units, labels)
     }
 
     SoftCard(modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                EyebrowLabel("${dayLabel(log.startedAt)} · ${timeLabel(log.startedAt)}")
+                // The phone's own date and clock style (v4 §4.15); exports keep the pinned format.
+                EyebrowLabel("${screenDate(log.startedAt)} · ${screenTime(log.startedAt)}", Modifier.weight(1f, fill = false))
                 Spacer(Modifier.weight(1f))
                 StatusChip(scoreStatus(log.overall), cupLabel(log.overall))
             }
@@ -515,7 +612,8 @@ private fun BoardingPass(
                 fromLabel = "COFFEE",
                 to = grams(log.waterG),
                 toUnit = "g",
-                toLabel = "WATER",
+                // "YIELD" for a shot, "WATER IN THE BASE" for a moka pot (v4 §4.9).
+                toLabel = labels.water,
                 nodes = nodes,
                 midLabel = if (Fields.RATIO in distrusted) "$ratioLabel · ignored" else ratioLabel,
                 style = Num.Large,
@@ -537,14 +635,15 @@ private fun TheBrew(
     ts: Pair<Status, String>,
     timeTrusted: Boolean,
     bedExposedSec: Int?,
+    gutter: Dp = 16.dp,
 ) {
     val rows = remember(log, recipe, ts, timeTrusted, bedExposedSec) {
         brewTimeline(log, recipe, ts.first, timeTrusted, bedExposedSec)
     }
     if (recipe == null && rows.isEmpty()) return
 
-    SectionLabel("THE BREW", Modifier.padding(horizontal = 16.dp))
-    SoftCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
+    SectionLabel("THE BREW", Modifier.padding(horizontal = gutter))
+    SoftCard(Modifier.padding(horizontal = gutter).fillMaxWidth()) {
         if (recipe != null) {
             val total = recipe.totalSec.coerceAtLeast(1)
             val actualEnd = if (timeTrusted) log.totalTimeSec / total.toFloat() else null
@@ -588,14 +687,14 @@ private fun TheBrew(
 
 /** THE BED, when anything about it was recorded. The shape is drawn, never typed. */
 @Composable
-private fun TheBed(log: BrewLogEntity) {
+private fun TheBed(log: BrewLogEntity, gutter: Dp = 16.dp) {
     val recorded = log.bedShape != BedShape.Unset || log.sludge != Sludge.Unset ||
         log.channeling != Channeling.Unset || log.bedNotes.isNotBlank()
     if (!recorded) return
     val c = CoffeeTheme.colors
 
-    SectionLabel("THE BED", Modifier.padding(horizontal = 16.dp))
-    SoftCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
+    SectionLabel("THE BED", Modifier.padding(horizontal = gutter))
+    SoftCard(Modifier.padding(horizontal = gutter).fillMaxWidth()) {
         var needsGap = false
         if (log.bedShape != BedShape.Unset) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -661,6 +760,7 @@ private fun passCells(
     ts: Pair<Status, String>,
     distrusted: Set<String>,
     units: Units,
+    labels: MethodLabels,
 ): List<Cell> {
     val clicks = log.grindClicks
     // The way the dial reads it: "dial 7.5" on a numbered ring, "6 turns + 6" on a plain one.
@@ -670,18 +770,31 @@ private fun passCells(
     } else {
         scale.reading(clicks.toDouble())?.let { if (scale.dial.showsDialNumber) "dial $it" else it }
     }
+    // A blade grinder is timed in seconds; pre-ground coffee has no setting at all (v4 §4.2).
+    val blade = log.grindKind == "blade" && log.grindValue != null
     val grind = Cell(
         label = "GRIND",
-        value = clicks?.toString() ?: log.grindSetting.trim().ifEmpty { null },
-        unit = clicks?.let { unitWord(it, "click") },
+        value = when {
+            log.grindKind == "preground" -> "As bought"
+            clicks != null -> clicks.toString()
+            blade -> log.grindValue!!.roundToInt().toString()
+            else -> log.grindSetting.trim().ifEmpty { null }
+        },
+        unit = when {
+            log.grindKind == "preground" -> null
+            clicks != null -> unitWord(clicks, "click")
+            blade -> "s"
+            else -> null
+        },
         sub = grindSub,
-        textValue = clicks == null,
+        textValue = clicks == null && !blade,
     ).ignoredIf(Fields.GRIND in distrusted)
 
     val time = Cell(
-        label = "TIME",
-        value = log.totalTimeSec.takeIf { it > 0 }?.let(::clock),
-        sub = recipe?.let { "plan ${clock(it.totalSec)}" },
+        label = labels.time,
+        // Cold brew reads in hours, not "720:00".
+        value = log.totalTimeSec.takeIf { it > 0 }?.let { if (labels.longTimes) formatDuration(it) else clock(it) },
+        sub = recipe?.let { "plan ${if (labels.longTimes) formatDuration(it.totalSec) else clock(it.totalSec)}" },
         status = ts.first,
     ).ignoredIf(Fields.TIME in distrusted)
 

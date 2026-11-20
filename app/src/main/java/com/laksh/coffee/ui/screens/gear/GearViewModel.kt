@@ -155,6 +155,31 @@ class GearViewModel(
     fun setOwnedBrewers(ids: Set<String>) = viewModelScope.launch { prefs.setOwnedBrewerIds(ids) }
     fun setWater(id: String) = viewModelScope.launch { prefs.setDefaultWaterId(id) }
 
+    // v4 §6.1: each of these stands alone, whatever onboarding pre-set.
+    fun setExperience(value: String) = viewModelScope.launch { prefs.setExperience(value) }
+    fun setHasScale(on: Boolean) = viewModelScope.launch { prefs.setHasScale(on) }
+    fun setReviewMode(mode: String) = viewModelScope.launch { prefs.setReviewMode(mode) }
+    fun setSound(on: Boolean) = viewModelScope.launch { prefs.setSound(on) }
+    fun setBuysGround(on: Boolean) = viewModelScope.launch { prefs.setBuysGround(on) }
+
+    /**
+     * Unsaved inline edits by row key ("bean:12", "grinder:new"), kept here so a rotation or a
+     * resize across 840 never loses typed text (v4 §2.10).
+     */
+    val drafts = mutableMapOf<String, Any>()
+
+    fun saveBeanThen(bean: BeanEntity, onSaved: (Long) -> Unit) = viewModelScope.launch {
+        val id = repo.upsertBean(bean)
+        onSaved(if (bean.id != 0L) bean.id else id)
+    }
+
+    fun saveGrinderThen(g: GrinderEntity, onSaved: (Long) -> Unit) = viewModelScope.launch {
+        val id = repo.upsertGrinder(g)
+        val c = Catalog.grinder(g.catalogId)
+        if (c == null || !CatalogLinker.scaleDiffers(g, c)) prefs.removeNotice(GearState.noticeId(g))
+        onSaved(if (g.id != 0L) g.id else id)
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer { GearViewModel(this.app.repository, this.app.settings, this.app.settingsState) }

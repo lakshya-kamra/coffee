@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -81,7 +82,8 @@ private fun TasteColumn(value: Int, label: String, index: Int, modifier: Modifie
         fill.animateTo(target, Motion.heavy())
     }
 
-    Column(modifier.height(108.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    // A minimum, so the value and label grow at 200 % text instead of clipping (v4 A7).
+    Column(modifier.heightIn(min = 108.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             "$value",
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),

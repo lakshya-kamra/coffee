@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -196,7 +197,8 @@ fun StepperRow(
         }
         HoldWell(Icons.Rounded.Remove, minusDescription, onMinus, onLongMinus, onCanvas)
         Row(
-            Modifier.width(valueWidth),
+            // A minimum: a long value at 200 % text widens the row instead of clipping.
+            Modifier.widthIn(min = valueWidth),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Bottom,
         ) {
