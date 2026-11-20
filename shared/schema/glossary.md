@@ -45,3 +45,9 @@ RATIO, GRIND, the Review sections, "Published numbers", "Bed exposed", "Days off
 ## History
 
 - 2026-11-19: created with 27 terms (v4).
+- 2026-11-20: every source URL checked. 14 of the 18 source entries (9 distinct pages) were read and
+  say what the note claims; the other four changed. Barista
+  Hustle refuses automated readers, so `steep`, `extraction` and `grind` now cite the Coffee
+  Compass post by its permalink (`/blog/the-coffee-compass/`, confirmed through an archived copy)
+  instead of `?p=2185`. `press` cites AeroPrecipe's written summary of Hedrick's video, which says
+  to press gently, instead of the video page, which has no text to check.

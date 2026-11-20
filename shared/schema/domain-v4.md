@@ -150,3 +150,11 @@ Placeholder art: Drip draws the V60, Siphon the Chemex, Phin the AeroPress, Cezv
   are coffee-chicory blends), Key Coffee (East Asia: Yodobashi). Flagged without a new check
   (they were already in the catalog as "mainstream", region = their home `area`): Dunkin', Peet's,
   Starbucks Reserve, Tchibo, Dallmayr, Segafredo, Kimbo, illy, Lavazza, UCC.
+- roasters.json: optional `website`, an https URL of the roaster's own homepage (for a brand
+  without its own site, its owner's page for the brand, e.g. Bru on hul.co.in). Omitted when we
+  could not confirm the official site; readers treat a missing or non-https value as no link and
+  show the link only when present. Added 2026-11-20 for 373 of 413 roasters (all 19 mainstream
+  brands, all 25 in India, 16 of 18 in Japan, 9 of 10 in South Korea). Each was confirmed by
+  loading the homepage and finding the roaster's name on it, or by search results naming it as
+  the official site. Domains that were parked, for sale, password-protected or belonged to
+  someone else were left out. Check a link again before changing it; never guess one.

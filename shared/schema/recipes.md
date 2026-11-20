@@ -90,3 +90,12 @@ web app. One file, so both apps always show the same numbers.
   `sourceNote` names the numbers that are ours (a pour or drain time the source leaves out, a
   temperature from the middle of a range). No drip-bag recipe: no maker's page with a dose was
   found.
+- 2026-11-20: the four built-ins without sources now cite what they are or are not based on, and
+  their `sourceNote` says plainly whose numbers they are. `hedrick-aeropress` and `gagne-v60` are
+  our own recipes that 1.x credited to Hedrick and Gagné (their real recipes are
+  `hedrick-aeropress-very-good` and `gagne-v60-adastra`); `hedrick-espresso` is our starting
+  point after Hedrick's light-roast advice on the Flair blog; `switch-hybrid` cites two pages that
+  brew the open-close-open pattern. No numbers changed. `name` and `author` stay as they were
+  because both apps match 1.x export rows to built-ins by exact name and author
+  (`LegacyExportReader`, `domain/backup/legacy.ts`); renaming needs a legacy alias in both
+  readers first.

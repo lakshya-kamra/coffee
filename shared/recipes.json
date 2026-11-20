@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-19",
+  "updated": "2026-11-20",
   "recipes": [
     {
       "id": "hoffmann-v60",
@@ -373,9 +373,15 @@
       "grind": "Fine. Near espresso, definitely finer than V60",
       "tempC": 95,
       "blurb": "Grind fine, agitate hard early, press slowly. Built around pushing extraction up without the bitterness people expect.",
-      "sourceNote": "ADAPTED from Hedrick's publicly described AeroPress approach: fine grind, aggressive early agitation, slow press, no bypass. These numbers are not from one Hedrick recipe. For the numbers from his 'A Very Good Aeropress Recipe' video, use \"A Very Good AeroPress\".",
+      "sourceNote": "Not Hedrick's recipe. Our own high-extraction AeroPress (fine grind, a hard stir in the bloom, a slow press, no bypass), first credited to him in 1.x. Only the slow press matches what he publishes: his own recipe is 15 g / 250 g at 92 °C with a gentle swirl, not a stir. For that, use \"A Very Good AeroPress\".",
       "fidelity": "adapted",
-      "sources": [],
+      "sources": [
+        {
+          "who": "Lance Hedrick (via AeroPrecipe)",
+          "url": "https://aeroprecipe.com/recipes/lance-hedrick-a-very-good-aeropress-recipe-and-3-simple-tips",
+          "note": "Written summary of his 'A Very Good Aeropress Recipe' video, the recipe this one differs from: 15 g / 250 g at 92 °C, swirl, press gently and stop before the hiss."
+        }
+      ],
       "level": "medium",
       "needs": [
         "scale",
@@ -522,9 +528,15 @@
       "grind": "Espresso. Dial by taste, not by number",
       "tempC": 94,
       "blurb": "Long ratio, long pre-infusion, obsessive prep. Light roasts want time and gentleness, not pressure.",
-      "sourceNote": "ADAPTED from Hedrick's general light-roast espresso guidance: long ratio, extended low-pressure pre-infusion, thorough WDT, puck screen. This is not a single published recipe. Dial it to your machine.",
+      "sourceNote": "Not a Hedrick recipe: our own starting point after his light-roast advice on the Flair blog (low-pressure pre-infusion of 10-12 seconds, a long ratio near 1:3, water just off the boil). There his best shot was 16 g in, 45 g out on a Flair. The 18 g dose, 1:2.5 ratio, 94 °C and the WDT and puck-screen prep are ours. Dial it to your machine.",
       "fidelity": "adapted",
-      "sources": [],
+      "sources": [
+        {
+          "who": "Lance Hedrick (Flair Espresso University)",
+          "url": "https://flairespresso.com/blogs/news/espresso-university-dial-in-light-roasted-coffee",
+          "note": "Dialling in light roasts: about 3 bar pre-infusion for 10-12 seconds, then 8-9 bar; a ratio near 3:1; best shot 16 g in, 45 g out."
+        }
+      ],
       "level": "advanced",
       "needs": [
         "scale",
@@ -648,9 +660,20 @@
       "grind": "Medium-fine",
       "tempC": 95,
       "blurb": "Small, gentle pulses that barely disturb the bed. The opposite bet from Perger, and it also works.",
-      "sourceNote": "ADAPTED, and not Gagné's own recipe: a low-agitation, Melodrip-style take on ideas he explores on Coffee ad Astra. He publishes a different V60 recipe (22 g / 352 g, three spins); use \"Gagné's V60\" for that.",
+      "sourceNote": "Not Gagné's recipe, though 1.x credited it to him. Our own low-agitation pulse pour in the style the Melodrip made popular: small, gentle pulses that keep the water line low. Every number here is ours. Gagné publishes a different V60 recipe (22 g / 352 g, three spins); use \"Gagné's V60\" for that.",
       "fidelity": "adapted",
-      "sources": [],
+      "sources": [
+        {
+          "who": "Daily Coffee News",
+          "url": "https://dailycoffeenews.com/2017/07/21/agitation-investigation-the-melodrip-alters-pourover-control",
+          "note": "The Melodrip method this follows in spirit: pulse-pour most of the water gently while keeping a low water line."
+        },
+        {
+          "who": "Jonathan Gagné (Coffee ad Astra)",
+          "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
+          "note": "His own V60 recipe, which this is not."
+        }
+      ],
       "level": "medium",
       "needs": [
         "scale",
@@ -953,9 +976,20 @@
       "grind": "Medium-fine",
       "tempC": 95,
       "blurb": "Percolate, close the valve and steep, then release. Immersion body with filter clarity.",
-      "sourceNote": "The widely used Hario Switch hybrid pattern rather than one person's recipe. For named Switch recipes, see Kasuya, Fukahori and Bøen.",
+      "sourceNote": "The widely used Hario Switch hybrid pattern rather than one person's recipe: percolate with the valve open, close it to steep, open it to drain. The two pages below brew that way with different numbers; the numbers here are ours. For named Switch recipes, see Kasuya, Fukahori and Bøen.",
       "fidelity": "community",
-      "sources": [],
+      "sources": [
+        {
+          "who": "Jean Galea",
+          "url": "https://jeangalea.com/hario-switch/",
+          "note": "21 g / 320 ml: 160 ml with the valve open, close at 0:45 and pour the rest, open at 2:00."
+        },
+        {
+          "who": "Honest Coffee Guide",
+          "url": "https://honestcoffeeguide.com/brew-recipes/tetsu-kasuya-hybrid-method",
+          "note": "Kasuya's hybrid: open-valve pours first, then a closed-valve steep before the drain."
+        }
+      ],
       "level": "medium",
       "needs": [
         "scale",

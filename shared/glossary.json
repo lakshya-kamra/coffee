@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-19",
+  "updated": "2026-11-20",
   "terms": [
     {
       "id": "ratio",
@@ -70,7 +70,7 @@
       "short": "Leave the coffee sitting in the water. Longer steeping pulls out more flavour.",
       "aliases": ["steeping", "contact time"],
       "sources": [
-        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: a longer brew extracts more."}
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/blog/the-coffee-compass/", "note": "Coffee Compass: a longer brew extracts more."}
       ]
     },
     {
@@ -79,7 +79,7 @@
       "short": "Push the plunger down slowly and steadily.",
       "aliases": ["plunge"],
       "sources": [
-        {"who": "Lance Hedrick", "url": "https://www.youtube.com/watch?v=CafyJ2p0Bgs", "note": "Presses the AeroPress slowly and gently."}
+        {"who": "Lance Hedrick (via AeroPrecipe)", "url": "https://aeroprecipe.com/recipes/lance-hedrick-a-very-good-aeropress-recipe-and-3-simple-tips", "note": "Written summary of his 'A Very Good Aeropress Recipe' video: press gently and slowly, and stop before the hiss."}
       ]
     },
     {
@@ -123,7 +123,7 @@
       "short": "How much of the coffee dissolved into your cup. Too little tastes sour and thin; too much tastes bitter and dry.",
       "aliases": ["extraction yield", "EY"],
       "sources": [
-        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: extract more with a finer grind or longer brew, less with a coarser grind or shorter brew."}
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/blog/the-coffee-compass/", "note": "Coffee Compass: extract more with a finer grind or longer brew, less with a coarser grind or shorter brew."}
       ]
     },
     {
@@ -132,7 +132,7 @@
       "short": "How fine the coffee is ground. Finer gives up flavour faster; coarser, slower. Sour usually means go finer, bitter coarser.",
       "aliases": ["grind size", "grind setting"],
       "sources": [
-        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: finer extracts more, coarser less."},
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/blog/the-coffee-compass/", "note": "Coffee Compass: finer extracts more, coarser less."},
         {"who": "Tim Wendelboe", "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee", "note": "Adjusts the grind by brew time and taste."}
       ]
     },
