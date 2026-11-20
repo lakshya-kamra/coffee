@@ -223,8 +223,58 @@ fun GearScreen(
         )
     }
 
+    // Back from the app root while a bean or grinder is chosen in the pane (§2.5): the same path as
+    // choosing nothing, so unsaved edits still ask first.
+    LaunchedEffect(pane.backRequested) {
+        if (pane.backRequested) {
+            pane.backRequested = false
+            if (wide && pane.item != null) select(null)
+        }
+    }
+
+    // The list always sits in the same place in the tree, so its scroll and state survive
+    // crossing the expanded breakpoint (§2.10).
+    ListDetailLayout(
+        showDetail = wide,
+        listWidth = wc.listPaneWidth,
+        detailKey = if (tab == APP) "settings:$settingsSection" else (shownKey ?: "empty:$tab"),
+        list = listContent,
+    ) { key ->
+        when {
+            key.startsWith("settings:") -> SettingsPane(
+                section = SettingsSection.entries[key.removePrefix("settings:").toInt()],
+                vm = vm,
+                state = state,
+                onRunSetup = onRunSetup,
+            )
+            key.startsWith("bean:") -> savedBean(key)?.let { saved ->
+                BeanPane(
+                    key = key,
+                    saved = saved,
+                    vm = vm,
+                    state = state,
+                    saveTick = saveTick,
+                    onSaved = { id -> pane.item = "bean:$id" },
+                    onDeleted = { pane.item = null },
+                )
+            } ?: EmptyBeans(onAdd = { select("bean:$NEW") }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
+            key.startsWith("grinder:") -> savedGrinder(key)?.let { saved ->
+                GrinderPane(
+                    key = key,
+                    saved = saved,
+                    vm = vm,
+                    state = state,
+                    saveTick = saveTick,
+                    onSaved = { id -> pane.item = "grinder:$id" },
+                    onDeleted = { pane.item = null },
+                )
+            } ?: EmptyGrinders(state.settings.buysGround, onAdd = { select("grinder:$NEW") }, onGround = { vm.setBuysGround(true) }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
+            key == "empty:$BEANS" -> EmptyBeans(onAdd = { select("bean:$NEW") }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
+            else -> EmptyGrinders(state.settings.buysGround, onAdd = { select("grinder:$NEW") }, onGround = { vm.setBuysGround(true) }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
+        }
+    }
+
     if (!wide) {
-        listContent()
         // Phones and medium windows edit in a sheet; its draft is the same one the pane uses.
         val key = pane.item
         savedBean(key)?.takeIf { tab == BEANS }?.let { saved ->
@@ -276,46 +326,6 @@ fun GearScreen(
                         }
                     } else null,
                 )
-            }
-        }
-    } else {
-        ListDetailLayout(
-            showDetail = true,
-            listWidth = wc.listPaneWidth,
-            detailKey = if (tab == APP) "settings:$settingsSection" else (shownKey ?: "empty:$tab"),
-            list = listContent,
-        ) { key ->
-            when {
-                key.startsWith("settings:") -> SettingsPane(
-                    section = SettingsSection.entries[key.removePrefix("settings:").toInt()],
-                    vm = vm,
-                    state = state,
-                    onRunSetup = onRunSetup,
-                )
-                key.startsWith("bean:") -> savedBean(key)?.let { saved ->
-                    BeanPane(
-                        key = key,
-                        saved = saved,
-                        vm = vm,
-                        state = state,
-                        saveTick = saveTick,
-                        onSaved = { id -> pane.item = "bean:$id" },
-                        onDeleted = { pane.item = null },
-                    )
-                } ?: EmptyBeans(onAdd = { select("bean:$NEW") }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
-                key.startsWith("grinder:") -> savedGrinder(key)?.let { saved ->
-                    GrinderPane(
-                        key = key,
-                        saved = saved,
-                        vm = vm,
-                        state = state,
-                        saveTick = saveTick,
-                        onSaved = { id -> pane.item = "grinder:$id" },
-                        onDeleted = { pane.item = null },
-                    )
-                } ?: EmptyGrinders(state.settings.buysGround, onAdd = { select("grinder:$NEW") }, onGround = { vm.setBuysGround(true) }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
-                key == "empty:$BEANS" -> EmptyBeans(onAdd = { select("bean:$NEW") }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
-                else -> EmptyGrinders(state.settings.buysGround, onAdd = { select("grinder:$NEW") }, onGround = { vm.setBuysGround(true) }, Modifier.statusBarsPadding().padding(Dimens.gutter).padding(top = 16.dp))
             }
         }
     }

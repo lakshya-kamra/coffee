@@ -43,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -130,6 +131,7 @@ import com.laksh.coffee.ui.theme.Motion
 import com.laksh.coffee.ui.theme.Num
 import com.laksh.coffee.ui.theme.WidthClass
 import com.laksh.coffee.ui.theme.listBottomPadding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
@@ -159,7 +161,18 @@ fun HistoryScreen(
     val paneSel = (LocalPaneSelection.current as? PaneDetail.Brew)?.logId
     // Without a pane the keyboard still has a place: a highlighted row, saved across rotation.
     var cursor by rememberSaveable { mutableStateOf<Long?>(null) }
-    val selected = paneSel ?: cursor
+    // With a pane the cursor leads and the pane follows once the keys rest (§2.6): holding J
+    // must not build a detail tree and its ViewModel at key-repeat rate.
+    val inPanes = paneSel != null || wc.usesPanes
+    LaunchedEffect(paneSel) { if (paneSel != null) cursor = paneSel }
+    val selected = if (inPanes) cursor ?: paneSel else paneSel ?: cursor
+    LaunchedEffect(cursor, inPanes) {
+        val target = cursor
+        if (inPanes && target != null && target != paneSel) {
+            delay(LogFilterUi.PANE_SETTLE_MS)
+            onOpenLog(target)
+        }
+    }
     var confirmDelete by remember { mutableStateOf<BrewLogEntity?>(null) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -180,7 +193,7 @@ fun HistoryScreen(
 
     val moveTo: (Long?) -> Unit = { id ->
         if (id != null) {
-            if (paneSel != null || wc.usesPanes) onOpenLog(id) else cursor = id
+            cursor = id
             rowIndex[id]?.let { idx ->
                 scope.launch {
                     val visible = listState.layoutInfo.visibleItemsInfo

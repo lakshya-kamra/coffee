@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,11 +43,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -68,18 +80,23 @@ import com.laksh.coffee.ui.components.PillButton
 import com.laksh.coffee.ui.components.QuietButton
 import com.laksh.coffee.ui.components.RecipeCard
 import com.laksh.coffee.ui.components.ScreenHeader
+import com.laksh.coffee.ui.components.SecondaryButton
 import com.laksh.coffee.ui.components.SelectableChip
 import com.laksh.coffee.ui.components.focusRing
 import com.laksh.coffee.ui.components.hoverTint
 import com.laksh.coffee.ui.nav.LocalPaneSelection
 import com.laksh.coffee.ui.nav.PaneDetail
 import com.laksh.coffee.ui.nav.SharedKeys
+import com.laksh.coffee.ui.nav.TabKeys
+import com.laksh.coffee.ui.screens.history.LogFilterUi
 import com.laksh.coffee.ui.nav.listSearchTarget
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.LocalWindowClass
 import com.laksh.coffee.ui.theme.Micro
 import com.laksh.coffee.ui.theme.Motion
 import com.laksh.coffee.ui.theme.listBottomPadding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** How the library lays itself out (v4 §3.2). */
 internal enum class RecipeListLayout { Cards, Grid, PaneRows }
@@ -93,20 +110,75 @@ internal object RecipeListLayouts {
     }
 }
 
-/** [onNewRecipe] opens the recipe builder; wired by the navigation package. */
+/** Lazy index of the first recipe row in [PaneList]: header, search, chips and sort come first. */
+private const val PANE_FIRST_ROW = 4
+
+/**
+ * [onNewRecipe] opens the recipe builder; [onBrew], [onEdit] and [onDuplicate] serve the list's
+ * keys (B, E, D). All wired by the navigation package.
+ */
 @Composable
 fun RecipeListScreen(
     onOpenRecipe: (String) -> Unit,
     onNewRecipe: () -> Unit = {},
+    onBrew: (String) -> Unit = {},
+    onEdit: (String) -> Unit = {},
+    onDuplicate: (String) -> Unit = {},
     vm: RecipesViewModel = viewModel(factory = RecipesViewModel.Factory),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val inPane = LocalWindowClass.current.usesPanes
+    val paneSel = (LocalPaneSelection.current as? PaneDetail.Recipe)?.id
+    val paneList = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    // Keys (§3.2): in the pane layout the cursor leads and the pane follows once the keys rest, as
+    // in the Log. The card layouts have no row to highlight, so only N works there.
+    var cursor by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(paneSel) { if (paneSel != null) cursor = paneSel }
+    LaunchedEffect(cursor, inPane) {
+        val target = cursor
+        if (inPane && target != null && target != paneSel) {
+            delay(LogFilterUi.PANE_SETTLE_MS)
+            onOpenRecipe(target)
+        }
+    }
+    val current = if (inPane) cursor ?: paneSel else null
+    TabKeys { e ->
+        if (e.type != KeyEventType.KeyDown || e.isCtrlPressed || e.isMetaPressed || e.isAltPressed) return@TabKeys false
+        val ids = state.filtered.map { it.id }
+        val recipe = current?.let { id -> state.filtered.firstOrNull { it.id == id } }
+        val move: (Int) -> Boolean = { by ->
+            val next = LogFilterUi.step(ids, current, by)
+            if (next != null) {
+                cursor = next
+                val idx = PANE_FIRST_ROW + ids.indexOf(next)
+                scope.launch {
+                    val visible = paneList.layoutInfo.visibleItemsInfo
+                    if (visible.none { it.index == idx } || visible.lastOrNull()?.index == idx) {
+                        paneList.animateScrollToItem((idx - 2).coerceAtLeast(0))
+                    }
+                }
+            }
+            next != null
+        }
+        when (e.key) {
+            Key.N -> true.also { onNewRecipe() }
+            Key.J, Key.DirectionDown -> inPane && move(1)
+            Key.K, Key.DirectionUp -> inPane && move(-1)
+            Key.Enter, Key.NumPadEnter -> (recipe != null).also { if (it) onOpenRecipe(recipe!!.id) }
+            Key.B -> (recipe != null).also { if (it) onBrew(recipe!!.id) }
+            Key.E -> (recipe != null && RecipeListState.isMine(recipe)).also { if (it) onEdit(recipe!!.id) }
+            Key.D -> (recipe != null).also { if (it) onDuplicate(recipe!!.id) }
+            else -> false
+        }
+    }
+
     BoxWithConstraints(Modifier.fillMaxSize()) {
         when (RecipeListLayouts.of(inPane, maxWidth.value)) {
             RecipeListLayout.Cards -> PhoneList(state, vm, onOpenRecipe, onNewRecipe)
             RecipeListLayout.Grid -> CardGrid(state, vm, onOpenRecipe, onNewRecipe)
-            RecipeListLayout.PaneRows -> PaneList(state, vm, onOpenRecipe, onNewRecipe)
+            RecipeListLayout.PaneRows -> PaneList(state, vm, onOpenRecipe, onNewRecipe, paneList, current)
         }
     }
 }
@@ -118,7 +190,7 @@ private fun PhoneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe
     val chipRow = rememberLazyListState()
     // "Mine" and "My brewers" arrive at the front of the row once there is something to offer.
     // A lazy row keeps its first visible chip in place, which would leave them off-screen.
-    LaunchedEffect(state.hasMine, state.hasOwned) { chipRow.requestScrollToItem(0) }
+    LaunchedEffect(state.hasOwned) { chipRow.requestScrollToItem(0) }
 
     LazyColumn(
         Modifier.fillMaxSize().testTag("recipe-list"),
@@ -134,11 +206,10 @@ private fun PhoneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // These chips sit on the bare canvas, where a light surface2 pill disappears.
-                if (state.hasMine) {
-                    item(key = "mine", contentType = "chip") {
-                        SelectableChip("Mine", state.mine, vm::toggleMine, Modifier.animateItem(placementSpec = Motion.offset()), onCanvas = true)
-                    }
+                // These chips sit on the bare canvas, where a light surface2 pill disappears. "Mine"
+                // is always offered: with nothing of yours it leads to the guided empty state.
+                item(key = "mine", contentType = "chip") {
+                    SelectableChip("Mine", state.mine, vm::toggleMine, Modifier.animateItem(placementSpec = Motion.offset()), onCanvas = true)
                 }
                 if (state.hasOwned) {
                     item(key = "my-brewers", contentType = "chip") {
@@ -180,7 +251,11 @@ private fun PhoneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe
 
         // Keyed so a filter change moves the survivors instead of teleporting them.
         val list = state.filtered
-        if (list.isEmpty() && state.all.isNotEmpty()) {
+        if (state.mineEmpty) {
+            item(key = "empty", contentType = "empty") {
+                MineEmpty(vm, onNewRecipe, Modifier.animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick()).padding(16.dp))
+            }
+        } else if (list.isEmpty() && state.all.isNotEmpty()) {
             item(key = "empty", contentType = "empty") {
                 Empty(state, vm, Modifier.animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick()).padding(16.dp))
             }
@@ -217,7 +292,9 @@ private fun CardGrid(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe:
         item(key = "search", span = { GridItemSpan(maxLineSpan) }, contentType = "search") { Search(state, vm) }
         item(key = "chips", span = { GridItemSpan(maxLineSpan) }, contentType = "chips") { WrappedChips(state, vm) }
         val list = state.filtered
-        if (list.isEmpty() && state.all.isNotEmpty()) {
+        if (state.mineEmpty) {
+            item(key = "empty", span = { GridItemSpan(maxLineSpan) }, contentType = "empty") { MineEmpty(vm, onNewRecipe) }
+        } else if (list.isEmpty() && state.all.isNotEmpty()) {
             item(key = "empty", span = { GridItemSpan(maxLineSpan) }, contentType = "empty") { Empty(state, vm) }
         } else {
             items(list, key = { it.id }, contentType = { "recipe-card" }) { recipe ->
@@ -239,10 +316,17 @@ private fun CardGrid(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe:
  * compact rows. The row the pane shows is lifted.
  */
 @Composable
-private fun PaneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe: (String) -> Unit, onNewRecipe: () -> Unit) {
-    val selected = (LocalPaneSelection.current as? PaneDetail.Recipe)?.id
+private fun PaneList(
+    state: RecipeListState,
+    vm: RecipesViewModel,
+    onOpenRecipe: (String) -> Unit,
+    onNewRecipe: () -> Unit,
+    listState: LazyListState,
+    selected: String?,
+) {
     LazyColumn(
         Modifier.fillMaxSize().testTag("recipe-list"),
+        state = listState,
         contentPadding = PaddingValues(bottom = listBottomPadding()),
     ) {
         item(key = "header", contentType = "header") { Header(state, onNewRecipe) }
@@ -252,7 +336,9 @@ private fun PaneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe:
         item(key = "chips", contentType = "chips") { WrappedChips(state, vm, Modifier.padding(horizontal = 16.dp), authors = false) }
         item(key = "sort", contentType = "sort") { SortRow(state, vm, Modifier.padding(horizontal = 16.dp)) }
         val list = state.filtered
-        if (list.isEmpty() && state.all.isNotEmpty()) {
+        if (state.mineEmpty) {
+            item(key = "empty", contentType = "empty") { MineEmpty(vm, onNewRecipe, Modifier.padding(16.dp)) }
+        } else if (list.isEmpty() && state.all.isNotEmpty()) {
             item(key = "empty", contentType = "empty") { Empty(state, vm, Modifier.padding(16.dp)) }
         } else {
             items(list, key = { it.id }, contentType = { "recipe-row" }) { recipe ->
@@ -349,7 +435,7 @@ private fun Search(state: RecipeListState, vm: RecipesViewModel, modifier: Modif
         placeholder = "Search recipes, people, brewers",
         leadingIcon = Icons.Rounded.Search,
         trailing = if (state.query.isNotEmpty()) {
-            { IconWell(icon = Icons.Rounded.Close, contentDescription = "Clear search", onClick = { vm.setQuery("") }, size = 32.dp, onCanvas = false, iconSize = 16.dp) }
+            { IconWell(icon = Icons.Rounded.Close, contentDescription = "Clear search", onClick = { vm.setQuery("") }, size = 36.dp, onCanvas = false, iconSize = 16.dp) }
         } else {
             null
         },
@@ -366,7 +452,7 @@ private fun WrappedChips(state: RecipeListState, vm: RecipesViewModel, modifier:
     Column(modifier.padding(top = 12.dp, bottom = 4.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SelectableChip("All", !state.hasFilters, vm::clearFilters, onCanvas = true)
-            if (state.hasMine) SelectableChip("Mine", state.mine, vm::toggleMine, onCanvas = true)
+            SelectableChip("Mine", state.mine, vm::toggleMine, onCanvas = true)
             if (state.hasOwned) SelectableChip("My brewers", state.myBrewers, { vm.toggleMyBrewers(state.myBrewers) }, onCanvas = true)
             state.brewers.forEach { b ->
                 SelectableChip(
@@ -405,6 +491,22 @@ private fun Empty(state: RecipeListState, vm: RecipesViewModel, modifier: Modifi
             onClick = vm::clearFilters,
             modifier = Modifier.offset(x = (-8).dp),
         )
+    }
+}
+
+/**
+ * "Mine" with nothing of yours yet (§4.12): where your own recipes will live, and the two ways to
+ * get one. Duplicating starts from the full list, so it turns "Mine" off.
+ */
+@Composable
+private fun MineEmpty(vm: RecipesViewModel, onNewRecipe: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text("Your own recipes live here.", style = MaterialTheme.typography.bodyLarge, color = CoffeeTheme.colors.inkHigh)
+        Spacer(Modifier.height(12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SecondaryButton(text = "Make your own", onClick = onNewRecipe, icon = Icons.Rounded.Add, onCanvas = true)
+            QuietButton(text = "Duplicate one you like", onClick = vm::toggleMine)
+        }
     }
 }
 

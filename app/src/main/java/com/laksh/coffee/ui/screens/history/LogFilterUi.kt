@@ -22,6 +22,9 @@ enum class LogMenu(val label: String) { Coffee("Coffee"), Recipe("Recipe"), Brew
  */
 object LogFilterUi {
     const val PLACEHOLDER = "Search coffee, recipe, notes"
+
+    /** How long J/K must rest before the pane follows the cursor (§2.6). */
+    const val PANE_SETTLE_MS = 120L
     const val NO_RESULTS = "No brews match."
     const val CLEAR = "Clear filters"
     const val SORT_NEWEST = "Newest"
@@ -94,7 +97,7 @@ object LogFilterUi {
      * The brew a J/K or arrow press moves to, from [current] (the selected or newest brew).
      * Clamped at both ends; null when the list is empty.
      */
-    fun step(ids: List<Long>, current: Long?, by: Int): Long? {
+    fun <T> step(ids: List<T>, current: T?, by: Int): T? {
         if (ids.isEmpty()) return null
         val at = ids.indexOf(current)
         if (at < 0) return ids.first()

@@ -117,26 +117,40 @@ data class PaneSelections(val recipe: String? = null, val log: Long? = null) {
 
 /** The narrow/widen rules, pure so they are unit-tested. */
 object PaneRules {
-    /** Opening [detail] selects it in the pane instead of pushing a page: wide windows, own tab. */
+    /**
+     * Opening [detail] selects it in the pane instead of pushing a page: wide windows, own tab.
+     * (The root also sends a brew opened from another tab to the Log's pane; see [widen].)
+     */
     fun selectsInPane(usesPanes: Boolean, selectedTab: AppTab, detail: PaneDetail): Boolean =
         usesPanes && detail.tab == selectedTab
 
     /**
-     * The window narrowed below expanded (or a page over the tabs closed while it is narrow): the
-     * selected tab's chosen detail becomes a pushed page, so it stays on screen, and the pane
+     * The window narrowed below expanded while [narrowedOn] was the tab on screen: once back at the
+     * base, that tab's chosen detail becomes a pushed page, so it stays on screen, and its pane
      * selection is cleared. Null when there is nothing to do. Only at the base, so a brew opened
-     * from a pane comes back to the same detail after it.
+     * from a pane comes back to the same detail after it; and only while the same tab is still
+     * the one on screen, so a choice left in another tab is never pushed later, when that tab is
+     * tapped (it waits for the window to widen again).
      */
-    fun narrow(usesPanes: Boolean, atBase: Boolean, selectedTab: AppTab, selections: PaneSelections): Pair<PaneDetail, PaneSelections>? {
-        if (usesPanes || !atBase) return null
+    fun narrow(
+        usesPanes: Boolean,
+        atBase: Boolean,
+        selectedTab: AppTab,
+        selections: PaneSelections,
+        narrowedOn: AppTab = selectedTab,
+    ): Pair<PaneDetail, PaneSelections>? {
+        if (usesPanes || !atBase || selectedTab != narrowedOn) return null
         val detail = selections.forTab(selectedTab) ?: return null
         return detail to selections.cleared(selectedTab)
     }
 
     /**
      * The window widened (or something pushed a pane-able page while wide): a detail page of the
-     * selected tab that sits directly on the tabs moves into the pane. Returns the new selections,
-     * meaning "pop that page", or null to leave the stack alone.
+     * selected tab that sits directly on the tabs moves into the pane. A brew page moves into the
+     * Log's pane from any tab (§3.1 E: Today's and Insights' brews open the Log with that brew
+     * selected), so the caller switches to [PaneDetail.tab]. Returns the new selections, meaning
+     * "pop that page", or null to leave the stack alone. A recipe opened from Today stays a page:
+     * its header flies from Today's card.
      */
     fun widen(
         usesPanes: Boolean,
@@ -145,32 +159,60 @@ object PaneRules {
         selectedTab: AppTab,
         selections: PaneSelections,
     ): PaneSelections? {
-        if (!usesPanes || stackDepth != 1 || top == null || top.tab != selectedTab) return null
+        if (!usesPanes || stackDepth != 1 || top == null) return null
+        if (top.tab != selectedTab && top !is PaneDetail.Brew) return null
         return selections.with(top)
     }
 }
 
+/** Compare open in the Log pane: [other] beside the brew [forLog] it was opened from. */
+@Immutable
+data class LogCompare(val forLog: Long, val other: Long)
+
 /**
- * The root's pane state: the saved [selections] plus the predictive-back progress of the detail
- * pane (0..1, read only in its layer).
+ * The root's pane state: the saved [selections], the Log pane's [compare], and the predictive-back
+ * progress of the detail pane (0..1, read only in its layer).
  */
 @Stable
-class PaneController(initial: PaneSelections = PaneSelections()) {
+class PaneController(initial: PaneSelections = PaneSelections(), compare: LogCompare? = null) {
     var selections by mutableStateOf(initial)
+
+    /**
+     * Held here rather than in the Log tab, so back can close it first (§2.5). Choosing another
+     * brew drops it: a compare belongs to the brew it was opened from.
+     */
+    var compare by mutableStateOf(compare)
     val backProgress = Animatable(0f, visibilityThreshold = 0.001f)
 
     fun select(detail: PaneDetail) {
+        if (detail is PaneDetail.Brew && compare?.forLog != detail.logId) compare = null
         selections = selections.with(detail)
     }
 
     fun clear(tab: AppTab) {
+        if (tab == AppTab.Log) compare = null
         selections = selections.cleared(tab)
+    }
+
+    /** True when back has something to close in [tab]'s pane. */
+    fun hasBack(tab: AppTab): Boolean = (tab == AppTab.Log && compare != null) || selections.forTab(tab) != null
+
+    /** One step of back in [tab]'s pane: a compare closes before the brew under it. */
+    fun back(tab: AppTab) {
+        if (tab == AppTab.Log && compare != null) compare = null else clear(tab)
     }
 
     companion object {
         val Saver: Saver<PaneController, Any> = listSaver(
-            save = { listOf(it.selections.recipe, it.selections.log) },
-            restore = { PaneController(PaneSelections(it[0] as String?, it[1] as Long?)) },
+            save = { listOf(it.selections.recipe, it.selections.log, it.compare?.forLog, it.compare?.other) },
+            restore = {
+                val forLog = it.getOrNull(2) as Long?
+                val other = it.getOrNull(3) as Long?
+                PaneController(
+                    PaneSelections(it[0] as String?, it[1] as Long?),
+                    if (forLog != null && other != null) LogCompare(forLog, other) else null,
+                )
+            },
         )
     }
 }
@@ -210,6 +252,12 @@ class GearPaneState(section: Int = GearSection.Beans.ordinal, item: String? = nu
 
     /** The chosen bean or grinder id in the section's pane ("bean:12", "grinder:3"), or null. */
     var item by mutableStateOf(item)
+
+    /**
+     * Set by the root's back handler; Gear answers it by choosing nothing, which asks first when
+     * the open editor has unsaved changes.
+     */
+    var backRequested by mutableStateOf(false)
 
     companion object {
         val Saver: Saver<GearPaneState, Any> = listSaver(

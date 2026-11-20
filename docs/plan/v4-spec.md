@@ -1030,3 +1030,19 @@ and are not in the repo.
 - Entry chunk: the pre-v4 build (1085e3a) loaded 167,873 B gzip on first load (entry 134,507 B);
   v4 loads 188,346 B (+12.2%, inside +15%). The entry file alone shrank to 85,415 B because
   Rolldown now splits shared modules into preloaded chunks, so first-load totals are compared.
+
+### V4-ANDROID-FIX (Android, after the cross-package review)
+- No live-brew pill or row in the rail and sidebar (§2.2). On Android the brew is a focus route
+  over the whole window and leaving it ends the brew ("The timer stops and this brew is not
+  saved"), so the pill could only exist while covered. The pill, the row and their publisher were
+  removed rather than shipped as UI that never shows.
+- Sidebar rows are at least 48 dp, Gear's sub-rows included (§5 A12 over the 44/36 above).
+- At text scale above 150 % the rail and the bottom bar show icons only (the labels clipped at
+  200 %); each item's accessible name is unchanged.
+- The Recipes list's keys (J/K, arrows, Enter, B, E, D) work in the list-detail layout
+  (expanded and up), where a row can show the cursor; the medium grid and phone cards have no
+  row highlight, so only N works there. Crossing the expanded breakpoint swaps the Recipes list
+  between three lazy containers, so its scroll position is not kept across that resize (§2.10).
+- AI analysis hashes: both prompt builders must write step temperatures as "70 C" (2.0 form) so
+  v4's "70 °C" step titles do not mark stored analyses stale. Android does this in
+  `AnalysisPrompt.promptTitle`.

@@ -123,6 +123,16 @@ object AnalysisPrompt {
     const val HISTORY_FOR_BREW = 8
     const val TREND_MAX_BREWS = 60
     const val MIN_RATED_FOR_TREND = 3
+
+    private val DEGREES_C = Regex("""(\d+) °C""")
+
+    /**
+     * A step title as the prompt (and so the staleness hash) has it: temperatures in the 2.0 form
+     * ("70 C"). v4 retitled three built-in recipes' steps to "70 °C"; without this every stored
+     * analysis of a brew of them would read "Brew edited since" though nothing was edited. Web
+     * twin: the steps line of the recipe block in analysisPrompt.ts.
+     */
+    internal fun promptTitle(title: String): String = DEGREES_C.replace(title, "$1 C")
     const val MAX_PRINCIPLES = 10
     const val MAX_PHOTOS = 3
 
@@ -817,7 +827,7 @@ object AnalysisPrompt {
             put("expectedDrawdownSec", int(if (lastPour != null && target != null) (target - lastPour).takeIf { it >= 0 } else null))
             put(
                 "steps",
-                JsonArray(recipe.steps.map { JsonPrimitive("${it.startSec.asClock()}-${it.endSec.asClock()} ${it.title}") }),
+                JsonArray(recipe.steps.map { JsonPrimitive("${it.startSec.asClock()}-${it.endSec.asClock()} ${promptTitle(it.title)}") }),
             )
         }
         return "RECIPE (what was planned)\n$obj"

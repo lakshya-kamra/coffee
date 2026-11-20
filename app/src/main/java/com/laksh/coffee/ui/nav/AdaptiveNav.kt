@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
@@ -39,12 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,7 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.laksh.coffee.core.clock
 import com.laksh.coffee.ui.components.CoffeeTooltip
 import com.laksh.coffee.ui.components.IconWell
 import com.laksh.coffee.ui.components.PrimaryButton
@@ -74,37 +67,13 @@ import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Dimens
 import com.laksh.coffee.ui.theme.Motion
 import com.laksh.coffee.ui.theme.Num
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
-// ------------------------------------------------------------------ live brew
 
 /**
- * A brew that is running while its screen is not the one on top. Published by the brew screen
- * (V4-AND2); the rail and sidebar show it as the only crema outside the timer, and a tap resumes
- * it. The clock is derived from the anchor, so nothing ticks in the publisher.
+ * Above this text scale the nav labels cannot fit their items (Recipes and Insights clip at 200 %):
+ * the rail drops them as short windows do, and the bar shows its icons. Each item's content
+ * description still names it (A7).
  */
-@Immutable
-data class LiveBrew(
-    val recipeId: String,
-    val stepTitle: String,
-    /** Elapsed milliseconds at [anchorNanos] (System.nanoTime). */
-    val elapsedMs: Long,
-    val anchorNanos: Long,
-    val running: Boolean,
-) {
-    fun elapsedAt(nowNanos: Long): Long = if (running) elapsedMs + (nowNanos - anchorNanos) / 1_000_000 else elapsedMs
-}
-
-object LiveBrewBus {
-    private val live = MutableStateFlow<LiveBrew?>(null)
-    val state: StateFlow<LiveBrew?> = live.asStateFlow()
-
-    fun publish(brew: LiveBrew?) {
-        live.value = brew
-    }
-}
+internal const val NavLabelMaxFontScale = 1.5f
 
 /** The navigation's own surface: half a shade between the canvas and a card, never a border. */
 internal fun CoffeeColors.navSurface(): Color = lerp(bg, surface1, 0.5f)
@@ -115,9 +84,9 @@ private val NavPillSpring = PillSpring
 
 /**
  * The rail (medium, expanded, and large with the sidebar folded): 80dp on the start edge.
- * Start brew on top, the five sections with labels, a pill that slides between them (Float
- * translation in its layer, the bar's spring), and the live brew at the foot. Short windows drop
- * the labels and tighten the items.
+ * Start brew on top, the five sections with labels, and a pill that slides between them (Float
+ * translation in its layer, the bar's spring). Short windows (and very large text) drop the
+ * labels and tighten the items.
  */
 @Composable
 internal fun NavRail(
@@ -126,8 +95,6 @@ internal fun NavRail(
     tooltips: Boolean,
     onSelect: (AppTab) -> Unit,
     onStartBrew: () -> Unit,
-    liveBrew: LiveBrew?,
-    onResumeBrew: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = CoffeeTheme.colors
@@ -169,8 +136,6 @@ internal fun NavRail(
                 }
             }
         }
-        Spacer(Modifier.weight(1f))
-        if (liveBrew != null) LiveBrewPill(liveBrew, onResumeBrew)
     }
 }
 
@@ -262,8 +227,8 @@ private fun NavGlyph(tab: AppTab, selected: Boolean, showLabel: Boolean, iconSiz
 
 /**
  * The labelled sidebar (large and up): the app's name and the fold button, Start brew, the five
- * sections with Gear's three sections always shown under it, the live brew, and a quiet way to the
- * shortcuts. The selected row is a surface2 band; only its colour animates.
+ * sections with Gear's three sections always shown under it, and a quiet way to the shortcuts.
+ * The selected row is a surface2 band; only its colour animates. Every row is at least 48dp (A12).
  */
 @Composable
 internal fun NavSidebar(
@@ -274,8 +239,6 @@ internal fun NavSidebar(
     onStartBrew: () -> Unit,
     onCollapse: () -> Unit,
     onShortcuts: () -> Unit,
-    liveBrew: LiveBrew?,
-    onResumeBrew: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = CoffeeTheme.colors
@@ -326,7 +289,7 @@ internal fun NavSidebar(
                     icon = { NavIcon(tab, tab == selected) },
                     selected = tab == selected,
                     hint = "${tab.ordinal + 1}",
-                    height = 44.dp,
+                    height = 48.dp,
                     onClick = { onSelect(tab) },
                     modifier = Modifier.testTag(tab.tag),
                 )
@@ -337,7 +300,7 @@ internal fun NavSidebar(
                             icon = null,
                             selected = selected == AppTab.Gear && gearSection == section.ordinal,
                             hint = null,
-                            height = 36.dp,
+                            height = 48.dp,
                             onClick = { onGearSection(section) },
                             indent = 40.dp,
                             role = Role.Button,
@@ -345,10 +308,6 @@ internal fun NavSidebar(
                     }
                 }
             }
-        }
-        if (liveBrew != null) {
-            Spacer(Modifier.height(8.dp))
-            LiveBrewRow(liveBrew, onResumeBrew)
         }
         Box(
             Modifier
@@ -426,75 +385,3 @@ private fun SidebarRow(
 }
 
 private val RowShape = RoundedCornerShape(12.dp)
-
-// ---------------------------------------------------------------- live brew UI
-
-/** The brew clock, ticking once a second while it is on screen. */
-@Composable
-private fun rememberLiveClock(brew: LiveBrew): String {
-    val now = remember { mutableLongStateOf(System.nanoTime()) }
-    LaunchedEffect(brew) {
-        while (brew.running) {
-            withFrameNanos { now.longValue = it.coerceAtLeast(System.nanoTime()) }
-            kotlinx.coroutines.delay(1000)
-        }
-    }
-    return clock((brew.elapsedAt(now.longValue) / 1000).toInt())
-}
-
-@Composable
-private fun LiveBrewPill(brew: LiveBrew, onClick: () -> Unit) {
-    val colors = CoffeeTheme.colors
-    val interaction = remember { MutableInteractionSource() }
-    val time = rememberLiveClock(brew)
-    Column(
-        Modifier
-            .focusRing(interaction, ItemShape)
-            .clip(ItemShape)
-            .background(colors.cremaContainer)
-            .hoverTint(interaction, colors.crema.copy(alpha = 0.12f))
-            .selectable(selected = false, interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
-            .semantics { contentDescription = "Brewing, $time. Resume" }
-            .padding(horizontal = 10.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(Modifier.size(8.dp).clip(CircleShape).background(colors.crema))
-        Spacer(Modifier.height(4.dp))
-        Text(time, style = Num.Inline, color = colors.cremaInk)
-    }
-}
-
-@Composable
-private fun LiveBrewRow(brew: LiveBrew, onClick: () -> Unit) {
-    val colors = CoffeeTheme.colors
-    val interaction = remember { MutableInteractionSource() }
-    val time = rememberLiveClock(brew)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .focusRing(interaction, RowShape)
-            .clip(RowShape)
-            .background(colors.cremaContainer)
-            .hoverTint(interaction, colors.crema.copy(alpha = 0.12f))
-            .selectable(selected = false, interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(8.dp).clip(CircleShape).background(colors.crema))
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text("Brewing", style = MaterialTheme.typography.titleSmall, color = colors.cremaInk)
-            if (brew.stepTitle.isNotBlank()) {
-                Text(
-                    brew.stepTitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.inkMid,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-        Text(time, style = Num.Inline, color = colors.cremaInk)
-    }
-}

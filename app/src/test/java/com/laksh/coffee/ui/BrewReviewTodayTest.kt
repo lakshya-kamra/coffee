@@ -8,7 +8,12 @@ import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.domain.BrewerFamilies
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.recipes.ExpertRecipes
+import androidx.compose.ui.input.key.Key
+import com.laksh.coffee.domain.Temperatures
 import com.laksh.coffee.ui.screens.brew.AgainPrefill
+import com.laksh.coffee.ui.screens.brew.BrewKeys
+import com.laksh.coffee.ui.screens.brew.BrewPhase
+import com.laksh.coffee.ui.screens.brew.BrewUiState
 import com.laksh.coffee.ui.screens.brew.BrewLayouts
 import com.laksh.coffee.ui.screens.brew.BrewWords
 import com.laksh.coffee.ui.screens.brew.GrindChoice
@@ -245,6 +250,54 @@ class BrewReviewTodayTest {
         assertEquals(GrindChoice.Blade, GrindChoice.of(false, blade))
         assertEquals(GrindChoice.Dial, GrindChoice.of(false, clicky))
         assertEquals(GrindChoice.Dial, GrindChoice.of(false, null))
+    }
+
+    @Test
+    fun aBrewWithNoGrinderIsRecordedWithAnEmptyGrindKindAsOnTheWeb() {
+        // Backup v2.1: "" is dial or unknown. Android used to write "dial" here.
+        assertEquals("", GrindChoice.recordKind(false, null))
+        assertEquals("dial", GrindChoice.recordKind(false, clicky))
+        assertEquals("blade", GrindChoice.recordKind(false, blade))
+        assertEquals("preground", GrindChoice.recordKind(true, null))
+        assertEquals("preground", GrindChoice.recordKind(true, clicky))
+    }
+
+    // ------------------------------------------------------------------ brew keys
+
+    @Test
+    fun spaceAndTheArrowsBelongToAFocusedButton() {
+        // A focused Next or Finish: Space presses it, the arrows move focus.
+        listOf(Key.Spacebar, Key.Enter, Key.DirectionLeft, Key.DirectionRight, Key.DirectionDown).forEach {
+            assertFalse(BrewKeys.reachesRoot(it, rootFocused = false))
+            assertTrue(BrewKeys.reachesRoot(it, rootFocused = true))
+        }
+        // The letters work wherever focus is.
+        listOf(Key.N, Key.F, Key.M, Key.X, Key.Escape).forEach { assertTrue(BrewKeys.reachesRoot(it, rootFocused = false)) }
+    }
+
+    // ------------------------------------------------------------------ auto-advance
+
+    @Test
+    fun withAutoAdvanceOffTheCardWaitsAfterTheClockPassesTheStep() {
+        val r = ExpertRecipes.all.first { it.steps.size >= 3 && it.brewer.method != com.laksh.coffee.domain.BrewMethod.Espresso }
+        val running = BrewUiState(loading = false, recipe = r, phase = BrewPhase.Running, settings = Settings(autoAdvanceSteps = false))
+        assertFalse(running.waitingForTap)
+        assertTrue(running.copy(clockStepIndex = 1).waitingForTap)
+        // The setting on (the default): the card follows the clock, nothing waits.
+        assertFalse(running.copy(clockStepIndex = 1, settings = Settings()).waitingForTap)
+        assertFalse(running.copy(clockStepIndex = 1, done = true).waitingForTap)
+        assertEquals("Time for the next step.", BrewWords.NEXT_STEP)
+    }
+
+    // ------------------------------------------------------------------ units
+
+    @Test
+    fun stepTitlesFollowTheTemperatureUnit() {
+        val hybrid = ExpertRecipes.byId("kasuya-switch-hybrid")!!
+        val f = Temperatures.renderSteps(hybrid, "f")
+        assertTrue(f.steps.any { it.title.contains("158 °F") })
+        assertFalse(f.steps.any { it.title.contains("°C") })
+        assertTrue(Temperatures.renderSteps(hybrid, "c") === hybrid)
     }
 
     @Test

@@ -329,6 +329,21 @@ class AnalysisPromptTest {
     // ---------------------------------------------------- photos and units
 
     @Test
+    fun v4sDegreeSignInStepTitlesLeavesTheHashAsIn2_0() {
+        // kasuya-switch-hybrid's "CLOSE, 160 g at 70 C" became "70 °C" in v4: same prompt, same hash.
+        val hybrid = ExpertRecipes.byId("kasuya-switch-hybrid")!!
+        assertTrue(hybrid.steps.any { "°C" in it.title })
+        val asIn20 = hybrid.copy(steps = hybrid.steps.map { it.copy(title = it.title.replace(" °C", " C")) })
+        val now = AnalysisPrompt.brew(input(recipe = hybrid))
+        val then = AnalysisPrompt.brew(input(recipe = asIn20))
+        assertEquals(then.inputHash, now.inputHash)
+        val steps = block(now.user, "RECIPE (what was planned)")["steps"]!!.jsonArray.map { it.jsonPrimitive.content }
+        assertTrue(steps.toString(), steps.any { it.endsWith("CLOSE, 160 g at 70 C") })
+        assertEquals("Pour 2 to 100 g at 95 C", AnalysisPrompt.promptTitle("Pour 2 to 100 g at 95 °C"))
+        assertEquals("Bloom", AnalysisPrompt.promptTitle("Bloom"))
+    }
+
+    @Test
     fun attachedPhotosAreNamedInOrderAndChangeTheHash() {
         val none = AnalysisPrompt.brew(input())
         assertTrue(none.user.contains("PHOTOS\nnone"))

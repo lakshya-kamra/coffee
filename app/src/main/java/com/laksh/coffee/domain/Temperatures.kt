@@ -33,6 +33,13 @@ object Temperatures {
 
     fun cToF(c: Double): Int = (c * 9.0 / 5.0 + 32.0).roundToInt()
 
+    /**
+     * A recipe's step titles and details in the user's unit ("CLOSE, 160 g at 70 °C" reads
+     * 158 °F too), for every screen that shows or reads the steps. The same recipe for "c".
+     */
+    fun renderSteps(recipe: Recipe, unit: String): Recipe =
+        if (unit != "f") recipe else recipe.copy(steps = recipe.steps.map { it.copy(title = render(it.title, unit), detail = render(it.detail, unit)) })
+
     /** Recipe prose in the user's unit: "70 °C" → "158 °F" when unit is "f"; unchanged for "c". */
     fun render(text: String, unit: String): String {
         if (unit != "f") return text

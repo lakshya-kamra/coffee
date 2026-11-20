@@ -58,8 +58,11 @@ data class RecipeListState(
     private val ownedFamilies: Set<String> =
         if (ownedBrewerIds.isEmpty()) emptySet() else BrewerFamilies.owned(ownedBrewerIds)
 
-    /** The "Mine" chip is only offered once there is something of yours to show. */
+    /** Something of yours is in the library. The "Mine" chip shows either way (§4.12). */
     val hasMine: Boolean = all.any(::isMine)
+
+    /** "Mine" is on with nothing of yours: the list shows the guided empty state instead. */
+    val mineEmpty: Boolean = mine && !hasMine
 
     /** The "My brewers" chip is only offered when you have said which brewers you own. */
     val hasOwned: Boolean = ownedFamilies.isNotEmpty()
@@ -69,7 +72,7 @@ data class RecipeListState(
     // What the two toggles leave; the brewer and author chips are cut from this, so no chip
     // ever leads to an empty list.
     private val scoped: List<Recipe> = all.filter { r ->
-        (!mine || !hasMine || isMine(r)) && (!myBrewers || r.brewer.family in ownedFamilies)
+        (!mine || isMine(r)) && (!myBrewers || r.brewer.family in ownedFamilies)
     }
 
     val brewers: List<Brewer> = scoped.map { it.brewer }.distinct()
@@ -105,7 +108,7 @@ data class RecipeListState(
     }
 
     /** Something other than the search text is narrowing the list. */
-    val hasFilters: Boolean = (mine && hasMine) || myBrewers || activeBrewer != null || activeAuthor != null
+    val hasFilters: Boolean = mine || myBrewers || activeBrewer != null || activeAuthor != null
 
     companion object {
         /** Yours: written from scratch, copied, or a built-in you edited. */

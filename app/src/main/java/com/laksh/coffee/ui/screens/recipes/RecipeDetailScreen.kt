@@ -147,8 +147,7 @@ private fun shown(recipe: Recipe, hasScale: Boolean, tempUnit: String): Shown {
     val r = recipe.copy(
         blurb = Temperatures.render(recipe.blurb, tempUnit),
         tips = recipe.tips.map { Temperatures.render(it, tempUnit) },
-        steps = recipe.steps.map { it.copy(detail = Temperatures.render(it.detail, tempUnit)) },
-    )
+    ).let { Temperatures.renderSteps(it, tempUnit) }
     val prep = if (hasScale) recipe.prep.map { Temperatures.render(it, tempUnit) } else NoScale.prep(recipe, tempUnit)
     return Shown(r, prep, tempUnit)
 }

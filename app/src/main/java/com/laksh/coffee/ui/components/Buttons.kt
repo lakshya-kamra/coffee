@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -230,6 +231,8 @@ fun IconWell(
         Box(
             modifier
                 .alpha(if (enabled) 1f else 0.4f)
+                // A smaller well still takes a 48dp touch (A12); the well itself stays its size.
+                .minimumInteractiveComponentSize()
                 .size(size)
                 .focusRing(interaction, CircleShape)
                 .pressSquash(interaction, 0.92f)

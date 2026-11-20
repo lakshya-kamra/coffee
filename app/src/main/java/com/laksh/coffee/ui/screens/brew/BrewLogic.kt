@@ -1,5 +1,6 @@
 package com.laksh.coffee.ui.screens.brew
 
+import androidx.compose.ui.input.key.Key
 import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.data.db.entity.BeanEntity
@@ -76,6 +77,23 @@ object BrewLayouts {
     /** The big clock whenever the ring can hold it; a long brew's four digits need a wider ring. */
     fun portraitUsesBigClock(ringDp: Float, totalSec: Int): Boolean =
         ringDp >= PHONE_RING && (totalSec < 600 || ringDp >= 320f)
+}
+
+// --------------------------------------------------------------------------- keys
+
+/** Which keys the brew's root acts on (v4 §2.7). */
+object BrewKeys {
+    // What a focused button or radio does with these: press it, or move focus.
+    private val CONTROL_KEYS = setOf(
+        Key.Spacebar, Key.Enter, Key.NumPadEnter, Key.DirectionCenter,
+        Key.DirectionLeft, Key.DirectionRight, Key.DirectionUp, Key.DirectionDown,
+    )
+
+    /**
+     * Letters (N, F, M, X, Esc) always reach the root. Space, Enter and the arrows only while the
+     * root itself has focus: on a focused Next or Finish, Space must press it, not pause the brew.
+     */
+    fun reachesRoot(key: Key, rootFocused: Boolean): Boolean = rootFocused || key !in CONTROL_KEYS
 }
 
 // ------------------------------------------------------------------ announcements
@@ -190,6 +208,15 @@ enum class GrindChoice(val kind: String) {
             preground -> Preground
             grinder?.settingUnit == "s" -> Blade
             else -> Dial
+        }
+
+        /**
+         * The brew record's grindKind. No grinder chosen (and not pre-ground) is "", dial or
+         * unknown, as the web writes it and backup v2.1 documents it, never "dial".
+         */
+        fun recordKind(preground: Boolean, grinder: GrinderEntity?): String {
+            val c = of(preground, grinder)
+            return if (c == Dial && grinder == null) "" else c.kind
         }
 
         /**

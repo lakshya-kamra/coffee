@@ -280,8 +280,12 @@ class PersonalisationTest {
         assertTrue(s.hasMine)
         assertEquals(listOf(mine), s.filtered)
         assertTrue(s.hasFilters)
-        // With nothing of yours, a stale "Mine" must not blank the list.
-        assertEquals(library, RecipeListState(library, mine = true).filtered)
+        assertFalse(s.mineEmpty)
+        // With nothing of yours, "Mine" shows the guided empty state (Make your own, Duplicate).
+        val none = RecipeListState(library, mine = true)
+        assertTrue(none.mineEmpty)
+        assertTrue(none.filtered.isEmpty())
+        assertFalse(RecipeListState(library).mineEmpty)
         assertTrue(RecipeListState.isMine(mine))
         assertFalse(RecipeListState.isMine(library.first()))
         // A built-in you edited is yours too.

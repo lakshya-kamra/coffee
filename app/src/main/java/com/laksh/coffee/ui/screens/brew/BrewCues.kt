@@ -35,8 +35,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.laksh.coffee.domain.Recipe
-import com.laksh.coffee.ui.nav.LiveBrew
-import com.laksh.coffee.ui.nav.LiveBrewBus
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Micro
 import com.laksh.coffee.ui.theme.PillShape
@@ -119,10 +117,11 @@ fun StepFlashOverlay(flash: StepFlash, reduced: Boolean) {
 
 /**
  * What TalkBack hears (v4 §5 A4): a polite live region, cleared a frame before each write so the
- * same words twice are still read. Step changes, the end, and "10 seconds left" once.
+ * same words twice are still read. Step changes, the end, "10 seconds left" once, and with
+ * auto-advance off "Time for the next step." when the clock passes the step ([waiting]).
  */
 @Composable
-fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, elapsed: LongState) {
+fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, elapsed: LongState, waiting: Boolean = false) {
     var said by remember { mutableStateOf("") }
     suspend fun say(text: String) {
         said = ""
@@ -140,6 +139,7 @@ fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, 
         }
     }
     LaunchedEffect(tenLeft, live) { if (tenLeft && live) say(BrewWords.TEN_LEFT) }
+    LaunchedEffect(waiting, live) { if (waiting && live) say(BrewWords.NEXT_STEP) }
     Box(
         Modifier
             .size(1.dp)
@@ -148,21 +148,4 @@ fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, 
                 contentDescription = said
             },
     )
-}
-
-/**
- * Tells the rail and sidebar a brew is running (their live pill), and that it stopped when the
- * screen leaves. The clock travels as an anchor, so nothing ticks here.
- */
-@Composable
-fun PublishLiveBrew(recipeId: String, stepTitle: String, anchor: TimerAnchor, active: Boolean) {
-    LaunchedEffect(recipeId, stepTitle, anchor, active) {
-        if (!active) {
-            LiveBrewBus.publish(null)
-            return@LaunchedEffect
-        }
-        val now = System.nanoTime()
-        LiveBrewBus.publish(LiveBrew(recipeId, stepTitle, anchor.elapsedAt(now), now, anchor.running))
-    }
-    DisposableEffect(Unit) { onDispose { LiveBrewBus.publish(null) } }
 }

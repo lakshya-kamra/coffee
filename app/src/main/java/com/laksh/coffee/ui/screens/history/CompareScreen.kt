@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +83,8 @@ fun CompareScreen(
     val first = logs.firstOrNull { it.id == a }
     val second = logs.firstOrNull { it.id == b }
     val units = LocalUnits.current
-    var picking by remember { mutableStateOf(false) }
+    // Saved, so an open picker survives a rotation.
+    var picking by rememberSaveable { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         DetailTopBar(onBack = onBack, title = "Compare")

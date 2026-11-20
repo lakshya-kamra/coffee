@@ -22,6 +22,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +42,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -59,7 +63,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +79,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
@@ -85,6 +89,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -94,6 +99,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -314,6 +320,12 @@ private fun AppShell(
                 }
                 // Wide windows: a recipe or brew opened from its own tab's list shows in the pane.
                 detail != null && PaneRules.selectsInPane(usesPanesNow, selected, detail) -> panes.select(detail)
+                // A brew opened from Today or Insights (§3.1 E): the Log, with that brew selected.
+                detail is PaneDetail.Brew && usesPanesNow -> {
+                    if (nav.currentDestination?.route != Routes.TABS) nav.popBackStack(Routes.TABS, inclusive = false)
+                    selected = detail.tab
+                    panes.select(detail)
+                }
                 else -> nav.navigate(route)
             }
         }
@@ -327,11 +339,6 @@ private fun AppShell(
             if (id != null) nav.navigate(Routes.brew(id)) { launchSingleTop = true } else go(Routes.RECIPES)
         }
     }
-    val liveBrew by LiveBrewBus.state.collectAsState()
-    val resumeBrew: () -> Unit = remember(nav) {
-        { LiveBrewBus.state.value?.let { nav.navigate(Routes.brew(it.recipeId)) { launchSingleTop = true } } }
-    }
-
     // Only ever set by the debug adb hook; lets the emulator open any screen directly.
     // Applied once: a rotation recreates the activity with the same intent, and re-applying the
     // route would push a second copy of the page and lose its state (V4-AND3 glue).
@@ -358,12 +365,26 @@ private fun AppShell(
     }
 
     // Narrowing (rotation to portrait, split screen) with a recipe or brew chosen in the pane:
-    // push it as a page so it stays on screen. Waits for the base, so a brew opened from the
-    // pane returns to the same recipe.
-    LaunchedEffect(usesPanes, atBase, selected, panes.selections) {
-        val (detail, next) = PaneRules.narrow(usesPanes, atBase, selected, panes.selections) ?: return@LaunchedEffect
+    // push it as a page so it stays on screen. Only on the wide-to-narrow edge and only for the
+    // tab on screen then; it waits for the base, so a brew opened from the pane returns to the
+    // same recipe. Saved, so the edge survives the activity being recreated by the rotation.
+    var wasWide by rememberSaveable { mutableStateOf(usesPanes) }
+    var narrowedOn by rememberSaveable { mutableStateOf<AppTab?>(null) }
+    LaunchedEffect(usesPanes) {
+        if (wasWide && !usesPanes) narrowedOn = selected else if (usesPanes) narrowedOn = null
+        wasWide = usesPanes
+    }
+    LaunchedEffect(narrowedOn, atBase) {
+        val tab = narrowedOn ?: return@LaunchedEffect
+        if (!atBase) return@LaunchedEffect
+        narrowedOn = null
+        val (detail, next) = PaneRules.narrow(usesPanes, true, selected, panes.selections, tab) ?: return@LaunchedEffect
+        // A compare open beside that brew follows it as a page of its own.
+        val compare = panes.compare?.takeIf { detail is PaneDetail.Brew && it.forLog == detail.logId }
+        panes.compare = null
         panes.selections = next
         nav.navigate(detail.route)
+        if (compare != null) nav.navigate(Routes.compare(compare.forLog, compare.other))
     }
     // Widening, or a page of this tab pushed while wide (a just-saved recipe, Review's "open the
     // brew"): it moves into the pane.
@@ -376,6 +397,8 @@ private fun AppShell(
         )
         val depth = if (nav.previousBackStackEntry?.destination?.route == Routes.TABS) 1 else 2
         val next = PaneRules.widen(usesPanes, depth, top, selected, panes.selections) ?: return@LaunchedEffect
+        // A brew page from Today or Insights lands in the Log's pane, as opening it wide does.
+        top?.let { selected = it.tab }
         panes.selections = next
         nav.popBackStack()
     }
@@ -383,17 +406,23 @@ private fun AppShell(
     // Back from another section returns to Today first, as it did when the tabs were a stack.
     BackHandler(enabled = atBase && selected != AppTab.Today) { selected = AppTab.Today }
     // Registered after it, so it wins: with a recipe or brew chosen in the pane, back (and its
-    // predictive gesture) first returns the pane to its default. The detail shrinks and fades
-    // with the gesture in its layer; letting go early springs it back.
-    PredictiveBackHandler(enabled = usesPanes && atBase && panes.selections.forTab(selected) != null) { events ->
+    // predictive gesture) first returns the pane to its default; a compare open in the Log pane
+    // closes before that. The detail shrinks and fades with the gesture in its layer; letting go
+    // early springs it back.
+    PredictiveBackHandler(enabled = usesPanes && atBase && panes.hasBack(selected)) { events ->
         try {
             events.collect { e -> panes.backProgress.snapTo(e.progress) }
-            panes.clear(selected)
+            panes.back(selected)
             scope.launch { panes.backProgress.animateTo(0f, Motion.EffectsDefault) }
         } catch (e: CancellationException) {
             scope.launch { panes.backProgress.animateTo(0f, Motion.SpatialDefault) }
             throw e
         }
+    }
+    // Gear's chosen bean or grinder is on the same back path; Gear itself clears it, so an editor
+    // with unsaved changes asks first.
+    BackHandler(enabled = usesPanes && atBase && selected == AppTab.Gear && gearPane.item != null) {
+        gearPane.backRequested = true
     }
 
     // Every screen scrolls under the status bar except the running brew and setup, whose mesh
@@ -419,9 +448,11 @@ private fun AppShell(
         }
     }
 
-    // The nav and the pages beside it start after the rail/sidebar and the inset it covers.
-    val startInset = WindowInsets.safeDrawing.only(WindowInsetsSides.Start).asPaddingValues()
-        .calculateStartPadding(LocalLayoutDirection.current)
+    // The nav and the pages beside it start after the rail/sidebar and the inset it covers. Read in
+    // composition, so only insets that change on rotation: safeDrawing includes the IME, and every
+    // frame of the keyboard's animation would recompose this whole shell (jank audit).
+    val startInset = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Start)
+        .asPaddingValues().calculateStartPadding(LocalLayoutDirection.current)
     val navInset = if (navKind == NavKind.Bar) 0.dp else Dimens.navWidth + startInset
 
     // Key events reach the root only through a focused node; this one holds focus whenever
@@ -459,18 +490,24 @@ private fun AppShell(
                         .focusTarget(),
                 ) {
                     // Under the NavHost: focus pages cover it; recipe and brew pages sit beside it.
-                    // Hidden from TalkBack while a focus page covers it.
-                    val navCovered = Modifier.then(if (focusOnTop) Modifier.clearAndSetSemantics { } else Modifier)
+                    // While a focus page covers it, it is hidden from TalkBack and Tab cannot
+                    // enter it; the focus page itself takes every tap (DetailPage).
+                    val navCovered = if (focusOnTop) {
+                        Modifier
+                            .clearAndSetSemantics { }
+                            .focusProperties { onEnter = { cancelFocusChange() } }
+                            .focusGroup()
+                    } else {
+                        Modifier
+                    }
                     when (navKind) {
                         NavKind.Bar -> Unit
                         NavKind.Rail -> NavRail(
                             selected = selected,
-                            short = windowClass.isShort,
+                            short = windowClass.isShort || LocalDensity.current.fontScale > NavLabelMaxFontScale,
                             tooltips = windowClass.showsTooltips,
                             onSelect = { tab -> go(tab.route) },
                             onStartBrew = startBrew,
-                            liveBrew = liveBrew,
-                            onResumeBrew = resumeBrew,
                             modifier = navCovered,
                         )
                         NavKind.Sidebar -> NavSidebar(
@@ -484,13 +521,19 @@ private fun AppShell(
                             onStartBrew = startBrew,
                             onCollapse = toggleSidebar,
                             onShortcuts = { showShortcuts = true },
-                            liveBrew = liveBrew,
-                            onResumeBrew = resumeBrew,
                             modifier = navCovered,
                         )
                     }
 
-                    Box(Modifier.fillMaxSize().padding(start = navInset)) {
+                    // Beside the rail the start inset is already in navInset; the far side (a
+                    // landscape cutout or 3-button bar) is padded here, in layout, never read in
+                    // composition. Without a rail both sides are.
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(start = navInset)
+                            .windowInsetsPadding(sideInsets(navInset)),
+                    ) {
                         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides baseScope) {
                             TabsHost(
                                 tabs = TABS,
@@ -629,6 +672,13 @@ private fun RecipesTab(nav: NavHostController, go: (String) -> Unit, panes: Pane
                     onNewRecipe = {
                         nav.navigate(Routes.recipeEdit(null, EditorMode.New)) { launchSingleTop = true }
                     },
+                    onBrew = { nav.navigate(Routes.brew(it)) { launchSingleTop = true } },
+                    onEdit = { rid ->
+                        nav.navigate(Routes.recipeEdit(rid, EditorMode.Edit, SharedKeys.FROM_RECIPES)) { launchSingleTop = true }
+                    },
+                    onDuplicate = { rid ->
+                        nav.navigate(Routes.recipeEdit(rid, EditorMode.Duplicate, SharedKeys.FROM_RECIPES)) { launchSingleTop = true }
+                    },
                 )
             },
         ) { id ->
@@ -664,11 +714,16 @@ private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneCont
     val shown = panes.selections.log ?: newest
     val showDetail = windowClass.usesPanes
     val close: () -> Unit = remember(panes) { { panes.clear(AppTab.Log) } }
-    // In the pane, Compare takes the detail's place beside the list. Saved, so a rotation keeps it.
-    var comparing by rememberSaveable { mutableStateOf(0L) }
-    var comparingFor by rememberSaveable { mutableStateOf(0L) }
-    // A compare belongs to the brew it was opened from; choosing another brew drops it.
-    val activeCompare = if (comparingFor == (shown ?: 0L)) comparing else 0L
+    // In the pane, Compare takes the detail's place beside the list. It lives in the root's pane
+    // state, so back closes it first and a rotation keeps it. A compare belongs to the brew it was
+    // opened from; a filter that moves the default brew leaves it behind.
+    val activeCompare = panes.compare?.takeIf { it.forLog == (shown ?: 0L) }?.other ?: 0L
+    val closeCompare: () -> Unit = remember(panes) { { panes.compare = null } }
+    // Dropped once the list has an answer, so back never spends a press on a compare not shown.
+    LaunchedEffect(shown, panes.compare) {
+        val c = panes.compare
+        if (shown != null && c != null && c.forLog != shown) panes.compare = null
+    }
     val brewAgain: (String, Long) -> Unit = remember(nav) { { recipeId, logId -> nav.navigate(Routes.brew(recipeId, logId)) } }
     CompositionLocalProvider(LocalPaneSelection provides if (showDetail) shown?.let { PaneDetail.Brew(it) } else null) {
         ListDetailLayout(
@@ -687,8 +742,8 @@ private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneCont
         ) { (logId, other) ->
             when {
                 logId <= 0L -> EmptyPane("Your brews show up here. Brew something and rate it to start your log.")
-                other > 0L -> CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = { comparing = 0L }, canClose = true)) {
-                    CompareScreen(a = logId, b = other, onBack = { comparing = 0L }, onPickOther = { comparing = it })
+                other > 0L -> CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = closeCompare, canClose = true)) {
+                    CompareScreen(a = logId, b = other, onBack = closeCompare, onPickOther = { panes.compare = LogCompare(logId, it) })
                 }
                 else -> CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = close, canClose = panes.selections.log != null)) {
                     BrewDetailScreen(
@@ -696,10 +751,7 @@ private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneCont
                         onBack = close,
                         onEdit = { nav.navigate(Routes.review(it)) },
                         onBrewAgain = brewAgain,
-                        onCompare = {
-                            comparingFor = logId
-                            comparing = it
-                        },
+                        onCompare = { panes.compare = LogCompare(logId, it) },
                     )
                 }
             }
@@ -739,12 +791,18 @@ private fun NavHostController.reviewOpenedFromDetail(logId: Long): Boolean {
  *
  * [besideNav] pages (a recipe, a brew) start after the rail or sidebar, which stays usable; the
  * strip they leave has no pointer input, so taps there reach the navigation underneath. Focus
- * pages cover the whole window.
+ * pages cover the whole window, and take every tap in it: the rail and sidebar stay composed
+ * under them, and a tap on a blank part of the brew timer must never reach a rail item (which
+ * would drop the brew with no question asked).
+ *
+ * The page pads the horizontal insets (a landscape cutout, a side navigation bar) unless
+ * [ownInsets]: the brew screen pads its own, so its mesh can run under them.
  */
 @Composable
 private fun AnimatedContentScope.DetailPage(
     rise: Boolean = false,
     besideNav: Boolean = false,
+    ownInsets: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val scope = this
@@ -768,11 +826,24 @@ private fun AnimatedContentScope.DetailPage(
                 },
             )
             .padding(start = inset)
-            .background(CoffeeTheme.colors.bg),
+            .background(CoffeeTheme.colors.bg)
+            // Hit, so nothing under the page (the rail, the sidebar, a tab still placed during
+            // the push) takes a tap meant for it.
+            .pointerInput(Unit) {}
+            .then(if (ownInsets) Modifier else Modifier.windowInsetsPadding(sideInsets(inset))),
     ) {
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides scope, content = content)
     }
 }
+
+/**
+ * The horizontal insets a page pads: beside a rail or sidebar only the far side, since [navInset]
+ * already holds the near one; without one, both. Applied in layout, so the IME inside
+ * safeDrawing never recomposes anything.
+ */
+@Composable
+private fun sideInsets(navInset: Dp): WindowInsets =
+    WindowInsets.safeDrawing.only(if (navInset > 0.dp) WindowInsetsSides.End else WindowInsetsSides.Horizontal)
 
 // Detail push: the page fades in and grows from 94 % over tabs that hold still. Scale is a
 // Float layer property, so it is sub-pixel smooth; pop is the mirror and predictive back seeks it.
@@ -930,7 +1001,7 @@ private fun DetailNavHost(
                 },
             ),
         ) { entry ->
-            DetailPage {
+            DetailPage(ownInsets = true) {
                 BrewScreen(
                     recipeId = entry.arguments?.getString("id").orEmpty(),
                     againLogId = entry.arguments?.getLong("again") ?: 0L,
@@ -1156,14 +1227,19 @@ private fun BarItem(
                     modifier = Modifier.matchParentSize().graphicsLayer { alpha = sel.value },
                 )
             }
-            Spacer(Modifier.height(2.dp))
-            BasicText(
-                tab.label,
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.2.sp),
-                // A ColorProducer is read in draw, so the colour fade never recomposes the label.
-                color = { lerp(low, high, sel.value) },
-                maxLines = 1,
-            )
+            // At very large text the label cannot fit a fifth of the bar; the icon stays, and the
+            // item's content description still names it (A7).
+            if (LocalDensity.current.fontScale <= NavLabelMaxFontScale) {
+                Spacer(Modifier.height(2.dp))
+                BasicText(
+                    tab.label,
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.2.sp),
+                    // A ColorProducer is read in draw, so the colour fade never recomposes the label.
+                    color = { lerp(low, high, sel.value) },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

@@ -3,6 +3,8 @@ package com.laksh.coffee.ui
 import com.laksh.coffee.ui.components.SheetRole
 import com.laksh.coffee.ui.components.presentsAsDialog
 import com.laksh.coffee.ui.nav.AppTab
+import com.laksh.coffee.ui.nav.LogCompare
+import com.laksh.coffee.ui.nav.PaneController
 import com.laksh.coffee.ui.nav.PaneDetail
 import com.laksh.coffee.ui.nav.PaneRules
 import com.laksh.coffee.ui.nav.PaneSelections
@@ -141,10 +143,49 @@ class AdaptiveShellTest {
         assertNull(PaneRules.widen(false, 1, PaneDetail.Brew(12), AppTab.Log, empty))
         // Something above the detail (Review over it): not at index 1.
         assertNull(PaneRules.widen(true, 2, PaneDetail.Brew(12), AppTab.Log, empty))
-        // Opened from Today or Insights: it stays a page.
+        // A recipe opened from Today stays a page (its header flies from Today's card).
         assertNull(PaneRules.widen(true, 1, PaneDetail.Recipe("r"), AppTab.Today, empty))
-        assertNull(PaneRules.widen(true, 1, PaneDetail.Brew(3), AppTab.Insights, empty))
         assertNull(PaneRules.widen(true, 1, null, AppTab.Log, empty))
+    }
+
+    @Test
+    fun aBrewFromTodayOrInsightsLandsInTheLogPane() {
+        // §3.1 E: the root switches to the detail's tab (the Log) and selects it there.
+        assertEquals(PaneSelections(log = 3), PaneRules.widen(true, 1, PaneDetail.Brew(3), AppTab.Insights, PaneSelections()))
+        assertEquals(PaneSelections(log = 3), PaneRules.widen(true, 1, PaneDetail.Brew(3), AppTab.Today, PaneSelections()))
+        assertEquals(AppTab.Log, PaneDetail.Brew(3).tab)
+        assertNull(PaneRules.widen(false, 1, PaneDetail.Brew(3), AppTab.Today, PaneSelections()))
+    }
+
+    @Test
+    fun narrowingPushesOnlyForTheTabOnScreenWhenItNarrowed() {
+        val sel = PaneSelections(recipe = "r1", log = 9)
+        // Narrowed on Today, later on Log: the Log's choice waits for the window to widen again.
+        assertNull(PaneRules.narrow(usesPanes = false, atBase = true, selectedTab = AppTab.Log, selections = sel, narrowedOn = AppTab.Today))
+        // A brew from the Recipes pane finished to Today while narrow: the recipe is not pushed.
+        assertNull(PaneRules.narrow(false, true, AppTab.Today, sel, narrowedOn = AppTab.Recipes))
+        // Left the brew instead: back on Recipes, the recipe is pushed.
+        assertEquals(PaneDetail.Recipe("r1"), PaneRules.narrow(false, true, AppTab.Recipes, sel, narrowedOn = AppTab.Recipes)?.first)
+    }
+
+    @Test
+    fun backClosesALogCompareBeforeTheBrewUnderIt() {
+        val panes = PaneController(PaneSelections(log = 5))
+        panes.compare = LogCompare(forLog = 5, other = 2)
+        assertTrue(panes.hasBack(AppTab.Log))
+        panes.back(AppTab.Log)
+        assertNull(panes.compare)
+        assertEquals(5L, panes.selections.log)
+        panes.back(AppTab.Log)
+        assertNull(panes.selections.log)
+        assertFalse(panes.hasBack(AppTab.Log))
+        // With nothing chosen (the pane shows the newest brew), an open compare is still on back.
+        panes.compare = LogCompare(forLog = 8, other = 2)
+        assertTrue(panes.hasBack(AppTab.Log))
+        // Choosing another brew drops a compare that belonged to the old one.
+        panes.select(PaneDetail.Brew(4))
+        assertNull(panes.compare)
+        assertFalse(panes.hasBack(AppTab.Gear))
     }
 
     @Test

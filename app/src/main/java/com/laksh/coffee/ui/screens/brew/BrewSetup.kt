@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +27,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
@@ -195,8 +199,9 @@ private fun SetupTwoColumns(
             Modifier
                 .widthIn(max = 1200.dp)
                 .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
+                // Landscape: the cutout and a side navigation bar too, so Leave and Start never sit
+                // under the camera hole. Not the IME: the fields scroll above it on their own.
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
                 .padding(horizontal = gutter),
             horizontalArrangement = Arrangement.spacedBy(gutter),
         ) {

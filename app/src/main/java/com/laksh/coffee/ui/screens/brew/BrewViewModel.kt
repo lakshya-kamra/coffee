@@ -82,12 +82,24 @@ data class BrewUiState(
     // timer
     val running: Boolean = false,
     val stepIndex: Int = 0,
+    /**
+     * The step the clock is in. Equal to [stepIndex] unless auto-advance is off, where the step
+     * card waits for a tap (Next) after the clock passes its end.
+     */
+    val clockStepIndex: Int = 0,
     /** Wall-clock second at which the last pour step ended, for drawdown timing. */
     val lastPourEndSec: Int? = null,
     val bedExposedSec: Int? = null,
     val done: Boolean = false,
 ) {
     val step get() = recipe?.steps?.getOrNull(stepIndex)
+
+    /** The step card follows the clock (the setting); a shot always does, it has no card to tap. */
+    val autoAdvance: Boolean get() = settings.autoAdvanceSteps || isEspresso
+
+    /** Auto-advance is off and the clock has passed this step: the card waits for Next (A4). */
+    val waitingForTap: Boolean
+        get() = phase == BrewPhase.Running && !autoAdvance && clockStepIndex > stepIndex && !done
 
     val totalSec: Int get() = recipe?.totalSec ?: 0
 
@@ -170,8 +182,10 @@ class BrewViewModel(
     val anchor: StateFlow<TimerAnchor> = _anchor.asStateFlow()
 
     /**
-     * Emits a step index whenever the brew crosses into a new step, for haptics and sound.
-     * No replay, so coming back to the screen does not buzz for a step already announced.
+     * Emits a step index whenever the brew crosses into a new step, for haptics and sound. With
+     * auto-advance off it fires when the clock reaches the next step (the index of that step, for
+     * the banner) and again when Next moves the card. No replay, so coming back to the screen does
+     * not buzz for a step already announced.
      */
     private val _stepCue = MutableSharedFlow<Int>(extraBufferCapacity = 1)
     val stepCue: SharedFlow<Int> = _stepCue.asSharedFlow()
@@ -402,7 +416,7 @@ class BrewViewModel(
         pause()
         accumulatedMs = 0L
         publishAnchor()
-        _state.value = _state.value.copy(shotStopped = false, stepIndex = 0, done = false)
+        _state.value = _state.value.copy(shotStopped = false, stepIndex = 0, clockStepIndex = 0, done = false)
     }
 
     fun resume() {
@@ -441,6 +455,14 @@ class BrewViewModel(
         var index = recipe.steps.indexOfLast { sec >= it.startSec }
         if (index < 0) index = 0
 
+        if (!st.autoAdvance) {
+            // The card holds its step until Next; the clock's step is tracked for the prompt.
+            val next = st.copy(clockStepIndex = index, done = sec >= recipe.totalSec)
+            if (next.waitingForTap && !st.waitingForTap && st.running) _stepCue.tryEmit(st.stepIndex + 1)
+            _state.value = next
+            return
+        }
+
         val crossed = index != st.stepIndex
         var lastPourEnd = st.lastPourEndSec
         if (crossed) {
@@ -452,9 +474,24 @@ class BrewViewModel(
         // On most ticks this equals the current value and the StateFlow drops it.
         _state.value = st.copy(
             stepIndex = index,
+            clockStepIndex = index,
             lastPourEndSec = lastPourEnd,
             done = sec >= recipe.totalSec,
         )
+    }
+
+    /** Auto-advance off: the card moves on to the next step. The clock is not moved. */
+    private fun advanceStep() {
+        val st = _state.value
+        val steps = st.recipe?.steps ?: return
+        val index = st.stepIndex + 1
+        if (index >= steps.size) return
+        val prev = steps.getOrNull(st.stepIndex)
+        _state.value = st.copy(
+            stepIndex = index,
+            lastPourEndSec = if (prev?.targetWaterG != null) prev.endSec else st.lastPourEndSec,
+        )
+        if (st.running) _stepCue.tryEmit(index)
     }
 
     /** Tapped when the bed is first exposed. This is the honest drawdown number. */
@@ -476,7 +513,13 @@ class BrewViewModel(
     fun skipToNextStep() {
         val st = _state.value
         val next = st.recipe?.steps?.getOrNull(st.stepIndex + 1) ?: return
-        accumulatedMs = next.startSec * 1000L
+        if (!st.autoAdvance) {
+            advanceStep()
+            // Waiting: the clock is already past the step, so Next only moves the card.
+            if (st.waitingForTap) return
+        }
+        // With auto-advance off the card can lag the clock, so the jump never goes back in time.
+        accumulatedMs = if (st.autoAdvance) next.startSec * 1000L else maxOf(currentElapsedMs(), next.startSec * 1000L)
         if (st.running) startedAtRealtime = System.nanoTime()
         publishAnchor()
         onTick(accumulatedMs)
@@ -488,6 +531,7 @@ class BrewViewModel(
         publishAnchor()
         _state.value = _state.value.copy(
             stepIndex = 0,
+            clockStepIndex = 0,
             lastPourEndSec = null,
             bedExposedSec = null,
             done = false,
@@ -542,7 +586,7 @@ class BrewViewModel(
                         st.grindSetting.trim().replace(',', '.').toDoubleOrNull()
                     else -> null
                 },
-                grindKind = choice.kind,
+                grindKind = GrindChoice.recordKind(st.preground, grinder),
                 waterId = st.settings.defaultWaterId.ifBlank { null },
                 doseG = st.doseG,
                 waterG = recipe.waterG,

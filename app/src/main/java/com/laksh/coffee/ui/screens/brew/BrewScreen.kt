@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
@@ -57,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.clock
 import com.laksh.coffee.domain.StepKind
+import com.laksh.coffee.domain.Temperatures
 import com.laksh.coffee.ui.components.CoffeeConfirm
 import com.laksh.coffee.ui.components.CoffeeMug
 import com.laksh.coffee.ui.components.MeshGradientBackground
@@ -64,6 +66,7 @@ import com.laksh.coffee.ui.components.QuietButton
 import com.laksh.coffee.ui.components.TumblingBeans
 import com.laksh.coffee.ui.theme.BrewMood
 import com.laksh.coffee.ui.theme.CoffeeTheme
+import com.laksh.coffee.ui.theme.LocalUnits
 import com.laksh.coffee.ui.theme.Motion
 import kotlinx.coroutines.launch
 
@@ -128,7 +131,12 @@ fun BrewScreen(
         factory = BrewViewModel.factory(recipeId, againLogId),
     ),
 ) {
-    val state by vm.state.collectAsStateWithLifecycle()
+    val raw by vm.state.collectAsStateWithLifecycle()
+    // Step titles and details in the user's unit (§4.15) wherever the brew shows or says them.
+    val tempUnit = if (LocalUnits.current.fahrenheit) "f" else "c"
+    val state = remember(raw, tempUnit) {
+        raw.recipe?.let { r -> Temperatures.renderSteps(r, tempUnit).takeIf { it !== r }?.let { raw.copy(recipe = it) } } ?: raw
+    }
     val anchor by vm.anchor.collectAsStateWithLifecycle()
     val timer = rememberBrewClock(anchor)
     val haptics = LocalHapticFeedback.current
@@ -189,17 +197,17 @@ fun BrewScreen(
     val finish: () -> Unit = { vm.finish(onFinished) }
     val shotPhase = ShotPhase.of(state.running, anchor.accumulatedMs, state.shotStopped)
 
-    if (recipe != null) {
-        PublishLiveBrew(recipe.id, state.step?.title.orEmpty(), anchor, active = pane == Pane.Running)
-    }
-
-    // The brew's keys (v4 §2.7) live on its root, which holds focus while it is on screen, so
-    // they reach it before any button that happens to have focus.
+    // The brew's keys (v4 §2.7) live on its root, which holds focus while it is on screen. The
+    // letters reach it before any button that happens to have focus; Space and the arrows only
+    // while the root itself has focus, so Space on a focused Next, Finish or -5 s presses that
+    // button (and the arrows still move focus) instead of pausing the timer.
     val focus = remember { FocusRequester() }
+    var rootFocused by remember { mutableStateOf(false) }
     LaunchedEffect(pane) { runCatching { focus.requestFocus() } }
     val onKey: (KeyEvent) -> Boolean = handler@{ e ->
         if (e.type != KeyEventType.KeyDown || e.isCtrlPressed || e.isMetaPressed || e.isAltPressed) return@handler false
         if (e.nativeKeyEvent.repeatCount > 0 && e.key != Key.DirectionLeft && e.key != Key.DirectionRight) return@handler false
+        if (!BrewKeys.reachesRoot(e.key, rootFocused)) return@handler false
         when (pane) {
             Pane.Running -> when (e.key) {
                 Key.Spacebar -> true.also { vm.toggleRunning() }
@@ -227,6 +235,7 @@ fun BrewScreen(
             .fillMaxSize()
             .semantics { paneTitle = "Brew" }
             .onPreviewKeyEvent(onKey)
+            .onFocusChanged { rootFocused = it.isFocused }
             .focusRequester(focus)
             .focusable(),
     ) {
@@ -294,7 +303,7 @@ fun BrewScreen(
 
         if (pane == Pane.Running) StepFlashOverlay(flash, reduced)
         if (recipe != null) {
-            BrewAnnouncer(recipe, state.stepIndex, state.done, live = pane == Pane.Running, elapsed = timer.elapsedMs)
+            BrewAnnouncer(recipe, state.stepIndex, state.done, live = pane == Pane.Running, elapsed = timer.elapsedMs, waiting = state.waitingForTap)
         }
     }
 

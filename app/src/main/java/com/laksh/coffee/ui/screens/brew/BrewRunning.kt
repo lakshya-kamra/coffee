@@ -381,8 +381,10 @@ private val RoundedCornerShape12 = androidx.compose.foundation.shape.RoundedCorn
 
 /**
  * Phone landscape and split screen: two columns that never scroll as a page. The dial on the left;
- * the step card (scrolling inside itself), the next step and the transport on the right. The
- * journey becomes a 4dp strip along the top edge.
+ * the step card (scrolling inside itself), the next step, the transport and, under it, Finish (with
+ * Bed exposed beside it during a drawdown) on the right. The transport row holds only fixed,
+ * narrow controls, so it fits a 640x360 phone with a side navigation bar. The journey becomes a
+ * 4dp strip along the top edge.
  */
 @Composable
 private fun ShortRunning(m: RunningModel) {
@@ -414,7 +416,9 @@ private fun ShortRunning(m: RunningModel) {
                         compact = true,
                     )
                     NextLine(m)
-                    Transport(m, playSize = 56.dp, rowHeight = 56.dp, bedInRow = true, finishPill = true)
+                    Transport(m, playSize = 56.dp, rowHeight = 56.dp, bedInRow = false)
+                    Spacer(Modifier.height(8.dp))
+                    ShortFinishRow(m)
                 }
             }
         }
@@ -432,13 +436,13 @@ private fun ShortRunning(m: RunningModel) {
     }
 }
 
-/** "NEXT · 0:45 · Up to 300 g" on one line. */
+/** "NEXT · 0:45 · Up to 300 g" on one line; with auto-advance off, the prompt to tap Next. */
 @Composable
 private fun NextLine(m: RunningModel) {
     val next = m.recipe.steps.getOrNull(m.state.stepIndex + 1) ?: return
     val target = next.targetWaterG?.let { " · Up to $it g" }.orEmpty()
     Text(
-        "NEXT · ${clock(next.startSec)}$target · ${next.title}",
+        if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${next.title}",
         style = Micro,
         color = CoffeeTheme.colors.inkLow,
         maxLines = 1,
@@ -688,7 +692,6 @@ private fun Transport(
     playSize: Dp,
     rowHeight: Dp,
     bedInRow: Boolean,
-    finishPill: Boolean = false,
 ) {
     val state = m.state
     val bedNow = bedInRow && state.step?.kind == StepKind.Drawdown && state.bedExposedSec == null && !state.done
@@ -707,20 +710,30 @@ private fun Transport(
         } else {
             IconWell(icon = Icons.Rounded.SkipNext, contentDescription = "Next step", onClick = m.onNext, size = 48.dp, shortcut = "N")
         }
-        if (finishPill) {
-            Spacer(Modifier.width(8.dp))
-            FinishPill(done = state.done, onClick = m.onFinish)
-        }
     }
 }
 
-/** Short layout's Finish: a 44dp pill at the end of the transport row. */
+/** Short layout's last row: Finish across the column, with Bed exposed beside it in a drawdown. */
 @Composable
-private fun FinishPill(done: Boolean, onClick: () -> Unit) {
+private fun ShortFinishRow(m: RunningModel) {
+    val state = m.state
+    val bedNow = state.step?.kind == StepKind.Drawdown && state.bedExposedSec == null && !state.done
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        if (bedNow) {
+            PillButton(text = "Bed exposed", onClick = m.onBed, height = 48.dp, onCanvas = true)
+            Spacer(Modifier.width(8.dp))
+        }
+        FinishPill(done = state.done, onClick = m.onFinish, modifier = Modifier.weight(1f))
+    }
+}
+
+/** Short layout's Finish: a 48dp pill under the transport row. */
+@Composable
+private fun FinishPill(done: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = CoffeeTheme.colors
     val interaction = remember { MutableInteractionSource() }
     Box(
-        Modifier
+        modifier
             .heightIn(min = 48.dp)
             .clip(PillShape)
             .background(if (done) colors.crema else colors.surface1)
@@ -728,7 +741,13 @@ private fun FinishPill(done: Boolean, onClick: () -> Unit) {
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(if (done) "Rate it" else "Finish", style = MaterialTheme.typography.labelLarge, color = if (done) colors.onCrema else colors.inkHigh)
+        Text(
+            if (done) "Rate this brew" else "Finish",
+            style = MaterialTheme.typography.labelLarge,
+            color = if (done) colors.onCrema else colors.inkHigh,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -766,6 +785,8 @@ private fun BrewStatus(state: BrewUiState, anchor: TimerAnchor, elapsed: LongSta
             state.phase == BrewPhase.Finishing -> StatusLine(status = Status.Neutral, lead = "Saving", detail = "at $pausedAt")
             state.done -> StatusLine(status = Status.Good, lead = "Done", detail = "rate this brew")
             !state.running -> StatusLine(status = Status.Attention, lead = "Paused", detail = "at $pausedAt")
+            // Auto-advance off: the clock has passed the step and the card waits for Next.
+            state.waitingForTap -> StatusLine(status = Status.Attention, lead = "Time for the next step", detail = "tap Next")
             step == null -> StatusLine(status = Status.Live, lead = "Brewing", live = true)
             else -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 StatusLine(status = Status.Live, lead = BrewWords.lead(step), modifier = Modifier.weight(1f, fill = false), live = true)
