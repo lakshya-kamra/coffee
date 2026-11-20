@@ -89,8 +89,11 @@ function RecipeDetail({ recipe, from }: { recipe: Recipe; from: SharedFrom }) {
   const brew = () => brewRecipe(recipe.id);
   const cta = <PrimaryButton text="Brew this" icon="Play" className={r.inverse} onClick={brew} />;
   const ready = settled || inPane;
-  // The pane swap already fades a pane detail in; only a pushed one fades up after the flight.
-  const body = <Body recipe={recipe} shown={shown} amount={amount} setAmount={setAmount} onDeleted={close} fade={!inPane} />;
+  // The pane swap already fades a pane detail in; only a pushed one fades up after the flight. A
+  // layer that mounts already settled (a resize below 840 moved it out of the pane, or a cold deep
+  // link) is instant, so it must not fade either (§2.10: nothing animates during a resize).
+  const [fade] = useState(() => !inPane && !settled);
+  const body = <Body recipe={recipe} shown={shown} amount={amount} setAmount={setAmount} onDeleted={close} fade={fade} />;
 
   return (
     <div className={`column ${r.detail}`} data-in-pane={inPane || undefined}>
