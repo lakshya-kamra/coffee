@@ -137,6 +137,46 @@ class MigrationSqlTest {
         assertEquals("ok", d.one("PRAGMA integrity_check"))
     }
 
+    // ------------------------------------------------------------------ 4 -> 5 (v4 app, backup 2.1)
+
+    private fun seededV4(): Connection = seededV3().apply { MIGRATION_3_4_SQL.forEach { exec(it) } }
+
+    @Test
+    fun fourToFiveGivesExactlyTheV5Schema() {
+        val migrated = seededV4()
+        MIGRATION_4_5_SQL.forEach { migrated.exec(it) }
+        val fresh = db().apply { createFromSchema(5) }
+
+        assertEquals(fresh.tables(), migrated.tables())
+        fresh.tables().forEach { t ->
+            val want = fresh.shape(t)
+            val got = migrated.shape(t)
+            assertEquals("$t columns", want.first, got.first)
+            assertEquals("$t foreign keys", want.second, got.second)
+            assertEquals("$t indices", want.third, got.third)
+        }
+    }
+
+    @Test
+    fun fourToFiveOnlyAddsColumnsAndKeepsEveryRow() {
+        val d = seededV4()
+        val before = listOf("beans", "grinders", "brew_logs", "analyses", "saved_recipes").associateWith { d.rows("SELECT * FROM $it ORDER BY 1") }
+        MIGRATION_4_5_SQL.forEach {
+            assertTrue(it, it.startsWith("ALTER TABLE") && it.contains("ADD COLUMN"))
+            d.exec(it)
+        }
+        // Every old value is where it was; the new columns read "" (not recorded).
+        before.forEach { (table, rows) ->
+            val after = d.rows("SELECT * FROM $table ORDER BY 1")
+            assertEquals(table, rows, after.map { it.take(rows.first().size) })
+        }
+        assertEquals(listOf(listOf("", ""), listOf("", "")), d.rows("SELECT form, groundFor FROM beans ORDER BY id"))
+        assertEquals("", d.one("SELECT settingUnit FROM grinders WHERE id = 1"))
+        assertEquals(List(4) { "" }, d.rows("SELECT grindKind FROM brew_logs ORDER BY id").map { it[0] })
+        assertTrue(d.rows("PRAGMA foreign_key_check").isEmpty())
+        assertEquals("ok", d.one("PRAGMA integrity_check"))
+    }
+
     @Test
     fun theBrewerCaseCoversEveryLegacyName() {
         val sql = MIGRATION_3_4_SQL.single { it.startsWith("UPDATE `brew_logs` SET `brewerId`") }

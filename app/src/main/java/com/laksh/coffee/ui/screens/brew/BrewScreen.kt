@@ -146,7 +146,8 @@ import java.time.LocalDate
 import kotlin.math.roundToInt
 
 /** Brewers that actually look like a cone with a bed in it. */
-private val POUR_OVER = setOf(BrewerArt.V60, BrewerArt.Chemex, BrewerArt.Kalita, BrewerArt.Switch)
+// Drip and Siphon drew as V60 and Chemex before v4, so they keep the dripper.
+private val POUR_OVER = setOf(BrewerArt.V60, BrewerArt.Chemex, BrewerArt.Kalita, BrewerArt.Switch, BrewerArt.Drip, BrewerArt.Siphon)
 
 /** The setup illustration. Small enough that the grind number stays the hero of the screen. */
 private val HERO_ART = 104.dp

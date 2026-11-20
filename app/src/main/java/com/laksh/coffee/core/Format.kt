@@ -3,7 +3,10 @@ package com.laksh.coffee.core
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.chrono.IsoChronology
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.FormatStyle
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -66,8 +69,9 @@ fun dayLabel(epochMs: Long): String {
 
 fun timeLabel(epochMs: Long): String = TIME_FMT.format(Instant.ofEpochMilli(epochMs))
 
-fun greeting(): String {
-    val hour = java.time.LocalTime.now().hour
+fun greeting(): String = greeting(java.time.LocalTime.now().hour)
+
+fun greeting(hour: Int): String {
     return when (hour) {
         in 0..4 -> "Still up"
         in 5..11 -> "Morning"
@@ -75,6 +79,71 @@ fun greeting(): String {
         in 17..21 -> "Evening"
         else -> "Late one"
     }
+}
+
+// ------------------------------------------------------------------------ v4
+
+/** "3:30" under an hour; "12 h 5 min" (or "12 h") from an hour up, for cold brew (v4 §4.9). */
+fun formatDuration(totalSec: Int): String {
+    val s = totalSec.coerceAtLeast(0)
+    if (s < 3600) return clock(s)
+    val h = s / 3600
+    val m = (s % 3600) / 60
+    return if (m == 0) "$h h" else "$h h $m min"
+}
+
+/** "1 part coffee to 16.7 parts water" ("…parts espresso" for espresso); "" without a dose. */
+fun ratioPhrase(doseG: Double, waterG: Double, method: String = ""): String {
+    if (doseG <= 0) return ""
+    val r = oneDp(waterG / doseG).removeSuffix(".0")
+    return "1 part coffee to $r parts ${if (method == "espresso") "espresso" else "water"}"
+}
+
+/** 6 → "6", 2.5 → "2½": spoons and mugs come in halves. */
+fun halves(v: Double): String {
+    val whole = v.toInt()
+    return if (v - whole >= 0.5) (if (whole == 0) "½" else "$whole½") else whole.toString()
+}
+
+// Screen dates and times follow the runtime locale (v4 §4.15); 12/24 h follows the locale's
+// convention. Exports and AI prompts keep the pinned dayLabel / timeLabel above.
+
+/** "8:14 PM" in en-US, "20:14" in en-GB. */
+fun screenTime(epochMs: Long, locale: Locale = Locale.getDefault(), zone: ZoneId = ZoneId.systemDefault()): String =
+    DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale).withZone(zone).format(Instant.ofEpochMilli(epochMs))
+
+/** The locale's medium date pattern without its year: "MMM d" in en-US, "d MMM" in en-GB. */
+private fun dayMonthPattern(locale: Locale): String {
+    val full = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.MEDIUM, null, IsoChronology.INSTANCE, locale)
+    return full.replace(Regex("[\\s,./-]*y+[\\s,./-]*"), " ").trim().trim(',', '.', '/', '-').trim()
+        .ifEmpty { "d MMM" }
+}
+
+/** "Nov 19" in en-US, "19 Nov" in en-GB. */
+fun screenDate(epochMs: Long, locale: Locale = Locale.getDefault(), zone: ZoneId = ZoneId.systemDefault()): String =
+    DateTimeFormatter.ofPattern(dayMonthPattern(locale), locale).withZone(zone).format(Instant.ofEpochMilli(epochMs))
+
+/** "Today", "Yesterday", else screenDate. */
+fun screenDayLabel(
+    epochMs: Long,
+    nowMs: Long = System.currentTimeMillis(),
+    locale: Locale = Locale.getDefault(),
+    zone: ZoneId = ZoneId.systemDefault(),
+): String {
+    val date = Instant.ofEpochMilli(epochMs).atZone(zone).toLocalDate()
+    val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
+    return when (date) {
+        today -> "Today"
+        today.minusDays(1) -> "Yesterday"
+        else -> screenDate(epochMs, locale, zone)
+    }
+}
+
+/** Today's eyebrow: "EVENING · THU, NOV 19" in en-US. */
+fun todayEyebrow(nowMs: Long = System.currentTimeMillis(), locale: Locale = Locale.getDefault(), zone: ZoneId = ZoneId.systemDefault()): String {
+    val at = Instant.ofEpochMilli(nowMs).atZone(zone)
+    val date = DateTimeFormatter.ofPattern("EEE, " + dayMonthPattern(locale), locale).format(at)
+    return "${greeting(at.hour).uppercase(Locale.ROOT)} · ${date.uppercase(locale)}"
 }
 
 fun daysOffRoastLabel(days: Long?): String = when {

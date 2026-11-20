@@ -14,7 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Room's own validation of MIGRATION_3_4 against schemas/…/4.json, on a device. */
+/** Room's own validation of MIGRATION_3_4 and MIGRATION_4_5 against schemas/…/4.json and 5.json, on a device. */
 @RunWith(AndroidJUnit4::class)
 class MigrationTest {
 
@@ -59,6 +59,25 @@ class MigrationTest {
         assertEquals(8, uids.size)
         uids.forEach { assertNotEquals("", it) }
         assertEquals(uids.size, uids.toSet().size)
+        assertTrue(db.strings("PRAGMA foreign_key_check").isEmpty())
+        assertEquals("ok", db.strings("PRAGMA integrity_check").single())
+        db.close()
+    }
+
+    @Test
+    fun migrate4To5_addsTheV4ColumnsAndKeepsEveryRow() {
+        helper.createDatabase(dbName, 3).apply { seedV3(); close() }
+        helper.runMigrationsAndValidate(dbName, 4, true, MIGRATION_3_4).close()
+        val db = helper.runMigrationsAndValidate(dbName, 5, true, MIGRATION_4_5)
+
+        assertEquals(listOf("", ""), db.strings("SELECT form FROM beans ORDER BY id"))
+        assertEquals(listOf("", ""), db.strings("SELECT groundFor FROM beans ORDER BY id"))
+        assertEquals("", db.strings("SELECT settingUnit FROM grinders").single())
+        assertEquals(listOf("", "", "", ""), db.strings("SELECT grindKind FROM brew_logs ORDER BY id"))
+        // Nothing that was there moved.
+        assertEquals(listOf("washed", "unknown"), db.strings("SELECT process FROM beans ORDER BY id"))
+        assertEquals("75", db.strings("SELECT grindClicks FROM brew_logs WHERE id = 1").single())
+        assertEquals("commandcode", db.strings("SELECT providerId FROM analyses").single())
         assertTrue(db.strings("PRAGMA foreign_key_check").isEmpty())
         assertEquals("ok", db.strings("PRAGMA integrity_check").single())
         db.close()

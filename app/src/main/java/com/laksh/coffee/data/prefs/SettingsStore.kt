@@ -11,6 +11,8 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.laksh.coffee.domain.Temperatures
+import java.util.Locale
 
 private val Context.dataStore by preferencesDataStore(name = "coffee_settings")
 
@@ -43,7 +45,26 @@ data class Settings(
     /** One-off notices waiting for the user, e.g. "grinder-scale:<uid>". */
     val pendingNotices: Set<String> = emptySet(),
     val startupTasksVersion: Int = 0,
+    // ---- v4 (backup 2.1)
+    /** Onboarding's "How do you make coffee now?": "" (not asked) | "new" | "recipes" | "tinker". */
+    val experience: String = "",
+    /** false: brewing amounts show in tablespoons and ml (grams stay the stored truth). */
+    val hasScale: Boolean = true,
+    /** "quick" | "detailed". Fresh installs store "quick"; an install that had brews, "detailed" (StartupTasks). */
+    val reviewMode: String = "quick",
+    /** "I buy ground coffee": brews default to pre-ground. */
+    val buysGround: Boolean = false,
+    // ---- v4, this device only: never written to a backup
+    /** The chime question has been answered. */
+    val soundCuesAsked: Boolean = false,
+    /** Large windows: the sidebar folded to the rail. */
+    val sidebarCollapsed: Boolean = false,
+    /** Log layout on wide windows: "list" | "table". */
+    val logView: String = "list",
 )
+
+/** reviewMode for an install that never stored one: detailed for someone who already has brews. */
+fun initialReviewMode(hasBrews: Boolean): String = if (hasBrews) "detailed" else "quick"
 
 class SettingsStore(private val context: Context) {
 
@@ -68,6 +89,13 @@ class SettingsStore(private val context: Context) {
         val DEFAULT_WATER = stringPreferencesKey("default_water")
         val PENDING_NOTICES = stringSetPreferencesKey("pending_notices")
         val STARTUP_TASKS_VERSION = intPreferencesKey("startup_tasks_version")
+        val EXPERIENCE = stringPreferencesKey("experience")
+        val HAS_SCALE = booleanPreferencesKey("has_scale")
+        val REVIEW_MODE = stringPreferencesKey("review_mode")
+        val BUYS_GROUND = booleanPreferencesKey("buys_ground")
+        val SOUND_CUES_ASKED = booleanPreferencesKey("sound_cues_asked")
+        val SIDEBAR_COLLAPSED = booleanPreferencesKey("sidebar_collapsed")
+        val LOG_VIEW = stringPreferencesKey("log_view")
     }
 
     val settings: Flow<Settings> = context.dataStore.data.map { p: Preferences -> settings(p) }
@@ -83,7 +111,8 @@ class SettingsStore(private val context: Context) {
             autoAdvanceSteps = p[Keys.AUTO_ADVANCE] ?: true,
             darkMode = p[Keys.DARK_MODE] ?: "system",
             name = p[Keys.NAME] ?: "",
-            tempUnit = p[Keys.TEMP_UNIT] ?: "c",
+            // A fresh install takes °F where the region uses it (v4 §4.15); StartupTasks pins it.
+            tempUnit = p[Keys.TEMP_UNIT] ?: Temperatures.defaultUnit(Locale.getDefault()),
             weightUnit = p[Keys.WEIGHT_UNIT] ?: "g",
             onboardingDone = p[Keys.ONBOARDING_DONE] ?: false,
             onboardingAuto = p[Keys.ONBOARDING_AUTO] ?: false,
@@ -94,6 +123,13 @@ class SettingsStore(private val context: Context) {
             defaultWaterId = p[Keys.DEFAULT_WATER] ?: "",
             pendingNotices = p[Keys.PENDING_NOTICES] ?: emptySet(),
             startupTasksVersion = p[Keys.STARTUP_TASKS_VERSION] ?: 0,
+            experience = p[Keys.EXPERIENCE] ?: "",
+            hasScale = p[Keys.HAS_SCALE] ?: true,
+            reviewMode = p[Keys.REVIEW_MODE] ?: "quick",
+            buysGround = p[Keys.BUYS_GROUND] ?: false,
+            soundCuesAsked = p[Keys.SOUND_CUES_ASKED] ?: false,
+            sidebarCollapsed = p[Keys.SIDEBAR_COLLAPSED] ?: false,
+            logView = p[Keys.LOG_VIEW] ?: "list",
         )
 
     suspend fun setLastRecipe(id: String) = context.dataStore.edit { it[Keys.LAST_RECIPE] = id }
@@ -116,6 +152,23 @@ class SettingsStore(private val context: Context) {
     suspend fun setHomeArea(area: String) = context.dataStore.edit { it[Keys.HOME_AREA] = area }
     suspend fun setDefaultWaterId(id: String) = context.dataStore.edit { it[Keys.DEFAULT_WATER] = id }
     suspend fun setStartupTasksVersion(v: Int) = context.dataStore.edit { it[Keys.STARTUP_TASKS_VERSION] = v }
+    suspend fun setExperience(value: String) = context.dataStore.edit { it[Keys.EXPERIENCE] = value }
+    suspend fun setHasScale(on: Boolean) = context.dataStore.edit { it[Keys.HAS_SCALE] = on }
+    suspend fun setReviewMode(mode: String) = context.dataStore.edit { it[Keys.REVIEW_MODE] = mode }
+    suspend fun setBuysGround(on: Boolean) = context.dataStore.edit { it[Keys.BUYS_GROUND] = on }
+    suspend fun setSoundCuesAsked(asked: Boolean) = context.dataStore.edit { it[Keys.SOUND_CUES_ASKED] = asked }
+    suspend fun setSidebarCollapsed(collapsed: Boolean) = context.dataStore.edit { it[Keys.SIDEBAR_COLLAPSED] = collapsed }
+    suspend fun setLogView(view: String) = context.dataStore.edit { it[Keys.LOG_VIEW] = view }
+
+    /**
+     * v4 defaults that must not move once someone has used the app: an existing install keeps
+     * °C and every Review section open, a fresh one stores the region's unit and "quick".
+     * Stores nothing for keys already set. [existing] = the install already has data.
+     */
+    suspend fun pinV4Defaults(existing: Boolean, hasBrews: Boolean) = context.dataStore.edit { p ->
+        if (p[Keys.TEMP_UNIT] == null) p[Keys.TEMP_UNIT] = if (existing) "c" else Temperatures.defaultUnit(Locale.getDefault())
+        if (p[Keys.REVIEW_MODE] == null) p[Keys.REVIEW_MODE] = initialReviewMode(hasBrews)
+    }
 
     /**
      * Backup restore: every setting a backup can carry, written in one edit. [change] gets the
@@ -141,6 +194,10 @@ class SettingsStore(private val context: Context) {
             p[Keys.FAV_ROASTERS] = s.favouriteRoasterIds
             p[Keys.HOME_AREA] = s.homeArea
             p[Keys.DEFAULT_WATER] = s.defaultWaterId
+            p[Keys.EXPERIENCE] = s.experience
+            p[Keys.HAS_SCALE] = s.hasScale
+            p[Keys.REVIEW_MODE] = s.reviewMode
+            p[Keys.BUYS_GROUND] = s.buysGround
         }
     }
 

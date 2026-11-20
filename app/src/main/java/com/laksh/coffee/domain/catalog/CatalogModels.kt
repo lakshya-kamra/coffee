@@ -46,6 +46,8 @@ data class GrinderSetting(
     val entryHint: String = "",
     /** "plain" | "turns" | "turns-dot" | "number-tick:<n>"; see domain/grind/DialFormat. */
     val dialFormat: String? = null,
+    /** v4: "s" = the setting is seconds of grinding (a blade grinder); "" otherwise. */
+    val settingUnit: String = "",
 )
 
 @Serializable
@@ -59,6 +61,24 @@ data class CatalogRoaster(
     val city: String = "",
     val area: String = "",
     val notable: String = "",
+    /** v4: a supermarket brand (Folgers, Lavazza, Bru…), sorted after the user's region and favourites. */
+    val mainstream: Boolean = false,
+    /** v4: `area` values where the brand is sold; empty for specialty roasters. */
+    val regions: List<String> = emptyList(),
+)
+
+/** One entry of shared/glossary.json (schema/glossary.md). */
+@Serializable
+data class GlossaryTerm(
+    val id: String,
+    /** As shown: "Drawdown", "Days off roast". */
+    val term: String,
+    /** One or two plain sentences. */
+    val short: String,
+    /** Optional longer text. */
+    val more: String = "",
+    val aliases: List<String> = emptyList(),
+    val sources: List<SourceRef> = emptyList(),
 )
 
 @Serializable

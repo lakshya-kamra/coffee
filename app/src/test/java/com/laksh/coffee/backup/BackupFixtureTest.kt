@@ -160,9 +160,13 @@ class BackupFixtureTest {
         doc.settings!!.ownedBrewerIds!!.forEach { assertNotNull(it, Catalog.brewer(it)) }
     }
 
-    /** The key order the web app writes is the order this app writes: one format, not two dialects. */
+    /**
+     * The key order the web app writes is the order this app writes: one format, not two dialects.
+     * Checked against the 2.1 fixture, which carries every key (the 2.0 one lacks the 2.1 keys).
+     */
     @Test
     fun thisAppWritesTheSameKeysInTheSameOrder() {
+        val root = BackupCodec.parse(Fixtures.text(Fixtures.V21)) as JsonObject
         val doc = BackupCodec.decodeV2(root).doc
         val out = StringBuilder()
         BackupWriter.write(out, doc, doc.photos.asSequence())

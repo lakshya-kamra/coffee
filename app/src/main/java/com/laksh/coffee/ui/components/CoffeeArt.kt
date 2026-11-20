@@ -620,8 +620,10 @@ fun BrewerIcon(
                     ),
                 )
 
+                // v4: Drip, Siphon, Phin and Cezve are placeholders that reuse the drawing each
+                // brewer showed before it had its own art, until A2 draws them.
                 when (brewer.art) {
-                    BrewerArt.V60 -> {
+                    BrewerArt.V60, BrewerArt.Drip -> {
                         // A pointed cone on a base plate.
                         line.m(0.14f, 0.22f); line.l(0.86f, 0.22f); line.l(0.54f, 0.70f); line.l(0.46f, 0.70f); line.close()
                         line.m(0.26f, 0.82f); line.l(0.74f, 0.82f)
@@ -640,7 +642,7 @@ fun BrewerIcon(
                         line.box(0.28f, 0.66f, 0.72f, 0.84f, corner = 0.06f)
                         line.m(0.72f, 0.75f); line.l(0.88f, 0.70f)
                     }
-                    BrewerArt.Chemex -> {
+                    BrewerArt.Chemex, BrewerArt.Siphon -> {
                         // An hourglass flask with a solid collar at the waist.
                         line.m(0.22f, 0.10f); line.l(0.78f, 0.10f); line.l(0.56f, 0.46f)
                         line.l(0.80f, 0.90f); line.l(0.20f, 0.90f); line.l(0.44f, 0.46f); line.close()
@@ -654,7 +656,7 @@ fun BrewerIcon(
                         line.m(0.68f, 0.42f); line.l(0.84f, 0.42f); line.l(0.84f, 0.76f); line.l(0.68f, 0.76f)
                         solid.addOval(Rect(ox + 0.37f * s, oy + 0.04f * s, ox + 0.51f * s, oy + 0.16f * s))
                     }
-                    BrewerArt.AeroPress -> {
+                    BrewerArt.AeroPress, BrewerArt.Phin -> {
                         // A narrow chamber, the plunger in its top, a wide flat plunger cap and
                         // the flanged filter cap at the bottom.
                         line.box(0.30f, 0.36f, 0.70f, 0.84f)
@@ -662,7 +664,7 @@ fun BrewerIcon(
                         line.m(0.24f, 0.12f); line.l(0.76f, 0.12f)
                         line.m(0.22f, 0.90f); line.l(0.78f, 0.90f)
                     }
-                    BrewerArt.Moka -> {
+                    BrewerArt.Moka, BrewerArt.Cezve -> {
                         // Two faceted chambers pinched at the waist, a spout, a lid knob, a handle.
                         line.m(0.28f, 0.90f); line.l(0.72f, 0.90f); line.l(0.64f, 0.56f); line.l(0.36f, 0.56f); line.close()
                         line.m(0.36f, 0.52f); line.l(0.64f, 0.52f); line.l(0.72f, 0.20f); line.l(0.28f, 0.20f); line.close()

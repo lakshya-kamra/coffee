@@ -152,6 +152,8 @@ class CoffeeRepository(context: Context, private val scope: CoroutineScope) {
     // ---------------------------------------------------- whole-log snapshots
 
     /** No beans, grinders or brews: a fresh install (or a wiped one). */
+    suspend fun brewCount(): Int = logs.countAll()
+
     suspend fun isEmpty(): Boolean =
         logs.countAll() == 0 && beans.all().isEmpty() && grinders.all().isEmpty()
 

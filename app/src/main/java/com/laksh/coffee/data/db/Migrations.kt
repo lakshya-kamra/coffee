@@ -40,7 +40,25 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
-internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+/**
+ * v4 app (backup 2.1): a bean's form (whole or ground), what ground coffee was ground for, a
+ * grinder's setting unit (seconds on a blade grinder) and how a brew's grind was set. ADD COLUMN
+ * only; every existing row reads "" (not recorded) for all four.
+ */
+internal val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_4_5_SQL.forEach(db::execSQL)
+    }
+}
+
+internal val MIGRATION_4_5_SQL: List<String> = listOf(
+    "ALTER TABLE `beans` ADD COLUMN `form` TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE `beans` ADD COLUMN `groundFor` TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE `grinders` ADD COLUMN `settingUnit` TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE `brew_logs` ADD COLUMN `grindKind` TEXT NOT NULL DEFAULT ''",
+)
+
+internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 
 /** A random 32-hex uid per row, so every existing row gets a distinct one. */
 private const val RANDOM_UID = "lower(hex(randomblob(16)))"

@@ -60,6 +60,8 @@ object BackupMapping {
         decafMethodId = b.decafMethodId,
         roastLevelId = b.roastLevelId,
         roastIntentId = b.roastIntentId,
+        form = b.form,
+        groundFor = b.groundFor,
         altitudeM = b.altitudeMasl,
         harvest = b.harvest,
         roastedOn = b.roastedOnEpochDay?.let(BackupTime::date),
@@ -92,6 +94,7 @@ object BackupMapping {
             clicksPerRotation = g.clicksPerRotation.takeIf { it > 0 },
             micronsPerStep = g.micronsPerClick?.finite(),
             dialFormat = g.dialFormat,
+            settingUnit = g.settingUnit,
         ),
         defaultFilterSetting = g.defaultFilterSetting?.finite(),
         defaultEspressoSetting = g.defaultEspressoSetting?.finite(),
@@ -118,6 +121,7 @@ object BackupMapping {
         grindSetting = l.grindSetting,
         grindClicks = l.grindClicks,
         grindValue = l.grindValue?.finite(),
+        grindKind = l.grindKind,
         doseG = l.doseG.finite() ?: 0.0,
         waterG = l.waterG.finite() ?: 0.0,
         tempC = l.tempC,
@@ -262,6 +266,10 @@ object BackupMapping {
         defaultGrinderUid = s.defaultGrinderId.takeIf { it > 0 }?.let(grinderUid),
         lastRecipeId = s.lastRecipeId,
         onboardingDone = s.onboardingDone,
+        experience = s.experience,
+        hasScale = s.hasScale,
+        reviewMode = s.reviewMode,
+        buysGround = s.buysGround,
         hasDefaultBean = true,
         hasDefaultGrinder = true,
     )
@@ -335,6 +343,8 @@ object BackupMapping {
             restDays = d.restDays,
             priceAmount = d.priceAmount,
             currency = TextLimits.label(d.currency),
+            form = d.form,
+            groundFor = d.groundFor,
         )
     }
 
@@ -360,6 +370,7 @@ object BackupMapping {
         updatedAt = ms(d.updatedAt) ?: fallbackMs,
         catalogId = TextLimits.labelOrNull(d.catalogId),
         dialFormat = TextLimits.label(d.setting.dialFormat),
+        settingUnit = d.setting.settingUnit,
     )
 
     fun brew(d: BrewDto, beanId: Long?, grinderId: Long?, id: Long = 0): BrewLogEntity {
@@ -412,6 +423,7 @@ object BackupMapping {
             brewerId = TextLimits.labelOrNull(d.brewerId),
             grindValue = d.grindValue,
             waterId = TextLimits.labelOrNull(d.waterId),
+            grindKind = d.grindKind,
         )
     }
 
@@ -515,6 +527,10 @@ object BackupMapping {
         lastRecipeId = d.lastRecipeId ?: cur.lastRecipeId,
         // Never un-finishes setup: a backup from a phone that skipped it must not start it here.
         onboardingDone = cur.onboardingDone || d.onboardingDone == true,
+        experience = d.experience ?: cur.experience,
+        hasScale = d.hasScale ?: cur.hasScale,
+        reviewMode = d.reviewMode ?: cur.reviewMode,
+        buysGround = d.buysGround ?: cur.buysGround,
     )
 
     private fun Double.finite(): Double? = takeIf { it.isFinite() }

@@ -50,9 +50,9 @@ data class TasteProfile(
             Triple("Sweetness", "dry → syrupy", TasteProfile::sweetness),
             Triple("Bitterness", "none → harsh", TasteProfile::bitterness),
             Triple("Body", "watery → heavy", TasteProfile::body),
-            Triple("Balance", "disjointed → seamless", TasteProfile::balance),
+            Triple("Balance", "one thing sticks out → all fits together", TasteProfile::balance),
             Triple("Aftertaste", "vanishes → lingers", TasteProfile::aftertaste),
-            Triple("Clarity", "muddled → crystalline", TasteProfile::clarity),
+            Triple("Clarity", "muddy → clean", TasteProfile::clarity),
         )
     }
 
@@ -76,6 +76,8 @@ object Descriptors {
     val FAULTS = listOf(
         "Sour", "Bitter", "Astringent", "Drying", "Hollow", "Thin", "Muddy",
         "Papery", "Ashy", "Salty", "Vegetal", "Boozy / ferment-heavy",
+        // v4 (backup 2.1): the quick review's "Too weak" / "Too strong" toggles. Older apps show them as stored.
+        "Too weak", "Too strong",
     )
 }
 

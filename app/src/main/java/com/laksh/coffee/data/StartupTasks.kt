@@ -21,10 +21,15 @@ object StartupTasks {
             linkAll(app)
             settings.setStartupTasksVersion(1)
         }
+        // Every start (cheap, writes only missing keys): v4 settings whose default depends on
+        // whether this install was already in use. An existing install keeps °C and every Review
+        // section open; a fresh one stores the region's unit and the quick review.
+        val empty = app.repository.isEmpty()
+        settings.pinV4Defaults(existing = !empty || s.onboardingDone, hasBrews = app.repository.brewCount() > 0)
         // Every start, not once: someone with data is never pushed into setup, and Home offers
         // "Make it yours" instead. That is an upgraded 1.x install, and also a new one whose
         // setup was left half-way after it had saved a grinder (the gate will not reopen it).
-        if (!s.onboardingDone && !app.repository.isEmpty()) {
+        if (!s.onboardingDone && !empty) {
             settings.setOnboardingDone(true)
             settings.setOnboardingAuto(true)
         }

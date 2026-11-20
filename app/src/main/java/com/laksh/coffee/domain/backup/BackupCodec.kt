@@ -166,6 +166,12 @@ object BackupCodec {
 
     private const val BOM = 0xFEFF
 
+    // Added in 2.1. An unknown value reads as "" (not recorded), never as an error.
+    private val BEAN_FORMS = listOf("whole", "ground")
+    private val GROUND_FOR = listOf("filter", "press", "espresso", "moka")
+    private val SETTING_UNITS = listOf("s")
+    private val GRIND_KINDS = listOf("dial", "blade", "preground")
+
     /** Compact, for JSON kept in a database column. */
     internal val compact = Json { encodeDefaults = true }
 
@@ -229,6 +235,8 @@ object BackupCodec {
             decafMethodId = Lenient.strOrNull(o["decafMethodId"]),
             roastLevelId = Lenient.str(o["roastLevelId"]),
             roastIntentId = Lenient.strOrNull(o["roastIntentId"]),
+            form = Lenient.oneOf(o["form"], BEAN_FORMS) ?: "",
+            groundFor = Lenient.oneOf(o["groundFor"], GROUND_FOR) ?: "",
             altitudeM = Lenient.strOrNumber(o["altitudeM"]),
             harvest = Lenient.str(o["harvest"]),
             roastedOn = BackupTime.dateOrNull(Lenient.str(o["roastedOn"])),
@@ -266,6 +274,7 @@ object BackupCodec {
                 clicksPerRotation = cpr?.takeIf { it > 0 },
                 micronsPerStep = Lenient.numOrNull(s["micronsPerStep"]),
                 dialFormat = Lenient.str(s["dialFormat"]),
+                settingUnit = Lenient.oneOf(s["settingUnit"], SETTING_UNITS) ?: "",
             ),
             defaultFilterSetting = Lenient.numOrNull(o["defaultFilterSetting"]),
             defaultEspressoSetting = Lenient.numOrNull(o["defaultEspressoSetting"]),
@@ -312,6 +321,7 @@ object BackupCodec {
             grindSetting = Lenient.str(o["grindSetting"]),
             grindClicks = Lenient.intOrNull(o["grindClicks"]),
             grindValue = Lenient.numOrNull(o["grindValue"]),
+            grindKind = Lenient.oneOf(o["grindKind"], GRIND_KINDS) ?: "",
             doseG = Lenient.num(o["doseG"]),
             waterG = Lenient.num(o["waterG"]),
             tempC = Lenient.int(o["tempC"]),
@@ -418,6 +428,11 @@ object BackupCodec {
             defaultGrinderUid = Lenient.uid(o["defaultGrinderUid"]),
             lastRecipeId = text("lastRecipeId"),
             onboardingDone = Lenient.boolOrNull(o["onboardingDone"]),
+            // "" is a real value here ("not asked yet"), so a missing key must not read as it.
+            experience = text("experience")?.takeIf { it in listOf("", "new", "recipes", "tinker") },
+            hasScale = Lenient.boolOrNull(o["hasScale"]),
+            reviewMode = Lenient.oneOf(o["reviewMode"], listOf("quick", "detailed")),
+            buysGround = Lenient.boolOrNull(o["buysGround"]),
             hasDefaultBean = "defaultBeanUid" in o,
             hasDefaultGrinder = "defaultGrinderUid" in o,
         )

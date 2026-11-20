@@ -31,8 +31,11 @@ enum class BrewMethod(val id: String, val label: String) {
     }
 }
 
-/** The nine drawings BrewerIcon knows. Names match the 1.x enum so CoffeeArt changes only its `when` subject. */
-enum class BrewerArt { V60, Chemex, Kalita, Switch, AeroPress, FrenchPress, Moka, Espresso, ColdBrew }
+/**
+ * The drawings BrewerIcon knows. The first nine names match the 1.x enum; Drip, Cezve, Siphon and
+ * Phin (v4) start as placeholders that reuse the nearest drawing until the screen packages draw them.
+ */
+enum class BrewerArt { V60, Chemex, Kalita, Switch, AeroPress, FrenchPress, Moka, Espresso, ColdBrew, Drip, Cezve, Siphon, Phin }
 
 /**
  * A brewer from shared/catalog/brewers.json. Logs and saved recipes store its [id]; 1.x data
@@ -61,8 +64,8 @@ data class Brewer(
             if (bare.length <= 14) bare else bare.take(13).trimEnd() + "…"
         }
 
-    /** Brewers that take the same recipes: art for pour-over (V60-01/02/03 are one family), method otherwise. */
-    val family: String get() = if (method == BrewMethod.PourOver) "pourover:${art.name}" else method.id
+    /** Brewers that take the same recipes: see [BrewerFamilies.of]. */
+    val family: String get() = BrewerFamilies.of(this)
 
     companion object {
         fun unknown(raw: String): Brewer = Brewer(id = "other", label = raw.ifBlank { "Other" })
@@ -78,15 +81,116 @@ data class Brewer(
 object BrewerArts {
     fun of(b: Brewer): BrewerArt = when {
         b.id == "chemex" -> BrewerArt.Chemex
-        b.method == BrewMethod.Moka || b.method == BrewMethod.Turkish -> BrewerArt.Moka
+        b.id == "drip-machine" -> BrewerArt.Drip
+        // Both are stacked metal gravity filters; the catalog files the phin under the AeroPress method.
+        b.id == "phin" || b.id == "south-indian-filter" -> BrewerArt.Phin
+        b.method == BrewMethod.Moka -> BrewerArt.Moka
+        b.method == BrewMethod.Turkish -> BrewerArt.Cezve
         b.method == BrewMethod.Espresso -> BrewerArt.Espresso
         b.method == BrewMethod.ColdBrew -> BrewerArt.ColdBrew
         b.method == BrewMethod.AeroPress -> BrewerArt.AeroPress
         b.method == BrewMethod.FrenchPress -> BrewerArt.FrenchPress
-        b.method == BrewMethod.Siphon -> BrewerArt.Chemex
+        b.method == BrewMethod.Siphon -> BrewerArt.Siphon
         b.category == "flat-bottom" -> BrewerArt.Kalita
         b.category == "hybrid" || b.category == "immersion" -> BrewerArt.Switch
         else -> BrewerArt.V60
+    }
+}
+
+/**
+ * Which recipes a brewer takes (v4 §4.13). Drip machines, drip bags, phins and South Indian
+ * filters have their own families and never borrow a V60 or AeroPress recipe; the Melodrip (an
+ * accessory) and "other" get families that match nothing. Web twin: brewerFamily in brewer.ts.
+ */
+object BrewerFamilies {
+    private val OWN = mapOf(
+        "drip-machine" to "drip-machine",
+        "drip-bag" to "drip-bag",
+        "phin" to "phin",
+        "south-indian-filter" to "south-indian-filter",
+        "melodrip" to "accessory",
+        "other" to "other",
+    )
+
+    /** Families that never match a recipe: [owned] leaves them out. */
+    val NO_MATCH: Set<String> = setOf("accessory", "other")
+
+    fun of(b: Brewer): String = OWN[b.id] ?: if (b.method == BrewMethod.PourOver) "pourover:${b.art.name}" else b.method.id
+
+    internal fun hasOwnFamily(b: Brewer): Boolean = b.id in OWN
+
+    /** The families of the brewers someone owns, without the ones that match nothing. */
+    fun owned(ownedBrewerIds: Collection<String>, byId: (String) -> Brewer? = Brewers::byId): Set<String> =
+        ownedBrewerIds.mapNotNull { byId(it)?.let(::of) }.filterNot { it in NO_MATCH }.toSet()
+}
+
+/** How the water meets the coffee: it decides which advice and which review sections apply. */
+enum class BrewStyle(val id: String) {
+    Percolation("percolation"), Immersion("immersion"), Espresso("espresso");
+
+    companion object {
+        /** An unknown brewer is treated as percolation (a filter brew), as data quality does. */
+        fun of(b: Brewer?): BrewStyle = when {
+            b == null -> Percolation
+            b.id == "phin" || b.id == "south-indian-filter" -> Percolation
+            else -> when (b.method) {
+                BrewMethod.Espresso -> Espresso
+                BrewMethod.FrenchPress, BrewMethod.AeroPress, BrewMethod.ColdBrew, BrewMethod.Turkish, BrewMethod.Siphon -> Immersion
+                BrewMethod.PourOver -> if (b.category == "immersion") Immersion else Percolation
+                BrewMethod.Moka -> Percolation
+            }
+        }
+    }
+}
+
+/** Which Review sections a brew gets (v4 §4.4). TDS and extraction always sit under "Advanced". */
+data class ReviewSections(
+    /** Drawdown time, In cup and Flow. */
+    val drawdown: Boolean,
+    /** Shape, surface, channelling. */
+    val bed: Boolean,
+    /** "Retained by the bed". */
+    val retained: Boolean,
+    val style: BrewStyle,
+) {
+    val advanced: Boolean get() = true
+
+    companion object {
+        private val DRAWDOWN_CATEGORIES = setOf("cone", "flat-bottom", "hybrid", "immersion")
+
+        fun of(b: Brewer?): ReviewSections {
+            val style = BrewStyle.of(b)
+            // An unknown brewer keeps every section, as before v4.
+            val pourOver = b == null ||
+                (b.method == BrewMethod.PourOver && b.category in DRAWDOWN_CATEGORIES && !BrewerFamilies.hasOwnFamily(b))
+            return ReviewSections(
+                drawdown = pourOver,
+                bed = pourOver || b?.id == "drip-machine",
+                retained = style == BrewStyle.Percolation && b?.method != BrewMethod.Moka,
+                style = style,
+            )
+        }
+    }
+}
+
+/** Field labels that change by method (v4 §4.9). */
+data class MethodLabels(
+    /** "WATER", "YIELD" or "WATER IN THE BASE". */
+    val water: String,
+    /** A short helper under the water label: "in the cup" for espresso, else "". */
+    val waterNote: String,
+    /** "TIME" or "SHOT TIME". */
+    val time: String,
+    /** Cold brew: durations read in hours ("12 h 5 min"), see formatDuration. */
+    val longTimes: Boolean,
+) {
+    companion object {
+        fun of(method: BrewMethod): MethodLabels = when (method) {
+            BrewMethod.Espresso -> MethodLabels("YIELD", "in the cup", "SHOT TIME", false)
+            BrewMethod.Moka -> MethodLabels("WATER IN THE BASE", "", "TIME", false)
+            BrewMethod.ColdBrew -> MethodLabels("WATER", "", "TIME", true)
+            else -> MethodLabels("WATER", "", "TIME", false)
+        }
     }
 }
 

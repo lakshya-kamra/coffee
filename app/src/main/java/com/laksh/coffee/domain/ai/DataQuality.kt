@@ -194,7 +194,9 @@ object DataQuality {
                 }
             }
         }
-        if (clicks == null && log.grindSetting.isBlank()) {
+        // Pre-ground coffee has no grind to record (v4 §4.2); a blade grinder records seconds in
+        // grindValue, as a numbered dial records its number. Same rule as the web.
+        if (log.grindKind != "preground" && clicks == null && log.grindValue == null && log.grindSetting.isBlank()) {
             add(FlagCode.GRIND_MISSING, Fields.GRIND, note, "No grind setting recorded.")
         }
 
@@ -219,7 +221,8 @@ object DataQuality {
         }
 
         // ---- temperature
-        if (method != BrewMethod.ColdBrew && (log.tempC < 60 || log.tempC > 100)) {
+        // Cold brew and a cezve both start from cold water.
+        if (method != BrewMethod.ColdBrew && method != BrewMethod.Turkish && (log.tempC < 60 || log.tempC > 100)) {
             add(
                 FlagCode.TEMP_IMPLAUSIBLE, Fields.TEMP, distrust,
                 "${log.tempC} °C can't be right for a hot brew.",

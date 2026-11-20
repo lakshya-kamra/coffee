@@ -18,6 +18,8 @@ import org.junit.Assert.assertNotNull
 /** The shared fixtures are on the test classpath (app/build.gradle.kts adds shared/ as resources). */
 object Fixtures {
     const val V2 = "fixtures/backup-v2-sample.json"
+    /** Backup 2.1 (v4): the same version 2 with every new key populated. */
+    const val V21 = "fixtures/backup-v2.1-sample.json"
     const val LEGACY = "fixtures/coffee-brew-log-1-sample.json"
     const val LEGACY_EXPECTED = "fixtures/coffee-brew-log-1-expected.json"
 

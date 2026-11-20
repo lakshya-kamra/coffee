@@ -4,6 +4,7 @@ import com.laksh.coffee.data.db.entity.BeanEntity
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
 import com.laksh.coffee.core.counted
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.oneDp
 import com.laksh.coffee.domain.catalog.Catalog
 import com.laksh.coffee.domain.catalog.TermKind
@@ -11,6 +12,7 @@ import com.laksh.coffee.domain.grind.GrindScale
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 /**
  * Turns a brew (or a run of brews) into something worth handing to a person or to Claude.
@@ -29,76 +31,140 @@ object BrewReport {
 
     // ------------------------------------------------------------------ local read
 
+    /** What quickRead may know beyond the brew and its recipe. */
+    data class QuickReadOptions(
+        /** The brewer; defaults to the recipe's. Null or unknown reads as a filter brew. */
+        val brewer: Brewer? = null,
+        /** false: "+1 tbsp" instead of "+2 g". */
+        val hasScale: Boolean = true,
+        val fahrenheit: Boolean = false,
+        /** Data quality already distrusted the total time: no advice about time. */
+        val timeIgnored: Boolean = false,
+    )
+
+    private fun timeUsable(actual: Int, target: Int): Boolean =
+        actual > 0 && target > 0 && actual >= 0.5 * target && actual <= 2.5 * target
+
     /**
-     * A cheap, offline first opinion. Deliberately hedged: these are the patterns that
-     * usually explain what you described, not a verdict.
+     * A cheap, offline first opinion (v2, v4 §4.4). Deliberately hedged: these are the patterns
+     * that usually explain what you described, not a verdict. Advice depends on how the brew works
+     * and on whether the grind can change, so pre-ground coffee never hears "go finer". The web
+     * app says exactly the same lines (shared/fixtures/domain-v4-cases.json).
      */
-    fun quickRead(log: BrewLogEntity, recipe: Recipe?): List<String> {
+    fun quickRead(log: BrewLogEntity, recipe: Recipe?, opts: QuickReadOptions = QuickReadOptions()): List<String> {
         val out = mutableListOf<String>()
         val t = log.taste
+        val brewer = opts.brewer ?: recipe?.brewer
+        val style = BrewStyle.of(brewer)
+        val espresso = style == BrewStyle.Espresso
+        val adjustable = log.grindKind != "preground"
+        val dose = if (log.doseG > 0) log.doseG else recipe?.doseG ?: 0.0
+
         val sour = "Sour" in log.faults
         val bitter = "Bitter" in log.faults
-        val astringent = "Astringent" in log.faults || "Drying" in log.faults
+        val weak = "Too weak" in log.faults
+        val strong = "Too strong" in log.faults
         val hollow = "Hollow" in log.faults || "Thin" in log.faults
+        val under = sour || weak || hollow || (t.acidity >= 7 && t.sweetness <= 4 && t.bitterness <= 3)
 
-        // Extraction direction
-        if (sour || (t.acidity >= 7 && t.sweetness <= 4 && t.bitterness <= 3) || hollow) {
-            out += "Reads under-extracted: sharp up front, not much sweetness behind it. " +
-                "One change at a time — grind finer first, then hotter water, then more contact."
+        // Extraction direction, by method and by whether the grind can change.
+        if (under) {
+            out += when {
+                espresso -> {
+                    val aim = if (dose > 0) "aim for about ${(dose * 2.5).roundToInt()} g" else ""
+                    when {
+                        adjustable && aim.isNotEmpty() -> "Let more out: $aim, or grind finer."
+                        adjustable -> "Let more out, or grind finer."
+                        aim.isNotEmpty() -> "Let more out: $aim."
+                        else -> "Let more out."
+                    }
+                }
+                style == BrewStyle.Immersion ->
+                    if (adjustable) "Steep 30 seconds longer, or grind a little finer." else "Steep 1 minute longer."
+                else -> if (adjustable) "Grind a little finer next time." else "Pour more slowly, and use water just off the boil."
+            }
         }
-        if (bitter && astringent) {
-            out += "Bitter plus drying is the over-extraction signature. Go a step coarser, " +
-                "or cut the contact time before you touch anything else."
-        } else if (bitter && !astringent && t.sweetness >= 6) {
-            out += "Bitter but still sweet is usually roast character, not a brewing fault. " +
-                "Worth trying a lower temperature before you re-dial the grind."
+        if (weak) {
+            out += if (espresso) "Use a little more coffee: +1 g." else "Or use a little more coffee: ${if (opts.hasScale) "+2 g" else "+1 tbsp"}."
         }
-
-        // Bed
-        when (log.bedShape) {
-            BedShape.HighAndDry ->
-                out += "Grounds stranded up the wall never brewed at all — that is dose you paid " +
-                    "for and did not extract. Swirl right after the bloom, or pour more centrally."
-            BedShape.Crater ->
-                out += "A cratered bed means the stream dug into one spot. Pour from lower, " +
-                    "slower, and keep the circles small."
-            BedShape.Sinkhole ->
-                out += "Pits in the bed are channelling. Water found a shortcut, so part of the " +
-                    "bed is over-extracted and part never got touched."
-            BedShape.Muddy ->
-                out += "A compacted, muddy bed points at fines migration choking the filter. " +
-                    "Coarser grind, or less agitation late in the brew."
-            BedShape.Sloped ->
-                out += "A sloped bed usually means the brewer was not level, or one side got " +
-                    "most of the water."
-            BedShape.Flat ->
-                out += "Flat bed. Whatever you did not like about this cup, distribution was not it."
-            else -> Unit
+        if (bitter) {
+            out += when {
+                espresso -> if (adjustable) "Stop the shot sooner, or grind coarser." else "Stop the shot sooner."
+                style == BrewStyle.Immersion ->
+                    if (adjustable) "Steep 30 seconds less, or grind a little coarser." else "Steep 30 seconds less."
+                else -> if (adjustable) "Grind a little coarser next time." else "Use water a little cooler, about ${tempWords(90, opts.fahrenheit)}."
+            }
+        }
+        if (strong) {
+            out += if (espresso) "Add hot water for an Americano, or let a little more out." else "Use a little less coffee, or add a splash of hot water to the cup."
         }
 
-        if (log.channeling == Channeling.Obvious) {
-            out += "You called obvious channelling — fix that before reading anything else into " +
-                "the taste. Channelled brews taste under and over extracted at the same time."
+        // The bed, only where there is one to look at.
+        if (ReviewSections.of(brewer).bed) {
+            when (log.bedShape) {
+                BedShape.HighAndDry ->
+                    out += "Grounds stranded up the wall never brewed at all — that is dose you paid " +
+                        "for and did not extract. Swirl right after the bloom, or pour more centrally."
+                BedShape.Crater ->
+                    out += "A cratered bed means the stream dug into one spot. Pour from lower, " +
+                        "slower, and keep the circles small."
+                BedShape.Sinkhole ->
+                    out += "Pits in the bed are channelling. Water found a shortcut, so part of the " +
+                        "bed is over-extracted and part never got touched."
+                BedShape.Muddy ->
+                    out += "A compacted, muddy bed points at fines migration choking the filter. " +
+                        "Coarser grind, or less agitation late in the brew."
+                BedShape.Sloped ->
+                    out += "A sloped bed usually means the brewer was not level, or one side got " +
+                        "most of the water."
+                BedShape.Flat ->
+                    out += "Flat bed. Whatever you did not like about this cup, distribution was not it."
+                else -> Unit
+            }
+            if (log.channeling == Channeling.Obvious) {
+                out += "You called obvious channelling — fix that before reading anything else into " +
+                    "the taste. Channelled brews taste under and over extracted at the same time."
+            }
         }
 
-        // Drawdown against the recipe
-        val target = recipe?.totalSec
+        // Time against the recipe: drawdown, steep or shot time. Printed as clocks, never "598s".
+        val target = recipe?.totalSec ?: 0
         val actual = log.totalTimeSec
-        if (target != null && target > 0 && actual > 0) {
+        if (!opts.timeIgnored && timeUsable(actual, target)) {
             val delta = actual - target
             when {
-                delta > 60 -> out += "You ran ${delta}s past the recipe's ${target.asClock()}. " +
-                    "That is a lot of extra contact — grind coarser if the cup came out heavy."
-                delta < -45 -> out += "You finished ${-delta}s early against ${target.asClock()}. " +
-                    "A fast drawdown with a thin cup means go finer."
+                espresso -> when {
+                    delta > 5 -> out += "Your shot ran ${formatDuration(actual)}, longer than the recipe's ${formatDuration(target)}. " +
+                        if (adjustable) "If it tasted bitter, grind a little coarser." else "If it tasted bitter, stop it sooner."
+                    delta < -5 -> out += "Your shot ran ${formatDuration(actual)}, quicker than the recipe's ${formatDuration(target)}. " +
+                        if (adjustable) "If it tasted sour, grind a little finer." else "If it tasted sour, let a little more out."
+                }
+                style == BrewStyle.Immersion -> when {
+                    delta > 60 -> out += "You steeped ${formatDuration(delta)} longer than the recipe's ${formatDuration(target)}. " +
+                        "If it tasted heavy or bitter, stick to the recipe's time."
+                    delta < -45 -> out += "You stopped ${formatDuration(-delta)} before the recipe's ${formatDuration(target)}. " +
+                        "If it tasted thin or sour, give it the full time."
+                }
+                delta > 60 -> out += "You ran ${formatDuration(delta)} past the recipe's ${formatDuration(target)}. " +
+                    if (adjustable) "That is a lot of extra contact — grind coarser if the cup came out heavy."
+                    else "Pre-ground coffee often drains slowly; if the cup came out heavy, use a little less coffee next time."
+                delta < -45 -> out += "You finished ${formatDuration(-delta)} early against ${formatDuration(target)}. " +
+                    if (adjustable) "A fast drawdown with a thin cup means go finer." else "If the cup was thin, pour more slowly next time."
             }
         }
 
         // Freshness
         log.daysOffRoast?.let { d ->
             when {
-                d <= 3 -> out += "Only ${counted(d.toInt(), "day")} off roast. Expect an aggressive bloom and a " +
-                    "faster-than-usual drawdown from all that CO2. Not a fault."
+                d <= 3 -> {
+                    // Only a percolation brew has a drawdown to speed up.
+                    val expect = when (style) {
+                        BrewStyle.Espresso -> "a lot of crema"
+                        BrewStyle.Immersion -> "a lively bloom"
+                        BrewStyle.Percolation -> "an aggressive bloom and a faster-than-usual drawdown"
+                    }
+                    out += "Only ${counted(d.toInt(), "day")} off roast. Expect $expect from all that CO2. Not a fault."
+                }
                 d >= 35 -> out += "$d days off roast. Flat and papery at this age is the beans, " +
                     "not your technique."
             }
@@ -106,8 +172,12 @@ object BrewReport {
 
         if (log.extractionYield != null) {
             val ey = BrewMath.round1(log.extractionYield)
-            out += "Measured extraction yield $ey%. For filter, most people land somewhere " +
-                "between 18 and 22 — but taste beats the number."
+            out += if (espresso) {
+                "Measured extraction yield $ey%. Taste beats the number."
+            } else {
+                "Measured extraction yield $ey%. For filter, most people land somewhere " +
+                    "between 18 and 22 — but taste beats the number."
+            }
         }
 
         if (out.isEmpty()) {
@@ -116,6 +186,10 @@ object BrewReport {
         }
         return out
     }
+
+    /** "90 °C", or "194 °F". */
+    private fun tempWords(c: Int, fahrenheit: Boolean): String =
+        if (fahrenheit) "${Temperatures.cToF(c.toDouble())} °F" else "$c °C"
 
     // ------------------------------------------------------------------- markdown
 

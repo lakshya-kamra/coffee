@@ -74,6 +74,15 @@ data class Recipe(
     val sources: List<RecipeSource> = emptyList(),
     /** The recipe id this one was duplicated from. */
     val basedOn: String? = null,
+    /** v4: "easy" | "medium" | "advanced"; "" = not said (user recipes). See [RecipeLevels]. */
+    val level: String = "",
+    /** v4: kit the recipe really depends on, a subset of [RecipeNeeds.ALL]. */
+    val needs: List<String> = emptyList(),
+    /**
+     * v4: prep lines for someone without a scale; they replace the lines that mention one.
+     * "{coffee}" and "{water}" are filled in by NoScale.prep.
+     */
+    val prepNoScale: List<String> = emptyList(),
 ) {
     val ratio: Double get() = if (doseG > 0) waterG / doseG else 0.0
     val ratioLabel: String get() = "1:" + oneDp(ratio)
@@ -96,6 +105,27 @@ data class Recipe(
 }
 
 fun Int.asClock(): String = "%d:%02d".format(this / 60, this % 60)
+
+/** How much a recipe asks of you (v4 §6.4). */
+object RecipeLevels {
+    val ALL = listOf("easy", "medium", "advanced")
+
+    /** easy 0, medium (or not said) 1, advanced 2: the firstBrew ordering. */
+    fun rank(level: String): Int = when (level) {
+        "easy" -> 0
+        "advanced" -> 2
+        else -> 1
+    }
+}
+
+/** Kit a recipe can depend on. */
+object RecipeNeeds {
+    const val SCALE = "scale"
+    const val GOOSENECK = "gooseneck"
+    const val GRINDER = "grinder"
+    const val THERMOMETER = "thermometer"
+    val ALL = listOf(SCALE, GOOSENECK, GRINDER, THERMOMETER)
+}
 
 /** Writes "#RRGGBB" (or "#AARRGGBB" when not opaque); reads that or a plain ARGB number. */
 object ArgbHexSerializer : KSerializer<Long> {

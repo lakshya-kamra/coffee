@@ -69,6 +69,11 @@ data class BeanEntity(
     val priceAmount: Double? = null,
     /** ISO 4217, e.g. "GBP". */
     @ColumnInfo(defaultValue = "") val currency: String = "",
+    // ---- v5 (backup 2.1)
+    /** "" (not recorded, treated as whole) | "whole" | "ground". */
+    @ColumnInfo(defaultValue = "") val form: String = "",
+    /** For ground coffee: "" | "filter" | "press" | "espresso" | "moka". */
+    @ColumnInfo(defaultValue = "") val groundFor: String = "",
 ) {
     // Parts are trimmed for the label only, so a value typed with a trailing space never reads "Roaster  — Name".
     val display: String get() = if (roaster.isBlank()) name.trim() else "${roaster.trim()} — ${name.trim()}"
@@ -121,6 +126,9 @@ data class GrinderEntity(
     val catalogId: String? = null,
     /** How the dial reads; "" = auto. See domain/grind/DialFormat. */
     @ColumnInfo(defaultValue = "") val dialFormat: String = "",
+    // ---- v5
+    /** "s" = the setting is seconds of grinding (a blade grinder, style stepless so 2.0.0 opens it). */
+    @ColumnInfo(defaultValue = "") val settingUnit: String = "",
 ) {
     val display: String get() = listOf(brand, model).map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
 
@@ -216,6 +224,12 @@ data class BrewLogEntity(
     val grindValue: Double? = null,
     /** water.json id, snapshotted from settings at brew time. */
     val waterId: String? = null,
+    // ---- v5
+    /**
+     * "" (a dial, or not recorded) | "dial" | "blade" | "preground". A pre-ground brew has
+     * grindSetting "As bought"; a blade brew keeps its seconds in [grindValue].
+     */
+    @ColumnInfo(defaultValue = "") val grindKind: String = "",
 )
 
 // ------------------------------------------------------- user-saved recipes

@@ -128,6 +128,13 @@ data class SettingsDto(
     val defaultGrinderUid: String? = null,
     val lastRecipeId: String? = null,
     val onboardingDone: Boolean? = null,
+    // Added in 2.1
+    /** "" | "new" | "recipes" | "tinker" */
+    val experience: String? = null,
+    val hasScale: Boolean? = null,
+    /** "quick" | "detailed" */
+    val reviewMode: String? = null,
+    val buysGround: Boolean? = null,
     // A null uid means "no default" when the key was in the file, and "say nothing" when it was not.
     @Transient val hasDefaultBean: Boolean = false,
     @Transient val hasDefaultGrinder: Boolean = false,
@@ -174,6 +181,10 @@ data class BeanDto(
     /** "" = not recorded. */
     val roastLevelId: String = "",
     val roastIntentId: String? = null,
+    /** Added in 2.1: "" | "whole" | "ground". */
+    val form: String = "",
+    /** Added in 2.1: "" | "filter" | "press" | "espresso" | "moka". */
+    val groundFor: String = "",
     /** "1700" or "1700-1900". */
     val altitudeM: String = "",
     val harvest: String = "",
@@ -205,6 +216,8 @@ data class GrinderSettingDto(
     val micronsPerStep: Double? = null,
     /** "" | "plain" | "turns" | "turns-dot" | "number-tick:10" */
     val dialFormat: String = "",
+    /** Added in 2.1: "" | "s" (seconds of grinding, a blade grinder). */
+    val settingUnit: String = "",
 )
 
 @Serializable
@@ -264,6 +277,8 @@ data class BrewDto(
     val grindClicks: Int? = null,
     /** The dial number on numbered and stepless grinders. */
     val grindValue: Double? = null,
+    /** Added in 2.1: "" | "dial" | "blade" | "preground". */
+    val grindKind: String = "",
     val doseG: Double = 0.0,
     val waterG: Double = 0.0,
     /** Always °C. */

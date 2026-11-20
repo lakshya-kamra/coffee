@@ -98,6 +98,11 @@ object Catalog {
         entries(PRINCIPLES, "principles", Principle.serializer())
     }
 
+    /** v4: plain explanations of the words the app uses (shared/glossary.json). */
+    val glossary: List<GlossaryTerm> by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        entries(GLOSSARY, "terms", GlossaryTerm.serializer())
+    }
+
     /** The built-in recipes, in file order. Brewers resolve through [brewers]. */
     val recipes: List<Recipe> by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         entries(RECIPES, "recipes", Recipe.serializer()).map { it.copy(isBuiltIn = true) }
@@ -112,6 +117,7 @@ object Catalog {
     private val waterById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { water.associateBy { it.id } }
     private val providerById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { providers.associateBy { it.id } }
     private val recipeById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { recipes.associateBy { it.id } }
+    private val termById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { glossary.associateBy { it.id } }
     private val processById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { beans.processes.associateBy { it.id } }
     private val varietalById by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { beans.varietals.associateBy { it.id } }
 
@@ -122,6 +128,9 @@ object Catalog {
     fun water(id: String?): CatalogWater? = id?.let { waterById[it] }
     fun provider(id: String?): CatalogProvider? = id?.let { providerById[it] }
     fun recipe(id: String?): Recipe? = id?.let { recipeById[it] }
+
+    /** A glossary term by id (Glossary.find also takes aliases). */
+    fun term(id: String?): GlossaryTerm? = id?.let { termById[it] }
     fun process(id: String?): ProcessTerm? = id?.let { processById[it] }
     fun varietal(id: String?): VarietalTerm? = id?.let { varietalById[it] }
 
@@ -149,8 +158,8 @@ object Catalog {
 
     /** Parses everything, brewers and recipes first because Home needs them on frame one. */
     fun preloadAll() {
-        brewers; recipes; beans; grinders; roasters; origins; water; providers; principles
-        recipeById; brewerById; grinderById; processById
+        brewers; recipes; beans; grinders; roasters; origins; water; providers; principles; glossary
+        recipeById; brewerById; grinderById; processById; termById
     }
 
     // ---------------------------------------------------------------- parsing
@@ -164,6 +173,7 @@ object Catalog {
     private const val PROVIDERS = "catalog/providers.json"
     private const val RECIPES = "recipes.json"
     private const val PRINCIPLES = "principles.json"
+    private const val GLOSSARY = "glossary.json"
 
     private fun file(path: String): JsonObject? {
         val text = runCatching {

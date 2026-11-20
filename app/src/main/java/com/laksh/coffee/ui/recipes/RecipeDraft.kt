@@ -49,6 +49,10 @@ data class RecipeDraft(
     val sources: List<RecipeSource>,
     val basedOn: String?,
     val sourceNote: String,
+    // v4: carried through unedited, so saving a recipe never drops them.
+    val level: String = "",
+    val needs: List<String> = emptyList(),
+    val prepNoScale: List<String> = emptyList(),
 ) {
     val totalSec: Int get() = steps.sumOf { it.durationSec.coerceAtLeast(0) }
 
@@ -87,6 +91,9 @@ data class RecipeDraft(
             fidelity = fidelity,
             sources = sources,
             basedOn = basedOn,
+            level = level,
+            needs = needs,
+            prepNoScale = prepNoScale.map { it.trim() }.filter { it.isNotEmpty() },
         )
     }
 
@@ -177,6 +184,9 @@ data class RecipeDraft(
             sources = r.sources,
             basedOn = r.basedOn,
             sourceNote = r.sourceNote,
+            level = r.level,
+            needs = r.needs,
+            prepNoScale = r.prepNoScale,
         )
 
         /** The blank V60-style template: one Bloom step, the numbers left for you to fill in. */
