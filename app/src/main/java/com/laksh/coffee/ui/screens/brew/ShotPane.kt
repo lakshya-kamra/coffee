@@ -45,7 +45,10 @@ import androidx.compose.ui.unit.dp
 import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.core.ratio
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.ShotTarget
+import com.laksh.coffee.domain.preinfusion
 import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.FieldWell
 import com.laksh.coffee.ui.components.IconWell
@@ -94,9 +97,9 @@ internal fun ShotPane(
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
-                    ShotTop(recipe, onLeave)
+                    ShotTop(recipe, state.settings.hasScale, onLeave)
                     Spacer(Modifier.height(8.dp))
-                    ShotControls(phase, yieldText, { yieldText = it }, onPrimary, onAgain, onRate)
+                    ShotControls(phase, state.settings.hasScale, yieldText, { yieldText = it }, onPrimary, onAgain, onRate)
                 }
             }
         } else {
@@ -104,7 +107,7 @@ internal fun ShotPane(
                 Modifier.fillMaxSize().widthIn(max = 560.dp).align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ShotTop(recipe, onLeave)
+                ShotTop(recipe, state.settings.hasScale, onLeave)
                 Column(
                     Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,7 +117,7 @@ internal fun ShotPane(
                     ShotClock(timer.elapsedMs, heroDp, target, pre, phase)
                     Spacer(Modifier.height(24.dp))
                 }
-                ShotControls(phase, yieldText, { yieldText = it }, onPrimary, onAgain, onRate)
+                ShotControls(phase, state.settings.hasScale, yieldText, { yieldText = it }, onPrimary, onAgain, onRate)
                 Spacer(Modifier.height(16.dp))
             }
         }
@@ -122,14 +125,16 @@ internal fun ShotPane(
 }
 
 @Composable
-private fun ShotTop(recipe: Recipe, onLeave: () -> Unit) {
+private fun ShotTop(recipe: Recipe, hasScale: Boolean, onLeave: () -> Unit) {
     val colors = CoffeeTheme.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
         IconWell(icon = Icons.Rounded.Close, contentDescription = "Leave brew", onClick = onLeave, size = 48.dp, shortcut = "Esc")
         Column(Modifier.weight(1f).padding(horizontal = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(recipe.name, style = MaterialTheme.typography.titleSmall, color = colors.inkMid, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // Without a scale the shot is read in ml, as setup said it ("→ 45 ml out").
+            val (out, outUnit) = NoScale.water(recipe.waterG, hasScale)
             Text(
-                "${grams(recipe.doseG)} g in → ${grams(recipe.waterG)} g out · ${ratio(recipe.doseG, recipe.waterG)}",
+                "${grams(recipe.doseG)} g in → $out $outUnit out · ${ratio(recipe.doseG, recipe.waterG)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.inkLow,
             )
@@ -163,6 +168,7 @@ private fun ShotClock(elapsed: LongState, heroDp: Dp, target: ShotTarget, pre: I
 @Composable
 private fun ColumnScope.ShotControls(
     phase: ShotPhase,
+    hasScale: Boolean,
     yieldText: String,
     onYield: (String) -> Unit,
     onPrimary: () -> Unit,
@@ -196,10 +202,11 @@ private fun ColumnScope.ShotControls(
                 label = "HOW MUCH CAME OUT?",
                 value = yieldText,
                 onChange = { v -> onYield(v.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(5)) },
-                suffix = "g",
+                // 1 ml of espresso is saved as about 1 g, as the setup's "45 ml out" was.
+                suffix = if (hasScale) "g" else "ml",
                 numeric = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                helper = "Weigh the cup, or leave the recipe's number.",
+                helper = if (hasScale) "Weigh the cup, or leave the recipe's number." else "Read it off the cup, or leave the recipe's number.",
             )
             Spacer(Modifier.height(12.dp))
             PrimaryButton(

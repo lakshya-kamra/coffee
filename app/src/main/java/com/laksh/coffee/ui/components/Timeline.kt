@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.ui.theme.CoffeeColors
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Micro
@@ -204,15 +205,19 @@ private fun TimelineRowView(
     }
 }
 
-/** The recipe as a planned timeline: every step, then a terminal "Done" at the total time. */
-fun Recipe.plannedTimelineRows(): List<TimelineRow> =
+/**
+ * The recipe as a planned timeline: every step, then a terminal "Done" at the total time. Without
+ * a scale the words and the targets read in ml and spoons, as the brew screen says them (A1).
+ */
+fun Recipe.plannedTimelineRows(hasScale: Boolean = true): List<TimelineRow> =
     steps.map { s ->
+        fun prose(t: String) = if (hasScale) t else NoScale.text(t)
         TimelineRow(
             time = clock(s.startSec),
             kind = s.kind.label,
-            title = s.title,
-            detail = s.detail.ifBlank { null },
-            trailing = s.targetWaterG?.let { "$it g" },
+            title = prose(s.title),
+            detail = s.detail.ifBlank { null }?.let(::prose),
+            trailing = s.targetWaterG?.let { if (hasScale) "$it g" else "$it ml" },
         )
     } + TimelineRow(
         time = formatDuration(totalSec),

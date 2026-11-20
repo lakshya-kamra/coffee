@@ -233,7 +233,7 @@ private fun OneColumn(
                 Spacer(Modifier.height(16.dp))
                 Text(recipe.blurb, style = MaterialTheme.typography.bodyMedium, color = c.inkMid)
                 YourGrinder(recipe, state.grindScale, state.grinderName)
-                StepsBlock(recipe)
+                StepsBlock(recipe, state.hasScale)
                 PrepBlock(s.prep, state.hasScale)
                 TipsBlock(recipe)
                 SourceBlock(recipe, state.isOverride, onReset)
@@ -309,7 +309,7 @@ private fun TwoColumns(
                         .verticalScroll(right),
                 ) {
                     Text(recipe.blurb, style = MaterialTheme.typography.bodyLarge, color = c.inkMid, modifier = Modifier.widthIn(max = 640.dp))
-                    StepsBlock(recipe)
+                    StepsBlock(recipe, state.hasScale)
                     PrepBlock(s.prep, state.hasScale)
                     TipsBlock(recipe)
                     YourGrinder(recipe, state.grindScale, state.grinderName)
@@ -514,8 +514,8 @@ private fun YourGrinder(recipe: Recipe, grindScale: GrindScale?, grinderName: St
 }
 
 @Composable
-private fun StepsBlock(recipe: Recipe) {
-    val timeline = remember(recipe) { recipe.plannedTimelineRows() }
+private fun StepsBlock(recipe: Recipe, hasScale: Boolean) {
+    val timeline = remember(recipe, hasScale) { recipe.plannedTimelineRows(hasScale) }
     SectionLabel("THE BREW · ${recipe.steps.size} ${if (recipe.steps.size == 1) "STEP" else "STEPS"}")
     // The whole instruction on every step: this page is where the method is learnt.
     SoftCard(Modifier.fillMaxWidth()) { TimelineCard(timeline, detailMaxLines = Int.MAX_VALUE) }

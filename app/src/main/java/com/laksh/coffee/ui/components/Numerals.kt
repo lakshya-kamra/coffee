@@ -35,6 +35,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.laksh.coffee.core.clipWords
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Motion
@@ -88,6 +90,8 @@ fun TickingNumber(
     color: Color = Color.Unspecified,
     unit: String? = null,
     unitColor: Color = Color.Unspecified,
+    /** What TalkBack reads; by default [spokenValue] of the value and unit. */
+    spoken: String? = null,
 ) {
     val colors = CoffeeTheme.colors
     val ink = color.takeOrElse { colors.inkHigh }
@@ -111,7 +115,10 @@ fun TickingNumber(
         }
     }
 
-    Row(modifier) {
+    // One node for TalkBack: each digit is its own Text, which would otherwise be read as
+    // "2, 0, 1, degree F" instead of "201 degrees Fahrenheit" (A5).
+    val said = spoken ?: spokenValue(value, unit)
+    Row(modifier.clearAndSetSemantics { contentDescription = said }) {
         value.forEachIndexed { i, c ->
             // Keyed from the right, so the ones digit keeps its slot when the length changes.
             key(value.length - i) {
@@ -149,6 +156,22 @@ fun TickingNumber(
             )
         }
     }
+}
+
+/** "201 degrees Fahrenheit", "15 grams", "8 out of 10": a number and its unit as words. */
+internal fun spokenValue(value: String, unit: String?): String {
+    if (value.isBlank() || value == "—") return if (unit == "/10") "Not rated" else "Not set"
+    val one = value == "1"
+    val word = when (unit) {
+        null, "" -> null
+        "°F" -> "degrees Fahrenheit"
+        "°C" -> "degrees Celsius"
+        "g" -> if (one) "gram" else "grams"
+        "s" -> if (one) "second" else "seconds"
+        "/10" -> "out of 10"
+        else -> unit
+    }
+    return listOfNotNull(value, word).joinToString(" ")
 }
 
 private fun numericValue(s: String): Double =

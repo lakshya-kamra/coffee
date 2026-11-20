@@ -128,15 +128,20 @@ object BrewReport {
         }
 
         // Time against the recipe: drawdown, steep or shot time. Printed as clocks, never "598s".
-        val target = recipe?.totalSec ?: 0
         val actual = log.totalTimeSec
+        // A shot is measured from the nearer edge of its band (A4), the one shot mode showed: a
+        // 0:45 recipe whose last 10 s are "Stop and taste" aims for about 35 s, not 0:45.
+        val shot = if (espresso && recipe != null) ShotTarget.of(recipe) else null
+        val target = shot?.highSec ?: recipe?.totalSec ?: 0
         if (!opts.timeIgnored && timeUsable(actual, target)) {
-            val delta = actual - target
+            val delta = shot?.offBy(actual) ?: (actual - target)
+            // "0:35" for a shot that ends at a time, "25-30 s" for a band the recipe states.
+            val aim = if (shot?.stated == true) shot.label else formatDuration(target)
             when {
                 espresso -> when {
-                    delta > 5 -> out += "Your shot ran ${formatDuration(actual)}, longer than the recipe's ${formatDuration(target)}. " +
+                    delta > 5 -> out += "Your shot ran ${formatDuration(actual)}, longer than the recipe's $aim. " +
                         if (adjustable) "If it tasted bitter, grind a little coarser." else "If it tasted bitter, stop it sooner."
-                    delta < -5 -> out += "Your shot ran ${formatDuration(actual)}, quicker than the recipe's ${formatDuration(target)}. " +
+                    delta < -5 -> out += "Your shot ran ${formatDuration(actual)}, quicker than the recipe's $aim. " +
                         if (adjustable) "If it tasted sour, grind a little finer." else "If it tasted sour, let a little more out."
                 }
                 style == BrewStyle.Immersion -> when {

@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -58,6 +59,7 @@ import com.laksh.coffee.domain.BrewMethod
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.ui.components.BrewerIcon
 import com.laksh.coffee.ui.components.Cell
 import com.laksh.coffee.ui.components.CoffeeMug
@@ -85,6 +87,7 @@ import com.laksh.coffee.ui.components.rememberGreeting
 import com.laksh.coffee.ui.components.roastStatus
 import com.laksh.coffee.ui.components.roastWord
 import com.laksh.coffee.ui.components.scoreStatus
+import com.laksh.coffee.ui.components.shotTimeStatus
 import com.laksh.coffee.ui.components.timeStatus
 import com.laksh.coffee.ui.components.toCaps
 import com.laksh.coffee.ui.nav.SharedKeys
@@ -230,7 +233,7 @@ private fun Header(state: HomeUiState, loaded: Boolean, gutter: Dp) {
     // ScreenHeader brings its own 16dp; the rest of the gutter is added around it.
     ScreenHeader(
         eyebrow = eyebrow,
-        title = playfulTitle(state.brewsToday),
+        title = playfulTitle(state.brewsToday, hasHistory = state.recentLogs.isNotEmpty()),
         modifier = Modifier.padding(horizontal = (gutter - 16.dp).coerceAtLeast(0.dp)),
         trailing = { HomeMug(state.brewsToday) },
         status = if (loaded) {
@@ -382,6 +385,7 @@ private fun NextOrFirst(state: HomeUiState, a: TodayActions, modifier: Modifier 
                 onOpen = { a.openRecipe(next.id, SharedKeys.FROM_NEXT) },
                 onBrew = { a.brew(next.id) },
                 buttonMax = buttonMax,
+                hasScale = state.settings.hasScale,
             )
         }
         if (!hasLogs) {
@@ -413,8 +417,12 @@ private fun PersonaliseCard(onPersonalise: () -> Unit, onNotNow: () -> Unit, mod
     }
 }
 
-private fun playfulTitle(brewsToday: Int): String = when (brewsToday) {
-    0 -> "No coffee yet."
+/**
+ * [hasHistory]: brews on earlier days. "No coffee yet." would read as if the log were empty to
+ * someone with a hundred brews in it, so a quiet day says so instead (A7, the web's words too).
+ */
+internal fun playfulTitle(brewsToday: Int, hasHistory: Boolean = false): String = when (brewsToday) {
+    0 -> if (hasHistory) "None yet today." else "No coffee yet."
     1 -> "One down."
     2 -> "Two down."
     else -> "$brewsToday today. Steady on."
@@ -529,10 +537,16 @@ private fun NextBrewPass(
     onOpen: () -> Unit,
     onBrew: () -> Unit,
     buttonMax: Dp,
+    hasScale: Boolean = true,
 ) {
     val c = CoffeeTheme.colors
     val units = LocalUnits.current
     val nodes = remember(recipe) { recipe.pourNodes() }
+    // Spoons and ml without a scale, the way setup and the brew will say them (A1).
+    val coffee = remember(recipe, hasScale) { NoScale.coffee(recipe.doseG, recipe.brewer.method, hasScale) }
+    val water = remember(recipe, hasScale) { NoScale.water(recipe.waterG, hasScale) }
+    val espresso = recipe.brewer.method == BrewMethod.Espresso
+    val shot = remember(recipe) { if (espresso) ShotTarget.of(recipe) else null }
 
     SoftCard(onClick = onOpen, contentPadding = PaddingValues(0.dp)) {
         // The top block flies into Recipe detail's header, so it carries its own surface:
@@ -559,12 +573,12 @@ private fun NextBrewPass(
 
         Column(Modifier.padding(start = 18.dp, end = 18.dp, top = 16.dp, bottom = 18.dp)) {
             RouteRow(
-                from = grams(recipe.doseG),
-                fromUnit = "g",
+                from = coffee.first,
+                fromUnit = coffee.second,
                 fromLabel = "COFFEE",
-                to = grams(recipe.waterG),
-                toUnit = "g",
-                toLabel = if (recipe.brewer.method == BrewMethod.Espresso) "YIELD" else "WATER",
+                to = water.first,
+                toUnit = water.second,
+                toLabel = if (espresso) "YIELD" else "WATER",
                 nodes = nodes,
                 midLabel = recipe.ratioLabel,
                 style = Num.Large,
@@ -577,7 +591,9 @@ private fun NextBrewPass(
                     lastGrind?.let { Cell(label = "GRIND", value = "$it", unit = unitWord(it, "click"), sub = "last used") }
                         ?: Cell(label = "GRIND", value = recipe.grind, textValue = true),
                     Cell("TEMP", units.temp(recipe.tempC), units.tempUnit),
-                    Cell("TARGET", formatDuration(recipe.totalSec)),
+                    // A shot aims for its own band, not the recipe's whole time with tasting in it (A4).
+                    shot?.let { Cell("TARGET", if (it.stated) "${it.lowSec}-${it.highSec}" else "${it.highSec}", "s") }
+                        ?: Cell("TARGET", formatDuration(recipe.totalSec)),
                 ),
                 columns = 3,
             )
@@ -586,7 +602,7 @@ private fun NextBrewPass(
                 StatusLine(
                     status = scoreStatus(l.overall),
                     lead = if (l.overall > 0) "Last time ${l.overall}/10" else "Last time unrated",
-                    detail = timeStatus(l.totalTimeSec, recipe.totalSec).second.lowercase(),
+                    detail = (shot?.let { shotTimeStatus(l.totalTimeSec, it) } ?: timeStatus(l.totalTimeSec, recipe.totalSec)).second.lowercase(),
                 )
             }
             resting?.let { (bean, daysLeft) ->
@@ -673,25 +689,40 @@ private fun RecentRow(log: BrewLogEntity, onOpen: () -> Unit, onAgain: () -> Uni
     val interaction = remember { MutableInteractionSource() }
     val zone = remember { ZoneId.systemDefault() }
     val whenText = remember(log.startedAt) { "${screenDayLabel(log.startedAt, zone = zone)} · ${screenTime(log.startedAt, zone = zone)}" }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 64.dp)
-            .focusRing(interaction, RoundedCornerShape(12.dp))
-            .hoverTint(interaction, c.inkHigh.copy(alpha = 0.04f))
-            .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onOpen)
-            .padding(start = 16.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(log.recipeName.ifBlank { "A brew" }, style = MaterialTheme.typography.titleMedium, color = c.inkHigh, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    // At large text the score and "Brew again" move under the name, so the name keeps the row's
+    // whole width and wraps instead of ending in "…" beside them (A9).
+    val stacked = LocalDensity.current.fontScale > 1.3f
+    val rowModifier = Modifier
+        .fillMaxWidth()
+        .heightIn(min = 64.dp)
+        .focusRing(interaction, RoundedCornerShape(12.dp))
+        .hoverTint(interaction, c.inkHigh.copy(alpha = 0.04f))
+        .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onOpen)
+        .padding(start = 16.dp, end = 10.dp, top = 8.dp, bottom = 8.dp)
+    val words: @Composable (Modifier) -> Unit = { m ->
+        Column(m) {
+            Text(log.recipeName.ifBlank { "A brew" }, style = MaterialTheme.typography.titleMedium, color = c.inkHigh, maxLines = if (stacked) 3 else 2, overflow = TextOverflow.Ellipsis)
             Text(whenText, style = MaterialTheme.typography.bodySmall, color = c.inkMid)
         }
+    }
+    val actions: @Composable () -> Unit = {
         if (log.overall > 0) {
             StatusChip(status = scoreStatus(log.overall), text = "${log.overall}/10")
             Spacer(Modifier.width(8.dp))
         }
         PillButton(text = "Brew again", onClick = onAgain, height = 44.dp)
+    }
+    if (stacked) {
+        Column(rowModifier) {
+            words(Modifier.fillMaxWidth())
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) { actions() }
+        }
+    } else {
+        Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
+            words(Modifier.weight(1f))
+            actions()
+        }
     }
 }
 

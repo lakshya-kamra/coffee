@@ -17,6 +17,7 @@ import com.laksh.coffee.domain.LogFilter
 import com.laksh.coffee.domain.LogQuery
 import com.laksh.coffee.domain.LogSort
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.ShotTarget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -109,7 +110,7 @@ class HistoryViewModel(
 
     val state: StateFlow<HistoryState> = combine(
         combine(repo.allLogs, repo.activeBeans, analysis.analysedBrewIds, repo.recipes) { logs, beans, ids, recipes ->
-            Base(logs, beans, ids, recipes.associate { it.id to it.totalSec })
+            Base(logs, beans, ids, recipes.associate { it.id to ShotTarget.targetSec(it) })
         },
         filter,
         pending,
@@ -130,7 +131,7 @@ class HistoryViewModel(
         HistoryState(
             logs = repo.allLogsNow.orEmpty(),
             beans = repo.activeBeansNow.orEmpty(),
-            targetSecByRecipe = repo.recipesNow.orEmpty().associate { it.id to it.totalSec },
+            targetSecByRecipe = repo.recipesNow.orEmpty().associate { it.id to ShotTarget.targetSec(it) },
         ),
     )
 

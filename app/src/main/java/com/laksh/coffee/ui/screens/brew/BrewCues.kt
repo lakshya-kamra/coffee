@@ -121,7 +121,15 @@ fun StepFlashOverlay(flash: StepFlash, reduced: Boolean) {
  * auto-advance off "Time for the next step." when the clock passes the step ([waiting]).
  */
 @Composable
-fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, elapsed: LongState, waiting: Boolean = false) {
+fun BrewAnnouncer(
+    recipe: Recipe,
+    stepIndex: Int,
+    done: Boolean,
+    live: Boolean,
+    elapsed: LongState,
+    waiting: Boolean = false,
+    hasScale: Boolean = true,
+) {
     var said by remember { mutableStateOf("") }
     suspend fun say(text: String) {
         said = ""
@@ -130,7 +138,7 @@ fun BrewAnnouncer(recipe: Recipe, stepIndex: Int, done: Boolean, live: Boolean, 
     }
     LaunchedEffect(recipe, stepIndex, done, live) {
         if (!live) return@LaunchedEffect
-        say(if (done) BrewWords.done((elapsed.longValue / 1000L).toInt()) else BrewWords.step(recipe, stepIndex))
+        say(if (done) BrewWords.done((elapsed.longValue / 1000L).toInt()) else BrewWords.step(recipe, stepIndex, hasScale))
     }
     val tenLeft by remember(recipe, stepIndex) {
         derivedStateOf {

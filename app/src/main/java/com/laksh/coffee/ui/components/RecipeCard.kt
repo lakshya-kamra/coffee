@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -101,11 +103,13 @@ fun RecipeCard(
                         .background(Color(recipe.accent)),
                 )
                 Spacer(Modifier.width(6.dp))
+                // At large text the author and brewer wrap to a second line rather than end in "…" (A9).
+                val metaLines = if (LocalDensity.current.fontScale > 1.3f) 2 else 1
                 Text(
                     text = recipe.author.toCaps(),
                     style = Micro,
                     color = colors.inkLow,
-                    maxLines = 1,
+                    maxLines = metaLines,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
@@ -114,7 +118,8 @@ fun RecipeCard(
                     text = recipe.brewer.shortName.toCaps(),
                     style = Micro,
                     color = colors.inkLow,
-                    maxLines = 1,
+                    maxLines = metaLines,
+                    modifier = Modifier.widthIn(max = 160.dp),
                 )
             }
             Spacer(Modifier.height(8.dp))

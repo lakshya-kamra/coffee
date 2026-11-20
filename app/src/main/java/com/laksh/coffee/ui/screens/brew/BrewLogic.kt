@@ -7,6 +7,7 @@ import com.laksh.coffee.data.db.entity.BeanEntity
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
 import com.laksh.coffee.domain.Brewers
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.domain.RecipeStep
 import com.laksh.coffee.domain.StepKind
@@ -100,24 +101,32 @@ object BrewKeys {
 
 /** The words a screen reader hears (v4 §5 A4). Exact strings: the web says the same. */
 object BrewWords {
-    /** "Pour to 300 g", "Bloom to 50 g", "Drawdown", else the step's own title. */
-    fun lead(step: RecipeStep): String {
+    /**
+     * "Pour to 300 g", "Bloom to 50 g", "Drawdown", else the step's own title. Without a scale
+     * ([hasScale] false) a pour is a jug reading, "Pour to about 300 ml", and a title's grams are
+     * said as [NoScale.text] says them.
+     */
+    fun lead(step: RecipeStep, hasScale: Boolean = true): String {
         val target = step.targetWaterG
+        val amount = target?.let { if (hasScale) "$it g" else "about ${NoScale.aboutMl(it)} ml" }
         return when {
-            step.kind == StepKind.Bloom && target != null -> "Bloom to $target g"
-            step.kind == StepKind.Pour && target != null -> "Pour to $target g"
+            step.kind == StepKind.Bloom && amount != null -> "Bloom to $amount"
+            step.kind == StepKind.Pour && amount != null -> "Pour to $amount"
             step.kind == StepKind.Drawdown -> "Drawdown"
-            else -> step.title
+            else -> prose(step.title, hasScale)
         }
     }
 
+    /** A step's own words, with its grams in ml and spoons when there is no scale. */
+    fun prose(text: String, hasScale: Boolean): String = if (hasScale) text else NoScale.text(text)
+
     /** "Step 2 of 6, Pour to 300 g. Steady spiral from the centre outward. Next at 1:15." */
-    fun step(recipe: Recipe, index: Int): String {
+    fun step(recipe: Recipe, index: Int, hasScale: Boolean = true): String {
         val s = recipe.steps.getOrNull(index) ?: return ""
         val next = recipe.steps.getOrNull(index + 1)
-        val detail = s.detail.trim().let { d -> if (d.isEmpty()) "" else " " + (if (d.endsWith('.')) d else "$d.") }
+        val detail = prose(s.detail, hasScale).trim().let { d -> if (d.isEmpty()) "" else " " + (if (d.endsWith('.')) d else "$d.") }
         val tail = next?.let { " Next at ${clock(it.startSec)}." }.orEmpty()
-        return "Step ${index + 1} of ${recipe.steps.size}, ${lead(s)}.$detail$tail"
+        return "Step ${index + 1} of ${recipe.steps.size}, ${lead(s, hasScale)}.$detail$tail"
     }
 
     /** "Brew done, 3:32. Rate this brew." */
@@ -130,8 +139,8 @@ object BrewWords {
     fun saysTenLeft(step: RecipeStep, elapsedSec: Int): Boolean =
         step.durationSec > 30 && step.endSec - elapsedSec == 10
 
-    /** The step-change banner: "NEXT STEP · Pour to 300 g". */
-    fun banner(step: RecipeStep): String = "NEXT STEP · ${lead(step)}"
+    /** The step-change banner: "NEXT STEP · Pour to 300 g" ("… about 300 ml" without a scale). */
+    fun banner(step: RecipeStep, hasScale: Boolean = true): String = "NEXT STEP · ${lead(step, hasScale)}"
 }
 
 // --------------------------------------------------------------------- shot mode
@@ -163,38 +172,6 @@ enum class ShotPhase {
         }
     }
 }
-
-/** What the recipe asks of a shot: a band of seconds when it states one, else when it ends. */
-data class ShotTarget(val lowSec: Int, val highSec: Int, val stated: Boolean) {
-    /** "25-30 s", or "about 35 s". */
-    val label: String get() = if (stated) "$lowSec-$highSec s" else "about $highSec s"
-
-    fun contains(sec: Int): Boolean = sec in lowSec..highSec
-
-    companion object {
-        // "25 to 30 seconds", "25-30 s". Ranges that end under 15 s are first drops, not the shot.
-        private val BAND = Regex("(\\d{1,2})\\s*(?:to|-|–)\\s*(\\d{1,2})\\s*(?:s\\b|sec|seconds)", RegexOption.IGNORE_CASE)
-
-        fun of(recipe: Recipe): ShotTarget {
-            val texts = recipe.tips + recipe.steps.filter { preinfusionStep(it).not() }.map { it.detail } + recipe.blurb
-            for (t in texts) {
-                for (m in BAND.findAll(t)) {
-                    val lo = m.groupValues[1].toInt()
-                    val hi = m.groupValues[2].toInt()
-                    if (hi >= 15 && lo < hi) return ShotTarget(lo, hi, stated = true)
-                }
-            }
-            val end = recipe.steps.lastOrNull { it.targetWaterG != null }?.endSec ?: recipe.totalSec
-            return ShotTarget(end, end, stated = false)
-        }
-
-        fun preinfusionStep(s: RecipeStep): Boolean = s.title.contains("infusion", ignoreCase = true)
-    }
-}
-
-/** The recipe's pre-infusion window in seconds, or null. */
-fun Recipe.preinfusion(): IntRange? =
-    steps.firstOrNull(ShotTarget::preinfusionStep)?.let { it.startSec until it.endSec.coerceAtLeast(it.startSec + 1) }
 
 // ------------------------------------------------------------------ grind choice
 

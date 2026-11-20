@@ -101,6 +101,16 @@ class DomainV4ParityTest {
     }
 
     @Test
+    fun noScaleText() {
+        // Added with v2.1.1 (A1); an older fixture without the key has nothing to check.
+        if ("noScaleText" !in cases) return
+        list("noScaleText").forEach { c ->
+            val text = c["in"].str() ?: c.s("text")
+            assertEquals(c.toString(), c.s("out"), NoScale.text(text))
+        }
+    }
+
+    @Test
     fun servingsPreset() {
         list("servingsPreset").forEach { c ->
             val r = NoScale.servings(Catalog.recipe(c.s("recipe"))!!, c["mugs"]!!.jsonPrimitive.int)

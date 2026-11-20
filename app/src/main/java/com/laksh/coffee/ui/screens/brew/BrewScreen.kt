@@ -163,7 +163,7 @@ fun BrewScreen(
                 )
             }
             if (soundOn) tone()
-            latest.recipe?.steps?.getOrNull(index)?.let { s -> launch { flash.play(BrewWords.banner(s), reduced) } }
+            latest.recipe?.steps?.getOrNull(index)?.let { s -> launch { flash.play(BrewWords.banner(s, latest.settings.hasScale), reduced) } }
         }
     }
 
@@ -303,7 +303,7 @@ fun BrewScreen(
 
         if (pane == Pane.Running) StepFlashOverlay(flash, reduced)
         if (recipe != null) {
-            BrewAnnouncer(recipe, state.stepIndex, state.done, live = pane == Pane.Running, elapsed = timer.elapsedMs, waiting = state.waitingForTap)
+            BrewAnnouncer(recipe, state.stepIndex, state.done, live = pane == Pane.Running, elapsed = timer.elapsedMs, waiting = state.waitingForTap, hasScale = state.settings.hasScale)
         }
     }
 

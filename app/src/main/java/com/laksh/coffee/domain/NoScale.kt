@@ -1,5 +1,6 @@
 package com.laksh.coffee.domain
 
+import com.laksh.coffee.core.grams
 import com.laksh.coffee.core.halves
 import kotlin.math.roundToInt
 
@@ -87,6 +88,43 @@ object NoScale {
         }
         return out.map { Temperatures.render(it, tempUnit) }
     }
+
+    // "16 g of coffee", "2 g more coffee": coffee, not water. "Pour 100 g over the coffee" is water.
+    private val PROSE_GRAMS =
+        Regex("(\\d+(?:\\.\\d+)?)\\s*(?:g|grams?)\\b(\\s+(?:of\\s+|more\\s+)?(?:ground\\s+)?coffee\\b)?", RegexOption.IGNORE_CASE)
+
+    /**
+     * Recipe prose for someone without a scale (v4 §4.3): every gram amount in a step title or
+     * detail is said the way the rest of the brew says it. Water reads as ml (1 g of water is 1 ml,
+     * no rounding, so "Pour all 500 g" says the same 500 as the "Pour all 500 ml" dial); coffee
+     * reads in level tablespoons, in halves. Web twin: noScaleText in noScale.ts.
+     */
+    fun text(s: String): String = PROSE_GRAMS.replace(s) { m ->
+        val g = m.groupValues[1].toDouble()
+        val coffee = m.groupValues[2]
+        if (coffee.isNotEmpty()) {
+            val tbsp = toHalves(g / GROUND_COFFEE_G_PER_LEVEL_TBSP).coerceAtLeast(0.5)
+            "${halves(tbsp)} level ${if (tbsp <= 1.0) "tablespoon" else "tablespoons"}$coffee"
+        } else {
+            "${g.roundToInt()} ml"
+        }
+    }
+
+    /** A water amount as the person reads it: "500" g with a scale, "500" ml without. */
+    fun water(g: Double, hasScale: Boolean): Pair<String, String> =
+        if (hasScale) grams(g) to "g" else g.roundToInt().coerceAtLeast(0).toString() to "ml"
+
+    /**
+     * A dose as the person reads it: "15" g with a scale (and for espresso and moka, where the
+     * basket sets it), else level tablespoons in halves, "3" tbsp.
+     */
+    fun coffee(doseG: Double, method: BrewMethod, hasScale: Boolean): Pair<String, String> {
+        val tbsp = if (hasScale) null else amounts(doseG, 0.0, method).coffeeTbsp
+        return if (tbsp == null) grams(doseG) to "g" else halves(tbsp) to "tbsp"
+    }
+
+    /** A pour as a jug is read: to the nearest 10 ml ("about 300 ml"). */
+    fun aboutMl(g: Int): Int = maxOf(0, (g / 10.0).roundToInt() * 10)
 
     /** "1 mug", "2 mugs", "3 mugs": 250 ml of water each, the dose from the recipe's ratio. */
     fun servings(recipe: Recipe, mugs: Int): Recipe = recipe.scaledToWater(ML_PER_MUG * mugs.toDouble())

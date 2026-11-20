@@ -50,6 +50,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -381,7 +382,8 @@ private fun RecipeRow(recipe: Recipe, selected: Boolean, onClick: () -> Unit, mo
                 // The one place a recipe's own colour survives: an identity dot.
                 Box(Modifier.size(8.dp).clip(CircleShape).background(Color(recipe.accent)))
                 Spacer(Modifier.width(6.dp))
-                Text(recipe.author, style = Micro, color = c.inkLow, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // Wraps to a second line at large text instead of ending in "…" (A9).
+                Text(recipe.author, style = Micro, color = c.inkLow, maxLines = if (LocalDensity.current.fontScale > 1.3f) 2 else 1, overflow = TextOverflow.Ellipsis)
             }
             Text(recipe.name, style = MaterialTheme.typography.titleMedium, color = c.inkHigh, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(

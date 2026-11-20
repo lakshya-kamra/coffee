@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.ratio
+import com.laksh.coffee.domain.BrewMethod
 import com.laksh.coffee.domain.BrewStyle
 import com.laksh.coffee.ui.components.Term
 import com.laksh.coffee.ui.components.asHeading
@@ -114,6 +115,8 @@ import com.laksh.coffee.domain.BrewMath
 import com.laksh.coffee.domain.Channeling
 import com.laksh.coffee.domain.Descriptors
 import com.laksh.coffee.domain.FlowFeel
+import com.laksh.coffee.domain.NoScale
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.domain.Sludge
 import com.laksh.coffee.domain.TasteProfile
 import com.laksh.coffee.domain.ai.Fields
@@ -155,6 +158,7 @@ import com.laksh.coffee.ui.components.pressSquash
 import com.laksh.coffee.ui.components.scoreStatus
 import com.laksh.coffee.ui.components.shareText
 import com.laksh.coffee.ui.components.sludgeStatus
+import com.laksh.coffee.ui.components.shotTimeStatus
 import com.laksh.coffee.ui.components.timeStatus
 import com.laksh.coffee.ui.photos.ReviewPhotos
 import com.laksh.coffee.ui.theme.CoffeeTheme
@@ -507,7 +511,11 @@ private fun NumbersHeader(
     vm: ReviewViewModel,
 ) {
     val c = CoffeeTheme.colors
-    val ts = timeStatus(log.totalTimeSec, state.recipe?.totalSec ?: 0)
+    // A shot is judged against its band, the one shot mode showed (A4); a brew against its time.
+    val shot = remember(state.recipe, state.sections.style) {
+        state.recipe?.takeIf { state.sections.style == BrewStyle.Espresso }?.let(ShotTarget::of)
+    }
+    val ts = shot?.let { shotTimeStatus(log.totalTimeSec, it) } ?: timeStatus(log.totalTimeSec, state.recipe?.totalSec ?: 0)
     val grindFlag = warnings[Fields.GRIND]
     val timeFlag = warnings[Fields.TIME]
     // Opens by itself when the brew arrived with a grind or time the analysis would ignore,
@@ -538,12 +546,16 @@ private fun NumbersHeader(
     val labels = state.labels
     val espresso = state.sections.style == BrewStyle.Espresso
     val bigText = LocalDensity.current.fontScale > 1.3f
+    // Spoons and ml without a scale, as the brew said them (A1); grams stay what is saved.
+    val hasScale = state.settings.hasScale
+    val dose = NoScale.coffee(log.doseG, state.brewer?.method ?: BrewMethod.PourOver, hasScale)
     SoftCard(contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)) {
         val cells = if (espresso) {
             val yieldG = log.beverageG ?: log.waterG
+            val out = NoScale.water(yieldG, hasScale)
             listOf(
-                Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
-                Cell(label = labels.water, value = grams(yieldG), unit = "g"),
+                Cell(label = "DOSE", value = dose.first, unit = dose.second),
+                Cell(label = labels.water, value = out.first, unit = out.second),
                 Cell(label = "RATIO", value = ratio(log.doseG, yieldG)),
                 Cell(
                     label = labels.time,
@@ -555,8 +567,8 @@ private fun NumbersHeader(
                 ),
             )
         } else listOf(
-            Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
-            Cell(label = labels.water, value = grams(log.waterG), unit = "g"),
+            Cell(label = "DOSE", value = dose.first, unit = dose.second),
+            NoScale.water(log.waterG, hasScale).let { (v, u) -> Cell(label = labels.water, value = v, unit = u) },
             Cell(
                 label = "GRIND",
                 value = log.grindClicks?.toString() ?: log.grindSetting.trim().ifEmpty { null },
@@ -660,10 +672,11 @@ private fun NumbersHeader(
             status = ts.first,
             lead = ts.second,
             modifier = Modifier.weight(1f),
-            detail = if (target != null && log.totalTimeSec > 0) {
-                "${formatDuration(log.totalTimeSec)} against ${formatDuration(target)}"
-            } else {
-                null
+            detail = when {
+                log.totalTimeSec <= 0 -> null
+                shot != null -> "${log.totalTimeSec} s against ${shot.label}"
+                target != null -> "${formatDuration(log.totalTimeSec)} against ${formatDuration(target)}"
+                else -> null
             },
         )
         QuietButton(
@@ -1013,8 +1026,9 @@ private fun BedShapeTile(
 private fun NotesSection(log: BrewLogEntity, vm: ReviewViewModel) {
     SectionLabel("NOTES")
     SoftCard {
+        // The section is already headed NOTES; the field says which note it is (one heading, A6).
         FieldWell(
-            label = "NOTES",
+            label = "THIS CUP",
             value = log.notes,
             onChange = vm::setNotes,
             modifier = Modifier.fillMaxWidth(),

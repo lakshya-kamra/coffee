@@ -18,6 +18,8 @@ import com.laksh.coffee.core.screenTime
 import com.laksh.coffee.domain.BrewMethod
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.MethodLabels
+import com.laksh.coffee.domain.ReviewSections
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.ui.components.CoffeeConfirm
 import com.laksh.coffee.ui.components.PrimaryButton
 import com.laksh.coffee.ui.components.SecondaryButton
@@ -125,6 +127,7 @@ import com.laksh.coffee.ui.components.scoreStatus
 import com.laksh.coffee.ui.components.shareText
 import com.laksh.coffee.ui.components.signedClock
 import com.laksh.coffee.ui.components.sludgeStatus
+import com.laksh.coffee.ui.components.shotTimeStatus
 import com.laksh.coffee.ui.components.timeStatus
 import com.laksh.coffee.ui.photos.BrewDetailPhotos
 import com.laksh.coffee.ui.theme.CoffeeTheme
@@ -232,7 +235,11 @@ private fun BrewDetailContent(
             log.id,
         )
     }
-    val ts = remember(log.totalTimeSec, recipe) { timeStatus(log.totalTimeSec, recipe?.totalSec ?: 0) }
+    // A shot is judged against its band, the one shot mode and Review use (A4).
+    val shot = remember(recipe) { recipe?.takeIf(ShotTarget::applies)?.let(ShotTarget::of) }
+    val ts = remember(log.totalTimeSec, recipe, shot) {
+        shot?.let { shotTimeStatus(log.totalTimeSec, it) } ?: timeStatus(log.totalTimeSec, recipe?.totalSec ?: 0)
+    }
     val timeTrusted = Fields.TIME !in distrusted && log.totalTimeSec > 0
     val bedExposedSec = remember(recipe, log.drawdownSec, distrusted) {
         if (Fields.DRAWDOWN in distrusted) null
@@ -344,8 +351,10 @@ private fun BrewDetailContent(
                     status = ts.first,
                     lead = ts.second,
                     detail = listOfNotNull(
-                        recipe?.takeIf { log.totalTimeSec > 0 }
-                            ?.let { "${formatDuration(log.totalTimeSec)} against ${formatDuration(it.totalSec)}" },
+                        recipe?.takeIf { log.totalTimeSec > 0 }?.let {
+                            if (shot != null) "${log.totalTimeSec} s against ${shot.label}"
+                            else "${formatDuration(log.totalTimeSec)} against ${formatDuration(it.totalSec)}"
+                        },
                         bedWords(log.bedShape),
                     ).joinToString(" · ").ifBlank { null },
                     onClick = scrollToAnalysis,
@@ -622,7 +631,8 @@ private fun BoardingPass(
         }
         PerforatedDivider()
         Column(Modifier.padding(horizontal = 18.dp, vertical = 6.dp)) {
-            DataGrid(cells = cells, columns = 3)
+            // Four cells read as two rows of two rather than three and one.
+            DataGrid(cells = cells, columns = if (cells.size == 4) 2 else 3)
         }
     }
 }
@@ -672,7 +682,9 @@ private fun TheBrew(
                 endStatus = if (timeTrusted) ts.first else null,
                 // The planned-versus-actual fact, under the cap it belongs to: "2:49 · −0:41".
                 actualLabel = if (timeTrusted) {
-                    val delta = if (ts.first == Status.Good) "on time" else signedClock(log.totalTimeSec - recipe.totalSec)
+                    val shot = if (ShotTarget.applies(recipe)) ShotTarget.of(recipe) else null
+                    val off = shot?.offBy(log.totalTimeSec) ?: (log.totalTimeSec - recipe.totalSec)
+                    val delta = if (ts.first == Status.Good) "on time" else signedClock(off)
                     "${formatDuration(log.totalTimeSec)} · $delta"
                 } else {
                     null
@@ -794,18 +806,24 @@ private fun passCells(
         label = labels.time,
         // Cold brew reads in hours, not "720:00".
         value = log.totalTimeSec.takeIf { it > 0 }?.let { if (labels.longTimes) formatDuration(it) else clock(it) },
-        sub = recipe?.let { "plan ${formatDuration(it.totalSec)}" },
+        sub = recipe?.let { r -> if (ShotTarget.applies(r)) "aim ${ShotTarget.of(r).label}" else "plan ${formatDuration(r.totalSec)}" },
         status = ts.first,
     ).ignoredIf(Fields.TIME in distrusted)
 
     val temp = Cell(label = "TEMP", value = log.tempC.takeIf { it > 0 }?.let(units::temp), unit = units.tempUnit)
         .ignoredIf(Fields.TEMP in distrusted)
 
+    // Drawdown and In cup only where Review asks for them (A3): a drip machine, a press or a
+    // shot never has a drawdown, so a dash there reads as something missed. A number someone did
+    // record (an older brew, an edit) is still shown.
+    val sections = ReviewSections.of(recipe?.brewer ?: Brewers.byId(log.brewerId) ?: brewerFromLabel(log.brewer))
     val drawdown = Cell(label = "DRAWDOWN", value = log.drawdownSec?.let(::clock))
         .ignoredIf(Fields.DRAWDOWN in distrusted)
+        .takeIf { sections.drawdown || log.drawdownSec != null }
 
     val inCup = Cell(label = "IN CUP", value = log.beverageG?.let(::grams), unit = "g")
         .ignoredIf(Fields.BEVERAGE in distrusted)
+        .takeIf { sections.drawdown || log.beverageG != null }
 
     val sixth = log.extractionYield
         ?.let { Cell(label = "EXTRACTION", value = oneDp(it), unit = "%").ignoredIf(Fields.EY in distrusted) }
@@ -816,7 +834,7 @@ private fun passCells(
             status = roastStatus(log.daysOffRoast).takeIf { it == Status.Attention },
         )
 
-    return listOf(grind, time, temp, drawdown, inCup, sixth)
+    return listOfNotNull(grind, time, temp, drawdown, inCup, sixth)
 }
 
 /**
@@ -871,13 +889,14 @@ private fun brewTimeline(
     if (bedRow != null && !bedPlaced) out += bedRow
 
     if (timeTrusted) {
+        val shot = if (ShotTarget.applies(recipe)) ShotTarget.of(recipe) else null
         out += TimelineRow(
             time = formatDuration(log.totalTimeSec),
             kind = "ACTUAL",
             title = "Finished",
-            detail = "planned ${formatDuration(recipe.totalSec)}",
+            detail = shot?.let { "aim ${it.label}" } ?: "planned ${formatDuration(recipe.totalSec)}",
             actual = true,
-            delta = signedClock(log.totalTimeSec - recipe.totalSec),
+            delta = signedClock(shot?.offBy(log.totalTimeSec) ?: (log.totalTimeSec - recipe.totalSec)),
             deltaStatus = finishStatus,
             terminal = true,
         )

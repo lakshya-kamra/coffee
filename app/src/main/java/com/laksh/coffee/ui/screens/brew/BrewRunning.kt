@@ -84,13 +84,14 @@ import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.domain.BrewStyle
 import com.laksh.coffee.domain.Glossary
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
-import com.laksh.coffee.domain.RecipeStep
 import com.laksh.coffee.domain.StepKind
 import com.laksh.coffee.domain.catalog.Catalog
 import com.laksh.coffee.ui.components.BrewRing
 import com.laksh.coffee.ui.components.HairLine
 import com.laksh.coffee.ui.components.IconWell
+import com.laksh.coffee.ui.components.scrollEdgeFade
 import com.laksh.coffee.ui.components.JourneyLine
 import com.laksh.coffee.ui.components.JourneyNode
 import com.laksh.coffee.ui.components.JourneyStyle
@@ -362,7 +363,7 @@ private fun StepList(m: RunningModel, modifier: Modifier = Modifier) {
                 )
                 Column(Modifier.weight(1f)) {
                     Text(
-                        stepLead(s, m.state.settings.hasScale),
+                        BrewWords.lead(s, m.state.settings.hasScale),
                         style = MaterialTheme.typography.titleMedium,
                         color = when {
                             now -> colors.inkHigh
@@ -443,9 +444,9 @@ private fun ShortRunning(m: RunningModel) {
 private fun NextLine(m: RunningModel) {
     val next = m.recipe.steps.getOrNull(m.state.stepIndex + 1) ?: return
     // Without a scale the dial reads "about 0 ml / 1250", so this line speaks ml too (as the web).
-    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to about ${aboutMl(it)} ml" }.orEmpty()
+    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to about ${NoScale.aboutMl(it)} ml" }.orEmpty()
     Text(
-        if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${next.title}",
+        if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${BrewWords.prose(next.title, m.state.settings.hasScale)}",
         style = Micro,
         color = CoffeeTheme.colors.inkLow,
         maxLines = 1,
@@ -544,20 +545,6 @@ private fun Dial(
     }
 }
 
-/** Grams poured, said as a jug reading: to the nearest 10 ml, like the web's aboutMl. */
-private fun aboutMl(g: Int): Int = maxOf(0, Math.round(g / 10f) * 10)
-
-/** [BrewWords.lead] on screen: "Pour to about 300 ml" without a scale, where "300 g" means nothing. */
-private fun stepLead(step: RecipeStep, hasScale: Boolean): String {
-    val t = step.targetWaterG
-    if (hasScale || t == null) return BrewWords.lead(step)
-    return when (step.kind) {
-        StepKind.Bloom -> "Bloom to about ${aboutMl(t)} ml"
-        StepKind.Pour -> "Pour to about ${aboutMl(t)} ml"
-        else -> BrewWords.lead(step)
-    }
-}
-
 /** An immersion step whose target is all the water reads "Pour all 500 ml" without a scale. */
 private fun pourAll(recipe: Recipe, index: Int): Boolean {
     val s = recipe.steps.getOrNull(index) ?: return false
@@ -627,7 +614,10 @@ private fun StepCardBody(
         if (hasScale) null else s.targetWaterG?.let { t -> t - (recipe.steps.take(index).mapNotNull { it.targetWaterG }.lastOrNull() ?: 0) }?.takeIf { it > 0 }
     }
 
-    Column(if (scrollInside) Modifier.fillMaxWidth().verticalScroll(rememberScrollState()) else Modifier.fillMaxWidth()) {
+    // At 200 % text the instruction can outgrow the card: it scrolls, and its edges fade so the
+    // cut-off line reads as "more below" (A2).
+    val scroll = rememberScrollState()
+    Column(if (scrollInside) Modifier.fillMaxWidth().scrollEdgeFade(scroll).verticalScroll(scroll) else Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             if (termKey != null) {
                 TermChip(key = termKey, text = s.kind.label.uppercase())
@@ -647,13 +637,13 @@ private fun StepCardBody(
             Text("${clock(s.startSec)}–${clock(s.endSec)}", style = type.bodySmall, color = colors.inkLow)
         }
         Spacer(Modifier.height(10.dp))
-        Text(s.title, style = titleStyle, color = colors.inkHigh)
+        Text(BrewWords.prose(s.title, hasScale), style = titleStyle, color = colors.inkHigh)
         if (jugMl != null) {
             Spacer(Modifier.height(2.dp))
-            Text("About $jugMl ml from your jug", style = type.bodyMedium, color = colors.inkMid)
+            Text("About ${NoScale.aboutMl(jugMl)} ml from your jug", style = type.bodyMedium, color = colors.inkMid)
         }
         Spacer(Modifier.height(6.dp))
-        Text(s.detail, style = bodyStyle, color = colors.inkMid)
+        Text(BrewWords.prose(s.detail, hasScale), style = bodyStyle, color = colors.inkMid)
         if (explainLine != null) {
             Spacer(Modifier.height(8.dp))
             Text(explainLine, style = type.bodySmall, color = colors.inkLow)
@@ -668,7 +658,7 @@ private fun StepCardBody(
             Spacer(Modifier.height(10.dp))
             Text("NEXT · ${clock(next.startSec)}", style = Micro, color = colors.inkLow)
             Spacer(Modifier.height(2.dp))
-            Text(next.title, style = type.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp), color = colors.inkMid)
+            Text(BrewWords.prose(next.title, hasScale), style = type.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp), color = colors.inkMid)
         }
     }
 }
@@ -806,7 +796,7 @@ private fun BrewStatus(state: BrewUiState, anchor: TimerAnchor, elapsed: LongSta
             state.waitingForTap -> StatusLine(status = Status.Attention, lead = "Time for the next step", detail = "tap Next")
             step == null -> StatusLine(status = Status.Live, lead = "Brewing", live = true)
             else -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                StatusLine(status = Status.Live, lead = stepLead(step, state.settings.hasScale), modifier = Modifier.weight(1f, fill = false), live = true)
+                StatusLine(status = Status.Live, lead = BrewWords.lead(step, state.settings.hasScale), modifier = Modifier.weight(1f, fill = false), live = true)
                 StepCountdown(elapsed = elapsed, endSec = step.endSec)
             }
         }
@@ -879,7 +869,7 @@ private fun WaterReadout(elapsed: LongState, recipe: Recipe, target: Int, hasSca
             }
             else -> {
                 Text("about ", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkMid, maxLines = 1)
-                Text("$w ml", modifier = Modifier.alignByBaseline(), style = style, color = colors.inkHigh, maxLines = 1)
+                Text("${NoScale.aboutMl(w)} ml", modifier = Modifier.alignByBaseline(), style = style, color = colors.inkHigh, maxLines = 1)
                 Text(" / $target", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkLow, maxLines = 1)
             }
         }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.laksh.coffee.domain.BedShape
 import com.laksh.coffee.domain.Channeling
 import com.laksh.coffee.domain.FlowFeel
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.domain.Sludge
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Micro
@@ -98,6 +99,16 @@ fun timeStatus(actualSec: Int, targetSec: Int): Pair<Status, String> {
         abs(d) <= 45 -> Status.Attention to words
         else -> Status.Fault to words
     }
+}
+
+/**
+ * A shot's time against its band (A4), in shot mode's words: "In the band", else fast or slow by
+ * the seconds past the nearer edge. Never a fault: a shot a few seconds out is a grind note.
+ */
+fun shotTimeStatus(actualSec: Int, target: ShotTarget): Pair<Status, String> {
+    if (actualSec <= 0) return Status.Unrated to "No time"
+    val d = target.offBy(actualSec)
+    return if (d == 0) Status.Good to "In the band" else Status.Attention to ((if (d < 0) "Fast by " else "Slow by ") + mss(abs(d)))
 }
 
 fun flowStatus(flow: FlowFeel): Status? = when (flow) {

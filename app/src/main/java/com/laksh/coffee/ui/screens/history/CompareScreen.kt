@@ -40,6 +40,7 @@ import com.laksh.coffee.core.screenTime
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.MethodLabels
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.ui.catalog.SheetTitle
 import com.laksh.coffee.ui.components.CoffeeSheet
 import com.laksh.coffee.ui.components.DetailTopBar
@@ -101,7 +102,7 @@ fun CompareScreen(
                 second,
                 units = units,
                 labels = method?.let(MethodLabels::of) ?: MethodLabels("WATER", "", "TIME", false),
-                plannedSec = { l -> recipes[l.recipeId]?.totalSec },
+                plannedSec = { l -> recipes[l.recipeId]?.let(ShotTarget::targetSec) },
                 lowerIsFiner = grinder?.lowerIsFiner ?: true,
                 date = { "${screenDate(it)} · ${screenTime(it)}" },
             )
