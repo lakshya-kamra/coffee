@@ -27,7 +27,7 @@ export const Steam = memo(function Steam({ strength = 1, className }: { strength
   return (
     <span className={`${s.steam} ${className ?? ""}`} aria-hidden="true" style={{ opacity: Math.min(1, strength) }}>
       {[-24, 0, 24].map((dx, i) => (
-        <svg key={dx} className={s.wisp} viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" style={{ animationDelay: `${-i * 1.2}s` }}>
+        <svg key={dx} className={s.wisp} data-loop="" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" style={{ animationDelay: `${-i * 1.2}s` }}>
           <path d={WISP} transform={`translate(${50 + dx} 0)`} vectorEffect="non-scaling-stroke" />
         </svg>
       ))}
@@ -124,7 +124,7 @@ export const CoffeeMug = memo(function CoffeeMug({
         <span className={s.liquid} style={{ clipPath: CUP_CLIP }}>
           <span className={s.mugLevel} style={{ transform: `translateY(${drop.toFixed(2)}%)` }}>
             <span className={s.liquidBody} style={{ top: `${BOTTOM - FULL_DROP}%`, background: liquid }} />
-            <svg className={s.ripple} viewBox="0 0 100 100" focusable="false">
+            <svg className={s.ripple} data-loop="" viewBox="0 0 100 100" focusable="false">
               <path d={RIPPLE} style={{ fill: crema }} fillOpacity={0.85} />
             </svg>
           </span>
@@ -201,7 +201,7 @@ export const Dripper = memo(function Dripper({
       </svg>
       {dripping &&
         [0, 1, 2].map((i) => (
-          <svg key={i} className={s.drip} viewBox="0 0 100 100" focusable="false" style={{ animationDelay: `${(-i * 0.9) / 3}s` }}>
+          <svg key={i} className={s.drip} data-loop="" viewBox="0 0 100 100" focusable="false" style={{ animationDelay: `${(-i * 0.9) / 3}s` }}>
             <circle cx={DCX} cy={CONE_BOTTOM} r={1.8} style={{ fill: water }} />
           </svg>
         ))}
@@ -223,7 +223,7 @@ export const TumblingBeans = memo(function TumblingBeans({ size = 72, label = "L
   return (
     <span className={s.beans} style={{ width: size, height: size }} role="img" aria-label={label}>
       {[0, 1, 2].map((i) => (
-        <svg key={i} className={s.bean} viewBox="0 0 72 72" focusable="false" aria-hidden="true" style={{ animationDelay: `${(-i * 1.5) / 3}s` }}>
+        <svg key={i} className={s.bean} data-loop="" viewBox="0 0 72 72" focusable="false" aria-hidden="true" style={{ animationDelay: `${(-i * 1.5) / 3}s` }}>
           {BEAN}
         </svg>
       ))}

@@ -75,7 +75,8 @@ export const RecipeHeader = memo(function RecipeHeader({
         <BrewerIcon brewer={recipe.brewer} size={detail ? 14 : 12} tint="var(--ink-low)" decorative />
         <span className="micro ink-low">{toCaps(detail ? recipe.brewer.label : brewerShortName(recipe.brewer))}</span>
       </span>
-      <NameTag className={`${nameClass} ${detail ? v.clamp3 : v.clamp2} ${v.headerName}`}>{recipe.name}</NameTag>
+      {/* The card name wraps in full (A7: at 200% text a 2-line clamp cut long names off). */}
+      <NameTag className={`${nameClass} ${detail ? v.clamp3 : ""} ${v.headerName}`}>{recipe.name}</NameTag>
     </>
   );
   return (

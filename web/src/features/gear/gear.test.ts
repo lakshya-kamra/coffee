@@ -112,3 +112,12 @@ describe("beans", () => {
     expect(localCurrency("en")).toBe("");
   });
 });
+
+describe("best grind cell", () => {
+  it("moves the dial reading under the value, with the score", async () => {
+    const { bestGrindCell } = await import("./BeanBrews");
+    expect(bestGrindCell("75 clicks (7.5 on the dial)", 8)).toEqual({ label: "Best grind", value: "75 clicks", sub: "7.5 on the dial · scored 8/10" });
+    expect(bestGrindCell("As bought", null)).toEqual({ label: "Best grind", value: "As bought", sub: null });
+    expect(bestGrindCell(null, null)).toEqual({ label: "Best grind", value: null, sub: null });
+  });
+});

@@ -28,7 +28,8 @@ export function useBrewNext(next: Recipe | null, scope: string, keysEnabled: boo
         group: "Actions",
         icon: "Play",
         keys: "b",
-        keywords: ["start", "brew", "next"],
+        keywords: ["start brew", "brew next", "next brew", "start", "brew", "next"],
+        keywordsOnly: true,
         run: () => brewRecipe(next.id),
       },
     ]);

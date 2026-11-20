@@ -122,7 +122,8 @@
 .rowIcon { flex: none; display: inline-flex; color: var(--ink-mid); }
 .rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .rowName { display: flex; align-items: baseline; gap: 8px; min-width: 0; color: var(--ink-high); }
-.rowNameText { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+/* Wraps in full, never clamped (A7: 200% text). */
+.rowNameText { overflow-wrap: break-word; min-width: 0; }
 .rowDot { flex: none; width: 8px; height: 8px; border-radius: 50%; transform: translateY(-1px); }
 .rowMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Numbers never ellipsize: they keep their width and the words give way. */

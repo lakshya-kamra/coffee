@@ -6,6 +6,7 @@
  * attribute alongside (it would show a second, native tooltip).
  */
 import { cloneElement, useEffect, useLayoutEffect, useRef, useState, type ReactElement } from "react";
+import { createPortal } from "react-dom";
 import { ariaKeyShortcuts } from "../keys";
 import { Kbd } from "./Kbd";
 import s from "./components.module.css";
@@ -43,6 +44,8 @@ interface Shown {
   readonly keys: string | null;
   readonly side: TooltipSide;
   readonly rect: DOMRect;
+  /** The open modal dialog the target is in: the tooltip renders inside it, in the top layer. */
+  readonly host: HTMLDialogElement | null;
 }
 
 function tipTarget(t: EventTarget | null): HTMLElement | null {
@@ -54,7 +57,7 @@ function read(el: HTMLElement): Shown | null {
   const label = el.dataset.tip;
   if (!label) return null;
   const side = (el.dataset.tipSide as TooltipSide | undefined) ?? "bottom";
-  return { label, keys: el.dataset.tipKeys ?? null, side, rect: el.getBoundingClientRect() };
+  return { label, keys: el.dataset.tipKeys ?? null, side, rect: el.getBoundingClientRect(), host: el.closest<HTMLDialogElement>("dialog[open]") };
 }
 
 /** The one tooltip element. Mount once, near the root. */
@@ -149,14 +152,27 @@ export function TooltipLayer() {
       const below = r.bottom + 8;
       top = shown.side === "top" || below + h > vh - 8 ? r.top - 8 - h : below;
     }
-    setPos({ left: Math.max(8, Math.min(left, vw - w - 8)), top: Math.max(8, Math.min(top, vh - h - 8)) });
+    left = Math.max(8, Math.min(left, vw - w - 8));
+    top = Math.max(8, Math.min(top, vh - h - 8));
+    // Inside a dialog that is still animating (a transform), "fixed" is relative to the dialog:
+    // place it once, see where it landed, and correct by the difference.
+    if (shown.host) {
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+      const at = el.getBoundingClientRect();
+      left -= at.left - left;
+      top -= at.top - top;
+    }
+    setPos({ left, top });
   }, [shown]);
 
   if (!shown) return null;
-  return (
+  const tip = (
     <div ref={box} className={s.tooltip} role="tooltip" data-shown={pos != null} style={pos ? { left: pos.left, top: pos.top } : { left: -9999, top: 0 }}>
       <span className="t-label-m">{shown.label}</span>
       {shown.keys && <Kbd keys={shown.keys} />}
     </div>
   );
+  // A modal dialog sits in the top layer, above anything outside it, so the tip goes inside.
+  return shown.host ? createPortal(tip, shown.host) : tip;
 }

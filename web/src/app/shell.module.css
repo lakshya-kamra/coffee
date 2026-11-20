@@ -34,8 +34,9 @@
    the only rule on data-state, and it is on the layer itself: a change of data-state alone
    (active → leaving) must not restyle the layer's contents (see setLayerState). */
 .layer[data-state="active"] { z-index: 1; }
-/* Infinite animations inside a hidden tab stop costing frames. */
-.layer[data-hidden] * { animation-play-state: paused !important; }
+/* Infinite animations inside a hidden tab stop costing frames. Only the looping elements carry
+   data-loop: a `*` here made every show/hide restyle the whole tab (≈20 ms on Recipes at 4×). */
+.layer[data-hidden] [data-loop] { animation-play-state: paused !important; }
 
 .screen {
   padding-bottom: var(--list-bottom-pad);

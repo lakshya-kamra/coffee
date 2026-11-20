@@ -68,6 +68,21 @@ export function shellCommands(s: Snapshot["settings"]): Command[] {
 /** Recipes, coffees, grinders and brews from the store, searchable by name and details. */
 export function dataCommands(s: Snapshot): Command[] {
   const out: Command[] = [];
+  // Two of §2.8's actions no screen registers: they need only the store, so they live here.
+  out.push({ id: "recipe.new", title: "New recipe", subtitle: "Recipes", group: "Actions", icon: "Add", keywords: ["create", "make your own", "add"], popularity: 20, run: () => nav.push("/recipes/new") });
+  const last = s.brews[0];
+  if (last) {
+    out.push({
+      id: "brew.rateLast",
+      title: "Rate your last brew",
+      subtitle: [last.recipeName || "Brew", screenDate(last.startedAt)].join(" · "),
+      group: "Actions",
+      icon: "Star",
+      keywords: ["review", "score", "rate"],
+      popularity: 21,
+      run: () => nav.push(`/review/${enc(last.uid)}`),
+    });
+  }
   s.recipes.forEach((r, i) => {
     out.push({
       id: `recipe:${r.id}`,

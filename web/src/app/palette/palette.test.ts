@@ -63,6 +63,12 @@ describe("rankCommands", () => {
   it("nothing found: no groups", () => {
     expect(rankCommands(ALL, "zzzzqqq")).toEqual([]);
   });
+
+  it("a keywordsOnly action is not found by the recipe its title names", () => {
+    const next = cmd("brew.next", "Brew Hoffmann V60", "Actions", { subtitle: "James Hoffmann · V60", keywords: ["start", "brew", "next"], keywordsOnly: true });
+    expect(flatten(rankCommands([...ALL, next], "hoff"))[0]!.id).toBe("recipe:hoffmann-v60");
+    expect(flatten(rankCommands([...ALL, next], "next")).map((c) => c.id)).toContain("brew.next");
+  });
 });
 
 describe("recents", () => {

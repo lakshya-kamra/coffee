@@ -38,6 +38,7 @@ import {
   Term,
   groupPosition,
   toCaps,
+  tooltipProps,
 } from "@/design/components";
 import { delayed, effectsDefault, spatialDefault } from "@/design/motion";
 import { methodLabels } from "@/domain/core/brewer";
@@ -253,7 +254,7 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
         <SectionLabel text="MAKE MORE OR LESS" />
         <SoftCard>
           <div className={r.scaler}>
-            <button type="button" className={r.step} aria-label="One gram less coffee" onClick={() => stepDose(-1)}>
+            <button type="button" className={r.step} aria-label="One gram less coffee" {...tooltipProps("One gram less coffee")} onClick={() => stepDose(-1)}>
               <svg width={20} height={20} viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
                 <path d={MINUS} fill="currentColor" />
               </svg>
@@ -276,7 +277,7 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
                 </>
               )}
             </span>
-            <button type="button" className={r.step} aria-label="One gram more coffee" onClick={() => stepDose(1)}>
+            <button type="button" className={r.step} aria-label="One gram more coffee" {...tooltipProps("One gram more coffee")} onClick={() => stepDose(1)}>
               <svg width={20} height={20} viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
                 <path d={PLUS} fill="currentColor" />
               </svg>

@@ -69,7 +69,9 @@ export function PickRow({
   return (
     <div className={s.field}>
       <EyebrowLabel text={label} />
-      <button ref={anchorRef} type="button" className={s.pickRow} onClick={onClick} aria-haspopup="dialog" aria-label={`${label}: ${value || placeholder}`}>
+      {/* Named by its content, so a trailing chip ("Edited") is in the name too (WCAG 2.5.3). */}
+      <button ref={anchorRef} type="button" className={s.pickRow} onClick={onClick} aria-haspopup="dialog">
+        <span className="visually-hidden">{label}: </span>
         <span className={s.pickText}>
           <span className={`t-body-l ${s.pickValue}`} data-empty={!value}>
             {value || placeholder}

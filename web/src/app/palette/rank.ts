@@ -34,7 +34,7 @@ function docsOf(commands: readonly Command[]): SearchDoc[] {
       title: c.title,
       subtitle: c.subtitle ?? "",
       group: c.group,
-      keys: [c.title, ...(c.subtitle ? [c.subtitle] : []), ...(c.keywords ?? [])],
+      keys: c.keywordsOnly ? [...(c.keywords ?? [])] : [c.title, ...(c.subtitle ? [c.subtitle] : []), ...(c.keywords ?? [])],
       popularity: c.popularity ?? 1000 + i,
     }));
     docCache.set(commands, d);

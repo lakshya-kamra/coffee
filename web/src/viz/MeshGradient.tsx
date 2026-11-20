@@ -13,18 +13,18 @@ import v from "./viz.module.css";
 function Layer({ mood, shown }: { mood: BrewMood; shown: boolean }) {
   return (
     <m.div className={v.meshLayer} data-mood={mood} initial={false} animate={{ opacity: shown ? 1 : 0 }} transition={effectsSlow} aria-hidden="true">
-      <span className={`${v.blobX} ${v.blobXA}`}>
-        <span className={`${v.blobY} ${v.blobYA}`}>
+      <span className={`${v.blobX} ${v.blobXA}`} data-loop="">
+        <span className={`${v.blobY} ${v.blobYA}`} data-loop="">
           <span className={`${v.blob} ${v.blobA}`} />
         </span>
       </span>
-      <span className={`${v.blobX} ${v.blobXB}`}>
-        <span className={`${v.blobY} ${v.blobYB}`}>
+      <span className={`${v.blobX} ${v.blobXB}`} data-loop="">
+        <span className={`${v.blobY} ${v.blobYB}`} data-loop="">
           <span className={`${v.blob} ${v.blobB}`} />
         </span>
       </span>
-      <span className={`${v.blobX} ${v.blobXC}`}>
-        <span className={`${v.blobY} ${v.blobYC}`}>
+      <span className={`${v.blobX} ${v.blobXC}`} data-loop="">
+        <span className={`${v.blobY} ${v.blobYC}`} data-loop="">
           <span className={`${v.blob} ${v.blobC}`} />
         </span>
       </span>

@@ -5,7 +5,7 @@ import s from "./components.module.css";
 
 export const StatusDot = memo(function StatusDot({ status, size = 8 }: { status: Status; size?: number }) {
   const color = status === "live" ? "var(--crema)" : status === "neutral" ? "var(--neutral-mark)" : statusColorVar(status);
-  return <span className={s.statusDot} data-live={status === "live"} style={{ width: size, height: size, background: color }} aria-hidden="true" />;
+  return <span className={s.statusDot} data-live={status === "live"} data-loop="" style={{ width: size, height: size, background: color }} aria-hidden="true" />;
 });
 
 /** "DEFAULT", "Unverified"… Neutral uses inkLow: 4.8–5.0:1 on surface2, level with the others. */

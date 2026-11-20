@@ -493,7 +493,8 @@ function RecentRow({ log, targetSec, onContextMenu }: { log: BrewRow; targetSec:
   const st = targetSec != null && targetSec > 0 && log.totalTimeSec > 0 ? timeStatus(log.totalTimeSec, targetSec)[0] : null;
   return (
     <li className={`interactive-row ${t.recentRow}`} onContextMenu={onContextMenu}>
-      <button type="button" className={t.recentOpen} onClick={() => openBrew(log)} aria-label={`${name}, ${screenDayLabel(log.startedAt)} ${screenTime(log.startedAt)}${log.overall > 0 ? `, scored ${log.overall} of 10` : ", not rated"}`}>
+      {/* Named by its own text (WCAG 2.5.3: the name holds what is visible), plus the score in words. */}
+      <button type="button" className={t.recentOpen} onClick={() => openBrew(log)}>
         <span className={t.recentWhen}>
           <span className="micro ink-low">{screenDayLabel(log.startedAt)}</span>
           <span className="num-inline">{screenTime(log.startedAt)}</span>
@@ -517,6 +518,7 @@ function RecentRow({ log, targetSec, onContextMenu }: { log: BrewRow; targetSec:
         <span className={`num-small ${t.recentScore}`} style={{ color: log.overall > 0 ? statusColorVar(scoreStatus(log.overall)) : "var(--ink-low)" }} aria-hidden="true">
           {log.overall > 0 ? log.overall : "—"}
         </span>
+        <span className="visually-hidden">{log.overall > 0 ? `, scored ${log.overall} of 10` : ", not rated"}</span>
       </button>
       <button type="button" className={`row-more ${t.again}`} aria-label={`Brew again: ${name}`} {...tooltipProps("Brew again")} onClick={() => brewAgain(log)}>
         <Icon name="Replay" size={20} />

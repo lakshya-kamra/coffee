@@ -21,6 +21,12 @@ export interface Command {
   readonly keys?: string;
   /** Extra words that should find it ("dark", "fahrenheit"). */
   readonly keywords?: readonly string[];
+  /**
+   * Found by its keywords only, not its title or subtitle. For an action that names a recipe
+   * ("Brew Hoffmann V60"): typing the recipe's name should open the recipe, with Ctrl/Cmd+Enter
+   * to brew it, rather than the Actions group (ranked first) starting a brew on Enter.
+   */
+  readonly keywordsOnly?: boolean;
   /** Lower ranks first among equal matches (1 = most used). */
   readonly popularity?: number;
   readonly run: () => void;

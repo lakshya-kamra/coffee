@@ -490,7 +490,8 @@ function ModelPickerSheet({ st, onClose }: { st: AiSettings; onClose: () => void
 export function AiSettingsSheet(p: { onClose(): void }) {
   const onClose = () => p.onClose();
   return (
-    <CoffeeSheet label="AI analysis" onClose={onClose} full>
+    // An editor (§2.4): a right side sheet at expanded+, so it no longer covers the screen it came from.
+    <CoffeeSheet role="editor" label="AI analysis" onClose={onClose} full>
       <h2 className="t-headline-s" style={{ marginBottom: 12 }}>
         AI analysis
       </h2>

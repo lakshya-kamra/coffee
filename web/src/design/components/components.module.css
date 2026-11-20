@@ -415,7 +415,8 @@ textarea.fieldInput { min-height: var(--field-multiline-h); resize: vertical; }
   background: var(--surface1);
   min-width: 0;
 }
-.cellSub { color: var(--ink-mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Wraps rather than ellipsizes: subs carry readings ("7.5 on the dial") and 200% text (A7). */
+.cellSub { color: var(--ink-mid); overflow-wrap: break-word; }
 
 /* ---------------------------------------------------------------- grouped rows */
 .groupRow {

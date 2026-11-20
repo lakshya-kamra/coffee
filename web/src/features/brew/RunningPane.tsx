@@ -422,11 +422,12 @@ function Transport({
   const wellSize = layout === "short" ? 44 : 48;
   return (
     <div className={b.transport} data-layout={layout}>
-      <button type="button" className={`t-label-l ${b.seekBtn}`} aria-label="Back 5 seconds" {...tooltipProps("Back 5 seconds", "left")} onClick={() => onSeek(-5)}>
+      {/* The names keep the visible "5 s" so voice control can say what it sees (WCAG 2.5.3). */}
+      <button type="button" className={`t-label-l ${b.seekBtn}`} aria-label="Back 5 s" {...tooltipProps("Back 5 seconds", "left")} onClick={() => onSeek(-5)}>
         −5 s
       </button>
       <PlayPause running={running} onClick={onToggle} buttonRef={playRef} />
-      <button type="button" className={`t-label-l ${b.seekBtn}`} aria-label="Forward 5 seconds" {...tooltipProps("Forward 5 seconds", "right")} onClick={() => onSeek(5)}>
+      <button type="button" className={`t-label-l ${b.seekBtn}`} aria-label="Forward 5 s" {...tooltipProps("Forward 5 seconds", "right")} onClick={() => onSeek(5)}>
         +5 s
       </button>
       {layout === "portrait" && <span className={b.grow} />}

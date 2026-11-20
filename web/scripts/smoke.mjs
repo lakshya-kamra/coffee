@@ -8,7 +8,7 @@
 // (SMOKE_CHANNEL=chrome); SMOKE_CHANNEL="" uses Playwright's own Chromium
 // (`npx playwright install chromium` once).
 import { execFileSync, spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -301,21 +301,26 @@ const FLOWS = [
     async run({ page }) {
       await page.goto(BASE + "/");
       await page.waitForURL("**/welcome");
+      // v4: "How do you make coffee now?" comes first, and a burr grinder is one of three choices.
+      await page.locator("label").filter({ hasText: /^I tinker/ }).click();
       await page.getByRole("button", { name: "Next", exact: true }).click(); // How you measure
       await settle(page, 400);
+      await page.getByRole("button", { name: "Next", exact: true }).click(); // Your grinder
+      await settle(page, 400);
+      await page.locator("label").filter({ hasText: /^Burr grinder/ }).click();
       await page.getByRole("searchbox").fill("k ultra");
       await settle(page, 400);
       await page.getByRole("list", { name: "Matches" }).getByRole("button").first().click();
       await page.getByText(/^How to read your dial/).waitFor({ timeout: 5000 });
       ok("onboarding grinder step: search, pick, dial help");
-      await page.getByRole("button", { name: "Next", exact: true }).click(); // Your grinder
-      await settle(page, 400);
-      await page.getByRole("button", { name: "Hario V60 02", exact: true }).click();
       await page.getByRole("button", { name: "Next", exact: true }).click(); // Brewers
       await settle(page, 400);
+      await page.getByRole("button", { name: "Hario V60 02", exact: true }).click();
       await page.getByRole("button", { name: "Next", exact: true }).click(); // Your coffee
       await settle(page, 400);
-      await page.getByRole("button", { name: "Start brewing", exact: true }).click();
+      await page.getByRole("button", { name: "Next", exact: true }).click(); // Your first brew
+      await settle(page, 400);
+      await page.getByRole("button", { name: "Go to Today", exact: true }).click();
       await page.waitForURL(BASE + "/");
       await page.reload();
       await settle(page);
@@ -347,14 +352,14 @@ const FLOWS = [
       // App settings round-trip through IndexedDB and boot.js.
       await page.goto(BASE + "/gear/app");
       await settle(page);
-      await page.getByRole("tablist", { name: "Theme" }).getByRole("tab", { name: "Light" }).click();
+      await page.getByRole("radiogroup", { name: "Theme" }).getByRole("radio", { name: "Light" }).click();
       await settle(page, 400);
       await page.reload();
       await settle(page);
       const theme = await page.evaluate(() => [document.documentElement.dataset.theme, localStorage.getItem("coffee.theme")]);
       if (theme[0] !== "light" || theme[1] !== "light") fail(`theme after reload: ${theme}`);
       else ok("theme survives a reload (IndexedDB → boot.js)");
-      await page.getByRole("tablist", { name: "Theme" }).getByRole("tab", { name: "Auto" }).click();
+      await page.getByRole("radiogroup", { name: "Theme" }).getByRole("radio", { name: "Auto" }).click();
 
       // A coffee with only a name saves.
       await page.goto(BASE + "/gear");
@@ -677,7 +682,7 @@ const FLOWS = [
 
       await page.goto(BASE + "/log");
       await settle(page);
-      const rows = page.getByRole("button", { name: /The Ultimate V60 Technique/ });
+      const rows = page.getByRole("button", { name: /^(?!More for ).*The Ultimate V60 Technique/ });
       if ((await rows.count()) !== 3) fail(`log rows: ${await rows.count()}`);
       else ok("Log shows three day-grouped brews");
       if (!(await seen("3 BREWS · 1 WEEK").count())) fail("log eyebrow");
@@ -755,7 +760,7 @@ const FLOWS = [
       // Analyse a brew: the hero shows the move in the grinder's own units.
       await page.goto(BASE + "/log");
       await settle(page);
-      await page.getByRole("button", { name: /The Ultimate V60 Technique/ }).first().click();
+      await page.getByRole("button", { name: /^(?!More for ).*The Ultimate V60 Technique/ }).first().click();
       await settle(page, 900);
       await page.getByRole("button", { name: "Analyse brew" }).click();
       await seen("THE ONE CHANGE").waitFor({ timeout: 10_000 });
@@ -767,13 +772,13 @@ const FLOWS = [
       // WEB-6: Review's "Save & analyse" saves, starts the analysis and lands on that brew.
       await page.goto(BASE + "/log");
       await settle(page);
-      await page.getByRole("button", { name: /The Ultimate V60 Technique/ }).nth(1).click();
+      await page.getByRole("button", { name: /^(?!More for ).*The Ultimate V60 Technique/ }).nth(1).click();
       await page.waitForURL(/\/log\/[0-9a-f-]{36}$/);
       const uid = new URL(page.url()).pathname.split("/").pop();
       await page.goto(`${BASE}/review/${uid}`);
       await settle(page, 900);
       if (!(await seen("Offline pattern matching, not a verdict. Save & analyse for a real read.").count())) fail("review: first-read copy with AI ready");
-      await page.getByRole("button", { name: "Save & analyse", exact: true }).click();
+      await page.getByRole("button", { name: "Save and analyse", exact: true }).click();
       await page.waitForURL(`**/log/${uid}`, { timeout: 5000 });
       await seen("THE ONE CHANGE").waitFor({ timeout: 10_000 });
       ok("review: Save & analyse lands on the brew with its analysis");
@@ -807,7 +812,7 @@ const FLOWS = [
       await page.waitForURL("**/welcome");
       ok("Today's Personalise card opens /welcome");
       // The real Skip (other flows use markOnboarded only because it is faster).
-      await page.getByRole("button", { name: "Skip", exact: true }).click();
+      await page.getByRole("button", { name: "Skip for now", exact: true }).click();
       await page.waitForURL(BASE + "/");
       await page.reload();
       await settle(page);
@@ -835,7 +840,7 @@ const FLOWS = [
       await page.waitForTimeout(400);
       await picker.getByRole("list", { name: "Matches" }).getByRole("button").first().click();
       await picker.waitFor({ state: "detached", timeout: 5000 });
-      const roaster = await editor.getByRole("button", { name: /^Roaster:/ }).getAttribute("aria-label");
+      const roaster = await editor.getByRole("button", { name: /^Roaster:/ }).textContent();
       if (!/Square Mile/i.test(roaster ?? "") || !(await editor.isVisible())) fail(`picking in the stacked picker: editor visible ${await editor.isVisible()}, ${roaster}`);
       else ok("a pick closes the picker and fills the editor");
       await axe(page, "bean editor sheet");
@@ -856,7 +861,7 @@ const FLOWS = [
       await multi.waitFor({ state: "detached", timeout: 5000 });
       // The setting is written to IndexedDB, so the row follows a moment later.
       await page.waitForTimeout(500);
-      const owned = await page.getByRole("button", { name: /^Brewers you own:/ }).getAttribute("aria-label");
+      const owned = await page.getByRole("button", { name: /^Brewers you own:/ }).textContent();
       if (!ticked || !owned?.includes(ticked)) fail(`multi-select picker closed with Back: ticked "${ticked}", row says "${owned}"`);
       else ok("Back keeps what was ticked in a multi-select picker");
 
@@ -1061,8 +1066,13 @@ const FLOWS = [
         for (const kind of KINDS) {
           const spans = perf.spans.filter((x) => x.kind === kind);
           const frames = perf.frames.filter(([t]) => spans.some((x) => t >= x.t0 && t <= x.t1)).map(([, d]) => d);
-          // A LoAF belongs to a transition when it overlaps one.
-          long[kind] = perf.loafs.filter((l) => spans.some((x) => l.start < x.t1 && l.start + l.duration > x.t0));
+          // A LoAF belongs to a transition when it overlaps one. v4 (V4-WINT): a tab switch at 4×
+          // may run to 60 ms. The tab layer is now a `pane` size container (v4 §1.1), so showing a
+          // tab re-lays out its whole subtree instead of taking Blink's cheap inherited-visibility
+          // path: switching into Recipes (≈2.3k elements) measures 48–56 ms at 4×, 12–14 ms at 1×.
+          // The 1× desktop pass (v4 performance flow) still allows no long frame at all.
+          const budget = kind === "tab switch" ? 60 : 50;
+          long[kind] = perf.loafs.filter((l) => l.duration > budget && spans.some((x) => l.start < x.t1 && l.start + l.duration > x.t0));
           const over8 = frames.filter((d) => d > 8.34).length;
           const over16 = frames.filter((d) => d > 16.9).length;
           console.log(
@@ -1100,7 +1110,564 @@ const FLOWS = [
       }
     },
   },
+  ...V4_FLOWS(),
 ];
+
+// ---------------------------------------------------------------- v4 flows (V4-WINT, v4-spec §8)
+
+/** Onboarded, with optional settings and N brews of the Hoffmann V60, written as the app stores them. */
+async function seed(page, settings = {}, brews = 0) {
+  await page.goto(BASE + "/");
+  await page.waitForURL("**/welcome");
+  await page.evaluate(
+    ({ settings, brews }) =>
+      new Promise((resolve, reject) => {
+        const open = indexedDB.open("coffee");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction(["kv", "brew_logs"], "readwrite");
+          const kv = tx.objectStore("kv");
+          const get = kv.get("settings");
+          get.onsuccess = () => kv.put({ key: "settings", value: { ...(get.result?.value ?? {}), onboardingDone: true, ...settings } });
+          const taste = { acidity: 5, sweetness: 5, bitterness: 5, body: 5, balance: 5, aftertaste: 5, clarity: 5 };
+          const now = Date.now();
+          for (let i = 0; i < brews; i++) {
+            const at = now - (i + 1) * 86_400_000;
+            tx.objectStore("brew_logs").add({ uid: crypto.randomUUID(), startedAt: at, updatedAt: at, recipeId: i % 2 ? "hoffmann-french-press" : "hoffmann-v60", recipeName: i % 2 ? "The Ultimate French Press Technique" : "The Ultimate V60 Technique", recipeAuthor: "James Hoffmann", brewer: i % 2 ? "French press" : "V60 02", brewerId: i % 2 ? "french-press" : "hario-v60-02", beanId: null, beanLabel: i % 3 ? "Square Mile — Red Brick" : "Onyx — Geometry", daysOffRoast: 12, grinderId: null, grinderLabel: "", grindSetting: "Medium-fine", grindClicks: null, grindValue: null, doseG: 30, waterG: 500, tempC: 94, waterId: null, totalTimeSec: 200 + i * 5, drawdownSec: null, beverageG: null, tdsPercent: null, extractionYield: null, flowFeel: null, bedShape: null, sludge: null, channeling: null, bedNotes: "", taste, overall: 5 + (i % 5), descriptors: [], faults: [], notes: i === 0 ? "geometry was lovely" : "", nextTime: "", isFavourite: false, sharedAt: null, grindKind: "" });
+          }
+          tx.oncomplete = () => (db.close(), resolve());
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    { settings, brews },
+  );
+}
+
+/** Which navigation is showing: "bar", "rail" or "sidebar" (the CSS module class of the visible nav). */
+function navKind(page) {
+  return page.evaluate(() => {
+    const kinds = [...document.querySelectorAll('nav[aria-label="Sections"]')]
+      .filter((n) => n.getClientRects().length > 0 && getComputedStyle(n).visibility !== "hidden")
+      .map((n) => /(?:^|\s)_(bar|rail|sidebar)_/.exec(n.className)?.[1] ?? "?");
+    return kinds.join("+") || "none";
+  });
+}
+
+/** Rect of an element and whether it sits wholly inside the window. */
+function rectOf(page, selector) {
+  return page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), inside: r.width > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 0.5 && r.bottom <= innerHeight + 0.5, font: parseFloat(getComputedStyle(el).fontSize) };
+  }, selector);
+}
+
+const paneH1 = (page) => page.evaluate(() => document.querySelector('section[data-tab][data-state="active"] [data-detail-pane] h1')?.textContent?.trim() ?? null);
+const path_ = (page) => new URL(page.url()).pathname;
+const visibleH1 = async (page) => (await h1(page)).at(-1) ?? null;
+
+async function startBrew(page, id) {
+  await page.goto(`${BASE}/brew/${id}`);
+  await settle(page, 900);
+  await page.getByRole("button", { name: "Start brew" }).last().click();
+  await settle(page, 900);
+}
+
+function V4_FLOWS() {
+  return [
+    {
+      name: "v4 (a) navigation per window class, [ collapses the sidebar",
+      async run({ page }) {
+        await seed(page);
+        for (const [w, h, want] of [
+          [390, 844, "bar"],
+          [700, 900, "rail"],
+          [1024, 768, "rail"],
+          [1440, 900, "sidebar"],
+        ]) {
+          await page.setViewportSize({ width: w, height: h });
+          await page.goto(BASE + "/");
+          await settle(page);
+          const got = await navKind(page);
+          if (got !== want) fail(`nav at ${w}x${h}: ${got}, expected ${want}`);
+        }
+        ok("bar at 390, rail at 700 and 1024, sidebar at 1440");
+        await page.evaluate(() => document.activeElement?.blur?.());
+        await page.keyboard.press("[");
+        await settle(page, 300);
+        const collapsed = await navKind(page);
+        await page.keyboard.press("[");
+        await settle(page, 300);
+        const expanded = await navKind(page);
+        if (collapsed !== "rail" || expanded !== "sidebar") fail(`[ toggles the sidebar: ${collapsed} then ${expanded}`);
+        else ok("[ collapses the sidebar to the rail and back");
+        // No sideways scroll at any §8.1 size on Today.
+        const wide = [];
+        for (const [w, h] of [[360, 800], [640, 360], [844, 390], [915, 412], [720, 450], [600, 960], [768, 1024], [820, 1180], [1024, 600], [1180, 820], [1280, 800], [1600, 900], [1920, 1080], [2560, 1440]]) {
+          await page.setViewportSize({ width: w, height: h });
+          await settle(page, 250);
+          const over = await page.evaluate(() => [...document.querySelectorAll("section[data-tab], .detail, [data-list-pane], [data-detail-pane], body")].filter((el) => el.getClientRects().length && el.scrollWidth > el.clientWidth + 1).map((el) => `${el.tagName.toLowerCase()} ${el.scrollWidth}>${el.clientWidth}`));
+          if (over.length) wide.push(`${w}x${h}: ${over.join(", ")}`);
+        }
+        if (wide.length) fail(`sideways scroll: ${wide.join("; ")}`);
+        else ok("Today never scrolls sideways at the 14 other §8.1 sizes");
+      },
+    },
+    {
+      name: "v4 (b) recipes list-detail at 1440: select, J/Enter, Esc, resize",
+      async run({ page }) {
+        await seed(page);
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(BASE + "/recipes");
+        await settle(page, 1000);
+        const rows = page.locator('section[data-tab="recipes"] ul[aria-label="Recipes"] > li > button:first-child');
+        if ((await rows.count()) < 3) {
+          fail(`recipes at 1440: ${await rows.count()} rows (not list-detail?)`);
+          return;
+        }
+        const defaultH1 = await paneH1(page);
+        if (!defaultH1) fail("recipes at 1440: the detail pane is empty by default");
+        const nameOf = async (i) => ((await rows.nth(i).locator("[class*=rowNameText]").textContent()) ?? "").trim();
+        const second = await nameOf(1);
+        await rows.nth(1).click();
+        await settle(page);
+        const at = path_(page);
+        if (!/^\/recipes\/[^/]+$/.test(at) || (await paneH1(page)) !== second) fail(`row click: url ${at}, pane "${await paneH1(page)}", expected "${second}"`);
+        else ok(`row click selects into the pane (${at})`);
+        if ((await page.locator(".detail").count()) > 0 && (await page.locator(".detail").first().isVisible())) fail("a full-window layer opened over the pane");
+        // J moves the roving focus and (after 120 ms of rest) the selection; Enter opens that row.
+        await page.keyboard.press("j");
+        await settle(page, 400);
+        await page.keyboard.press("Enter");
+        await settle(page);
+        const third = await nameOf(2);
+        if ((await paneH1(page)) !== third) fail(`J then Enter: pane shows "${await paneH1(page)}", expected "${third}"`);
+        else ok("J then Enter moves the selection to the next row");
+        await page.keyboard.press("Escape");
+        await settle(page);
+        if (path_(page) !== "/recipes" || (await paneH1(page)) !== defaultH1) fail(`Escape: ${path_(page)}, pane "${await paneH1(page)}"`);
+        else ok("Escape returns the pane to the default");
+        // Resize with a selection: the detail survives as a layer, then returns to the pane.
+        await rows.nth(1).click();
+        await settle(page);
+        const sel = path_(page);
+        await page.setViewportSize({ width: 400, height: 860 });
+        await settle(page);
+        const narrow = await visibleH1(page);
+        if (path_(page) !== sel || narrow !== second) fail(`1440 → 400: url ${path_(page)}, visible h1 "${narrow}"`);
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await settle(page);
+        if (path_(page) !== sel || (await paneH1(page)) !== second || !(await rows.first().isVisible())) fail(`400 → 1440: url ${path_(page)}, pane "${await paneH1(page)}"`);
+        else ok("1440 → 400 keeps the detail on screen; back to 1440 restores the pane");
+        await axe(page, "recipes list-detail at 1440");
+      },
+    },
+    {
+      name: "v4 (c) command palette",
+      async run({ page }) {
+        await seed(page);
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(BASE + "/");
+        await settle(page, 1000);
+        await page.keyboard.press("Control+k");
+        const field = page.getByRole("combobox", { name: "Search or type a command" });
+        await field.waitFor({ timeout: 5000 });
+        await field.fill("hoff");
+        await settle(page, 300);
+        await page.keyboard.press("Enter");
+        await settle(page);
+        if (!/^\/recipes\/[^/]*hoffmann[^/]*$/.test(path_(page))) fail(`palette Enter on "hoff": ${path_(page)}`);
+        else ok(`Ctrl+K, "hoff", Enter opens ${path_(page)}`);
+        await page.keyboard.press("Control+k");
+        await field.waitFor({ timeout: 5000 });
+        await field.fill("hoff");
+        await settle(page, 300);
+        await page.keyboard.press("Control+Enter");
+        await settle(page);
+        if (!/^\/brew\/[^/]*hoffmann/.test(path_(page))) fail(`palette Ctrl+Enter: ${path_(page)}`);
+        else ok(`Ctrl+Enter starts a brew (${path_(page)})`);
+        // brew.next is registered by Today and drives B and the sidebar's Start brew.
+        await page.goto(BASE + "/");
+        await settle(page, 1000);
+        await page.evaluate(() => document.activeElement?.blur?.());
+        await page.keyboard.press("b");
+        await settle(page);
+        if (!path_(page).startsWith("/brew/")) fail(`B on Today: ${path_(page)}`);
+        else ok(`B on Today runs brew.next (${path_(page)})`);
+      },
+    },
+    {
+      name: "v4 (d) brew timer layouts, Space and Esc",
+      async run({ page }) {
+        await seed(page, { soundCuesAsked: true });
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await startBrew(page, "hoffmann-v60");
+        const big = await rectOf(page, '[role="timer"]');
+        if (!(big?.font >= 120)) fail(`1024x768 clock font ${big?.font}px`);
+        else ok(`1024x768 clock is ${big.font}px`);
+        for (const [w, h] of [[640, 360], [844, 390], [915, 412], [720, 450]]) {
+          await page.setViewportSize({ width: w, height: h });
+          await settle(page, 500);
+          const c = await rectOf(page, '[role="timer"]');
+          const p = await rectOf(page, 'button[aria-label="Pause"], button[aria-label="Resume"]');
+          const t = await rectOf(page, 'section[aria-label="Current step"] h2');
+          if (!c?.inside || !p?.inside || !t?.inside) fail(`${w}x${h}: clock ${JSON.stringify(c)}, pause ${JSON.stringify(p)}, title ${JSON.stringify(t)}`);
+        }
+        ok("640x360, 844x390, 915x412, 720x450: clock, Pause and the step title in the window");
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await settle(page, 400);
+        await page.evaluate(() => document.activeElement?.blur?.());
+        await page.keyboard.press("Space");
+        await settle(page, 400);
+        const label = await page.evaluate(() => document.querySelector('button[aria-label="Pause"], button[aria-label="Resume"]')?.getAttribute("aria-label"));
+        if (label !== "Resume") fail(`Space: the button says ${label}`);
+        else ok("Space pauses");
+        await page.keyboard.press("Escape");
+        const dlg = page.getByRole("dialog", { name: "Leave this brew?" });
+        await dlg.waitFor({ timeout: 5000 });
+        await settle(page, 300);
+        const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
+        if (focused !== "Keep it going") fail(`Esc confirm focus: ${focused}`);
+        else ok('Esc asks "Leave this brew?" with "Keep it going" focused');
+        await page.keyboard.press("Escape");
+      },
+    },
+    {
+      name: "v4 (e) method-aware review: French press and espresso",
+      async run({ page }) {
+        await seed(page, { soundCuesAsked: true, reviewMode: "quick" }, 1);
+        await startBrew(page, "hoffmann-french-press");
+        await page.keyboard.press("f");
+        await page.getByRole("button", { name: "Finish", exact: true }).click();
+        await page.waitForURL(/\/review\//, { timeout: 10_000 });
+        await settle(page, 900);
+        await page.getByRole("button", { name: /More detail/ }).click();
+        await settle(page, 400);
+        const press = await page.evaluate(() => document.body.innerText);
+        if (/DRAWDOWN/.test(press) || /THE BED/.test(press)) fail("French press review shows Drawdown or The bed");
+        else ok("French press quick review (with More detail open): no Drawdown, no Bed");
+        await axe(page, "French press review");
+        await page.goto(`${BASE}/brew/3fe-classic-double`);
+        await settle(page, 900);
+        await page.getByRole("button", { name: "Start brew" }).last().click();
+        await settle(page, 700);
+        await page.keyboard.press("Space");
+        await page.waitForTimeout(1500);
+        await page.keyboard.press("Space");
+        await settle(page, 500);
+        await page.getByRole("button", { name: "Rate it" }).click();
+        await page.waitForURL(/\/review\//, { timeout: 10_000 });
+        await settle(page, 900);
+        const shot = await page.evaluate(() => document.body.innerText);
+        if (!/YIELD/.test(shot) || !/SHOT TIME/.test(shot) || /DRAWDOWN/.test(shot)) fail("espresso review: YIELD / SHOT TIME missing or Drawdown shown");
+        else ok("espresso review shows YIELD and SHOT TIME");
+      },
+    },
+    {
+      name: "v4 (f) a beginner's onboarding: new, no scale, ground coffee, drip machine",
+      async run({ page }) {
+        await page.goto(BASE + "/");
+        await page.waitForURL("**/welcome");
+        await settle(page);
+        await page.locator("label").filter({ hasText: /^I'm new to this/ }).click();
+        await page.getByRole("button", { name: "Next", exact: true }).click();
+        await settle(page, 400);
+        const noScale = page.getByRole("radio", { name: "No, I'll use spoons and a jug" });
+        if (!(await noScale.isChecked())) fail('"I\'m new to this" did not preselect "No" on the scale question');
+        await page.getByRole("button", { name: "Next", exact: true }).click();
+        await settle(page, 400);
+        await page.locator("label").filter({ hasText: /^I buy ground coffee/ }).click();
+        await page.getByRole("button", { name: "Next", exact: true }).click();
+        await settle(page, 400);
+        await page.getByRole("button", { name: "Automatic drip machine", exact: true }).click();
+        await page.getByRole("button", { name: "Next", exact: true }).click();
+        await settle(page, 400);
+        await page.getByRole("button", { name: "Next", exact: true }).click();
+        await settle(page, 600);
+        await axe(page, "onboarding: your first brew");
+        await page.getByRole("button", { name: "Start my first brew", exact: true }).click();
+        await page.waitForURL(/\/brew\//, { timeout: 10_000 });
+        await settle(page, 900);
+        const id = path_(page).split("/")[2];
+        const text = await page.evaluate(() => document.body.innerText);
+        if (/v60/i.test(id)) fail(`first brew for a drip machine is ${id}`);
+        else ok(`first brew: ${id}`);
+        if (!/tablespoon|tbsp/i.test(text) || !/\d\s?ml\b/.test(text)) fail("no-scale setup: no tablespoons or ml");
+        else ok("setup shows tablespoons and ml");
+        if (!/Pre-ground/.test(text)) fail("setup: no Pre-ground (as bought)");
+      },
+    },
+    {
+      name: "v4 (g) log at 1440: search and compare",
+      async run({ page }) {
+        await seed(page, {}, 8);
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(BASE + "/log");
+        await settle(page, 1000);
+        const rows = page.locator("section[data-tab=\"log\"] [data-list-pane]").getByRole("button", { name: /^(?!More for ).*Technique/ });
+        const before = await rows.count();
+        await page.getByRole("searchbox", { name: "Search the log" }).or(page.getByLabel("Search the log")).first().fill("geometry");
+        await settle(page, 500);
+        const after = await rows.count();
+        if (!(before > 1 && after >= 1 && after < before)) fail(`log search: ${before} → ${after} rows`);
+        else ok(`search narrows the log (${before} → ${after})`);
+        await rows.first().click();
+        await settle(page);
+        if (!/^\/log\/[0-9a-f-]{36}$/.test(path_(page))) fail(`log row: ${path_(page)}`);
+        await page.locator("section[data-tab=\"log\"] [data-detail-pane]").getByRole("button", { name: /Compare with/ }).first().click();
+        const picker = page.getByRole("dialog", { name: "Compare with" });
+        await picker.waitFor({ timeout: 5000 });
+        await picker.locator("li button").first().click();
+        await settle(page);
+        if (!/^\/log\/[0-9a-f-]{36}\/compare\/[0-9a-f-]{36}$/.test(path_(page)) || (await paneH1(page)) !== "Compare brews") fail(`compare: ${path_(page)}, pane "${await paneH1(page)}"`);
+        else ok("Compare with… opens the comparison in the pane");
+        await axe(page, "compare at 1440");
+      },
+    },
+    {
+      name: "v4 (h) forced colors: rating dots and segments",
+      async run({ page }) {
+        await seed(page, { soundCuesAsked: true, reviewMode: "detailed" }, 1);
+        await page.emulateMedia({ forcedColors: "active" });
+        await page.goto(BASE + "/gear/app");
+        await settle(page, 900);
+        const seg = await page.evaluate(() => {
+          const g = [...document.querySelectorAll('[role="radiogroup"]')].find((x) => x.getAttribute("aria-label") === "Theme");
+          const radios = g ? [...g.querySelectorAll('[role="radio"]')] : [];
+          const look = (el) => {
+            const cs = getComputedStyle(el);
+            return `${cs.backgroundColor}|${cs.color}|${cs.borderTopWidth} ${cs.borderTopStyle} ${cs.borderTopColor}|${cs.outlineStyle}`;
+          };
+          const on = radios.find((r) => r.getAttribute("aria-checked") === "true");
+          const off = radios.find((r) => r.getAttribute("aria-checked") !== "true");
+          return on && off ? { on: look(on), off: look(off) } : null;
+        });
+        if (!seg || seg.on === seg.off) fail(`forced colors: selected segment looks like the others (${JSON.stringify(seg)})`);
+        else ok("forced colors: the selected segment is distinguishable");
+        await startBrew(page, "hoffmann-v60");
+        await page.keyboard.press("f");
+        await page.getByRole("button", { name: "Finish", exact: true }).click();
+        await page.waitForURL(/\/review\//, { timeout: 10_000 });
+        await settle(page, 900);
+        const dots = await page.evaluate(() => {
+          const d = document.querySelector('[role="radiogroup"] [role="radio"][aria-label$=" of 10"]');
+          if (!d) return null;
+          // The dot is drawn by its ::before (A1).
+          const cs = getComputedStyle(d, "::before");
+          const visible = (cs.borderTopStyle !== "none" && parseFloat(cs.borderTopWidth) > 0) || (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent");
+          return { visible, border: `${cs.borderTopWidth} ${cs.borderTopStyle}`, bg: cs.backgroundColor, w: d.getBoundingClientRect().width };
+        });
+        if (!dots?.visible) fail(`forced colors: rating dots invisible (${JSON.stringify(dots)})`);
+        else ok("forced colors: rating dots have a visible edge");
+        await page.emulateMedia({ forcedColors: "none" });
+      },
+    },
+    {
+      name: "v4 (i) the bar is inert under a layer at 390",
+      async run({ page }) {
+        await seed(page);
+        await page.setViewportSize({ width: 390, height: 844 });
+        for (const url of ["/brew/hoffmann-v60", "/recipes/hoffmann-v60", "/welcome"]) {
+          await page.goto(BASE + url);
+          await settle(page, 800);
+          const inert = await page.evaluate(() => {
+            const nav = document.querySelector('nav[aria-label="Sections"]');
+            return nav ? nav.closest("[inert]") != null || nav.inert : null;
+          });
+          if (inert !== true) fail(`${url} at 390: the bar is not inert (${inert})`);
+        }
+        ok("bar is inert on /brew, a recipe and /welcome at 390");
+      },
+    },
+    {
+      name: "v4 (j) 200% text: no clipped text in the brew step card or recipe cards",
+      async run({ page }) {
+        await seed(page, { soundCuesAsked: true });
+        const clipped = (root) =>
+          page.evaluate((sel) => {
+            const out = [];
+            for (const box of document.querySelectorAll(sel)) {
+              if (!box.getClientRects().length) continue;
+              for (const el of [box, ...box.querySelectorAll("*")]) {
+                if (el.closest(".visually-hidden")) continue;
+                const cs = getComputedStyle(el);
+                const hides = ["hidden", "clip"].includes(cs.overflowY) || ["hidden", "clip"].includes(cs.overflow);
+                const clamp = cs.webkitLineClamp && cs.webkitLineClamp !== "none";
+                if ((hides || clamp) && el.scrollHeight > el.clientHeight + 2 && (el.textContent ?? "").trim()) out.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 20)} ${el.scrollHeight}>${el.clientHeight}`);
+              }
+            }
+            return out.slice(0, 6);
+          }, root);
+        for (const [w, h] of [[390, 844], [1440, 900]]) {
+          await page.setViewportSize({ width: w, height: h });
+          await page.goto(BASE + "/recipes");
+          await settle(page, 900);
+          await page.evaluate(() => (document.documentElement.style.fontSize = "32px"));
+          await settle(page, 500);
+          const cards = await clipped('section[data-tab="recipes"] ul[aria-label="Recipes"] > li');
+          if (cards.length) fail(`200% text at ${w}: clipped in recipe cards: ${cards.join(", ")}`);
+          await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+          await startBrew(page, "hoffmann-v60");
+          await page.evaluate(() => (document.documentElement.style.fontSize = "32px"));
+          await settle(page, 500);
+          const step = await clipped('section[aria-label="Current step"]');
+          if (step.length) fail(`200% text at ${w}: clipped in the step card: ${step.join(", ")}`);
+          const p = await rectOf(page, 'button[aria-label="Pause"], button[aria-label="Resume"]');
+          if (!p?.inside) fail(`200% text at ${w}: Pause is outside the window`);
+          await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+          await page.getByRole("button", { name: "Leave this brew" }).click();
+          await page.getByRole("dialog", { name: "Leave this brew?" }).getByRole("button", { name: "Discard", exact: true }).click();
+          await settle(page);
+        }
+        ok("200% text at 390 and 1440: recipe cards and the step card clip nothing, Pause stays reachable");
+      },
+    },
+    {
+      name: "v4 (k) backup 2.1: import, export, import into a fresh browser",
+      async run({ page, context }) {
+        await page.addInitScript(() => Object.defineProperty(window, "showSaveFilePicker", { value: undefined, configurable: true }));
+        const restore = async (p, file) => {
+          await p.goto(BASE + "/gear/app");
+          await settle(p);
+          await p.locator('input[type="file"][accept*="json"]').setInputFiles(file);
+          const sheet = p.getByRole("dialog", { name: "Restore from a backup" });
+          await sheet.getByText(/^Found /).waitFor({ timeout: 10_000 });
+          await sheet.getByRole("button", { name: "Import", exact: true }).click();
+          await sheet.getByRole("button", { name: "Done", exact: true }).waitFor({ timeout: 10_000 });
+          const line = (await sheet.innerText()).replace(/\s+/g, " ");
+          await sheet.getByRole("button", { name: "Done", exact: true }).click();
+          await settle(p);
+          return line;
+        };
+        const save = async (p) => {
+          await p.goto(BASE + "/gear/app");
+          await settle(p);
+          const [dl] = await Promise.all([p.waitForEvent("download"), p.getByRole("button", { name: /Back up everything/ }).click()]);
+          return JSON.parse(readFileSync(await dl.path(), "utf8"));
+        };
+        const keys = (doc) => ({
+          form: doc.beans?.map((b) => `${b.form ?? ""}/${b.groundFor ?? ""}`).sort().join(","),
+          unit: doc.grinders?.map((g) => g.setting?.settingUnit ?? "").sort().join(","),
+          kind: doc.brews?.map((b) => b.grindKind ?? "").sort().join(","),
+          faults: doc.brews?.flatMap((b) => b.faults ?? []).sort().join(","),
+        });
+        const v21 = path.join(web, "..", "shared", "fixtures", "backup-v2.1-sample.json");
+        const want = keys(JSON.parse(readFileSync(v21, "utf8")));
+        await markOnboarded(page);
+        const line = await restore(page, v21);
+        if (!/Added /.test(line)) fail(`2.1 restore: ${line.slice(0, 160)}`);
+        const first = await save(page);
+        const got1 = keys(first);
+        if (JSON.stringify(got1) !== JSON.stringify(want)) fail(`2.1 keys after import + export: ${JSON.stringify(got1)}, expected ${JSON.stringify(want)}`);
+        else ok(`2.1 sample imports and exports with its new keys (${want.form}; ${want.unit}; ${want.kind}; ${want.faults})`);
+        // Into a fresh browser: the exported file, then the 2.0 sample alongside it.
+        const tmp = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "dist", "smoke-v21-roundtrip.json");
+        writeFileSync(tmp, JSON.stringify(first));
+        const ctx2 = await context.browser().newContext({ serviceWorkers: "block", viewport: { width: 412, height: 915 } });
+        const p2 = await ctx2.newPage();
+        watch(p2, () => "v4 (k) fresh");
+        await p2.addInitScript(() => Object.defineProperty(window, "showSaveFilePicker", { value: undefined, configurable: true }));
+        await markOnboarded(p2);
+        await restore(p2, tmp);
+        const v2line = await restore(p2, path.join(web, "..", "shared", "fixtures", "backup-v2-sample.json"));
+        if (!/Added |Nothing new|already/i.test(v2line)) fail(`2.0 sample after 2.1: ${v2line.slice(0, 160)}`);
+        const second = keys(await save(p2));
+        for (const k of ["form", "unit", "kind"]) {
+          for (const v of want[k].split(",").filter((x) => x && x !== "/")) if (!second[k].split(",").includes(v)) fail(`fresh browser lost ${k} ${v}: ${second[k]}`);
+        }
+        if (!second.faults.includes("Too weak")) fail(`fresh browser lost the "Too weak" fault: ${second.faults}`);
+        else ok("a fresh browser keeps the 2.1 keys and also reads the 2.0 sample");
+        await ctx2.close();
+        rmSync(tmp, { force: true });
+      },
+    },
+    {
+      // v4-spec §8.3 at 1× on the desktop size (the 4× flow above is the phone check).
+      name: "v4 performance at 1440: tab switch, pane changes, dialog, side sheet, palette, resize",
+      async run({ page }) {
+        await seed(page, {}, 12);
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(BASE + "/");
+        await settle(page, 3000);
+        const side = page.getByRole("navigation", { name: "Sections" });
+        for (const label of ["Recipes", "Log", "Insights", "Gear", "Today"]) {
+          await side.getByRole("link", { name: label }).first().click();
+          await settle(page, 500);
+        }
+        await page.evaluate(() => {
+          const p = (window.__perf = { frames: [], loafs: [], spans: [], on: true });
+          new PerformanceObserver((l) => {
+            for (const e of l.getEntries()) p.loafs.push({ start: e.startTime, duration: e.duration });
+          }).observe({ type: "long-animation-frame" });
+          let last = performance.now();
+          const tick = (now) => {
+            p.frames.push([now, now - last]);
+            last = now;
+            if (p.on) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+        const span = async (kind, act, ms = 600) => {
+          const t0 = await page.evaluate(() => performance.now());
+          await act();
+          await page.waitForTimeout(ms);
+          const t1 = await page.evaluate(() => performance.now());
+          await page.evaluate(([k, a, b]) => window.__perf.spans.push({ kind: k, t0: a, t1: b }), [kind, t0, t1]);
+        };
+        const centre = async (loc) => {
+          const b = await loc.boundingBox();
+          return [b.x + b.width / 2, b.y + b.height / 2];
+        };
+        const at = {};
+        for (const label of ["Today", "Recipes", "Log", "Insights", "Gear"]) at[label] = await centre(side.getByRole("link", { name: label }).first());
+        for (const label of ["Recipes", "Log", "Insights", "Gear", "Today", "Log", "Recipes", "Gear", "Insights", "Recipes"]) await span("tab switch", () => page.mouse.click(...at[label]));
+        const rows = page.locator('section[data-tab="recipes"] ul[aria-label="Recipes"] > li > button:first-child');
+        const rowAt = [];
+        for (let i = 0; i < 5; i++) rowAt.push(await centre(rows.nth(i)));
+        for (let i = 0; i < 10; i++) await span("pane change", () => page.mouse.click(...rowAt[i % 5]));
+        // In-app navigation only from here: a reload would drop the observers.
+        await side.getByRole("link", { name: "Settings" }).first().click();
+        await settle(page, 1200);
+        // At large the Settings sections are a list with the section beside it.
+        await page.locator('section[data-tab="gear"] [data-list-pane]').getByText("Your data", { exact: true }).first().click();
+        await settle(page, 600);
+        const del = await centre(page.getByRole("button", { name: "Delete everything in this browser" }));
+        for (let i = 0; i < 2; i++) {
+          await span("dialog", () => page.mouse.click(...del));
+          await span("dialog", () => page.keyboard.press("Escape"));
+        }
+        await page.mouse.click(...at.Log);
+        await settle(page, 1200);
+        const addKey = page.locator("section[data-tab=\"log\"] [data-detail-pane]").getByRole("button", { name: /Set up analysis|Add key/ }).first();
+        if (await addKey.count()) {
+          const k = await centre(addKey);
+          for (let i = 0; i < 2; i++) {
+            await span("side sheet", () => page.mouse.click(...k));
+            await span("side sheet", () => page.keyboard.press("Escape"));
+          }
+        } else fail("perf: no Set up analysis button in the Log pane to open the side sheet");
+        for (let i = 0; i < 3; i++) {
+          await span("palette", () => page.keyboard.press("Control+k"));
+          await span("palette", () => page.keyboard.press("Escape"));
+        }
+        for (const [w, h] of [[1300, 900], [1100, 900], [800, 900], [1100, 900], [1300, 900], [1440, 900]]) await span("resize", () => page.setViewportSize({ width: w, height: h }), 400);
+        const perf = await page.evaluate(() => ((window.__perf.on = false), { frames: window.__perf.frames, loafs: window.__perf.loafs, spans: window.__perf.spans }));
+        const pct = (xs, q) => (xs.length ? [...xs].sort((x, y) => x - y)[Math.min(xs.length - 1, Math.floor(q * xs.length))] : 0);
+        for (const kind of ["tab switch", "pane change", "dialog", "side sheet", "palette", "resize"]) {
+          const spans = perf.spans.filter((x) => x.kind === kind);
+          const frames = perf.frames.filter(([t]) => spans.some((x) => t >= x.t0 && t <= x.t1)).map(([, d]) => d);
+          const long = perf.loafs.filter((l) => spans.some((x) => l.start < x.t1 && l.start + l.duration > x.t0));
+          const line = `${kind} ×${spans.length}: ${frames.length} frames, p50 ${pct(frames, 0.5).toFixed(1)} ms, p95 ${pct(frames, 0.95).toFixed(1)} ms, max ${Math.max(0, ...frames).toFixed(1)} ms; LoAF ${long.map((l) => Math.round(l.duration)).join(", ") || "none"}`;
+          // Resizing re-lays out the whole window by nature; it is recorded, and only (a)–(c) gate.
+          if (kind !== "resize" && (long.length || pct(frames, 0.95) > 17.5)) fail(line);
+          else ok(line);
+        }
+      },
+    },
+  ];
+}
 
 // ---------------------------------------------------------------- runner
 
@@ -1135,7 +1702,10 @@ try {
       const v = await cspViolations(page).catch(() => []);
       for (const x of v) fail(`${flow.name}: CSP violation ${x}`);
     } catch (e) {
-      fail(`${flow.name}: ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`);
+      // The first line plus Playwright's "waiting for <locator>" line, so a timeout names its target.
+      const lines = e instanceof Error ? e.message.split("\n") : [String(e)];
+      const target = lines.find((l) => l.includes("waiting for"))?.trim();
+      fail(`${flow.name}: ${lines[0]}${target ? ` (${target})` : ""}`);
     } finally {
       await context.close();
     }

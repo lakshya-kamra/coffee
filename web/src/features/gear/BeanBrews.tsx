@@ -34,6 +34,17 @@ export function beanBrewStats(beanId: number, brews: readonly BrewRow[]): BeanBr
   return { count: mine.length, avg, bestGrind: grind, bestScore: best?.overall ?? null, last: mine.slice(0, 5) };
 }
 
+/**
+ * "75 clicks (7.5 on the dial)" is too long for a third of a pane and values never wrap or clip,
+ * so the reading in brackets moves to the line under it, with the score.
+ */
+export function bestGrindCell(grind: string | null, score: number | null): Cell {
+  const m = grind ? /^(.+?)\s*\((.+)\)$/.exec(grind) : null;
+  const scored = score == null ? null : `scored ${score}/10`;
+  if (!m) return { label: "Best grind", value: grind, sub: scored };
+  return { label: "Best grind", value: m[1]!, sub: [m[2], scored].filter(Boolean).join(" · ") };
+}
+
 export function BeanBrews({ beanId, brews }: { beanId: number; brews: readonly BrewRow[] }) {
   const st = useMemo(() => beanBrewStats(beanId, brews), [beanId, brews]);
   // The newest of this coffee's brews that has a photo (photos hang off brews, not the bag).
@@ -52,7 +63,7 @@ export function BeanBrews({ beanId, brews }: { beanId: number; brews: readonly B
   const cells: Cell[] = [
     { label: "Brews", value: String(st.count) },
     { label: "Average", value: st.avg == null ? null : oneDp(st.avg), sub: st.avg == null ? "none rated" : cupLabel(Math.round(st.avg)) },
-    { label: "Best grind", value: st.bestGrind, sub: st.bestScore == null ? null : `scored ${st.bestScore}/10` },
+    bestGrindCell(st.bestGrind, st.bestScore),
   ];
 
   return (

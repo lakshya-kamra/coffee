@@ -209,3 +209,6 @@ optional `againUid` prop; V4-WBREW adds it to its signature).
 Transform, opacity and background-color only. Pane change: the old detail goes at once, the new
 one fades with an 8 px drift (opacity only when reduced). Breakpoint crossings never animate.
 Sheets: dialog scale 0.96 → 1 + fade; side sheet 24 px slide + fade; popover 4 px drop + fade.
+An `infinite` keyframe animation inside a tab must carry `data-loop=""` on the animated element:
+the shell pauses only those while the tab is hidden (a `*` selector there restyled the whole tab on
+every switch).
