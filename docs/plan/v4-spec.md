@@ -1028,5 +1028,5 @@ and are not in the repo.
   it; the alternatives (no container queries in tabs, or `content-visibility` on the scroller) cost
   more than they save. Recipe open/close keeps the 50 ms rule.
 - Entry chunk: the pre-v4 build (1085e3a) loaded 167,873 B gzip on first load (entry 134,507 B);
-  v4 loads 188,271 B (+12.2%, inside +15%). The entry file alone shrank to 85,338 B because
+  v4 loads 188,346 B (+12.2%, inside +15%). The entry file alone shrank to 85,415 B because
   Rolldown now splits shared modules into preloaded chunks, so first-load totals are compared.
