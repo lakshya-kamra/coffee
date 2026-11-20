@@ -571,9 +571,10 @@ private fun BoardingPass(
     val c = CoffeeTheme.colors
     val nodes = remember(recipe) { recipe?.pourNodes() ?: emptyList() }
     val units = LocalUnits.current
-    val labels = remember(log.brewerId, log.brewer, recipe) {
-        MethodLabels.of(recipe?.brewer?.method ?: (Brewers.byId(log.brewerId) ?: brewerFromLabel(log.brewer))?.method ?: BrewMethod.PourOver)
+    val method = remember(log.brewerId, log.brewer, recipe) {
+        recipe?.brewer?.method ?: (Brewers.byId(log.brewerId) ?: brewerFromLabel(log.brewer))?.method ?: BrewMethod.PourOver
     }
+    val labels = remember(method) { MethodLabels.of(method) }
     val cells = remember(log, recipe, grinder, ts, distrusted, units, labels) {
         passCells(log, recipe, grinder, ts, distrusted, units, labels)
     }
@@ -618,12 +619,14 @@ private fun BoardingPass(
             }
             Spacer(Modifier.height(16.dp))
             val ratioLabel = ratio(log.doseG, log.waterG)
-            // Without a scale the water reads in ml, as everywhere else; the dose stays in grams,
-            // the number the ratio is built on (the web's pass does the same).
+            // Without a scale the amounts read as the brew and Review said them: water in ml, the
+            // coffee in level tablespoons (an espresso or moka dose is the basket's, so it keeps
+            // grams). The web's pass does the same.
             val water = NoScale.water(log.waterG, hasScale)
+            val coffee = NoScale.coffee(log.doseG, method, hasScale)
             RouteRow(
-                from = grams(log.doseG),
-                fromUnit = "g",
+                from = coffee.first,
+                fromUnit = coffee.second,
                 fromLabel = "COFFEE",
                 to = water.first,
                 toUnit = water.second,
