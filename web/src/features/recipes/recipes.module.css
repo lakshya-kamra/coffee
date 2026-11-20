@@ -149,13 +149,16 @@
   min-width: 0;
   min-height: 76px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 10px 8px 10px var(--gutter);
   text-align: left;
 }
 .rowIcon { flex: none; display: inline-flex; color: var(--ink-mid); }
-.rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+/* A 7rem floor (it scales with text size): at 200% text in a 360 px pane the numbers drop to
+   their own line instead of squeezing the name to a letter per line. */
+.rowMain { flex: 1 1 7rem; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .rowName { display: flex; align-items: baseline; gap: 8px; min-width: 0; color: var(--ink-high); }
 /* Wraps in full, never clamped (A7: 200% text). */
 .rowNameText { overflow-wrap: break-word; min-width: 0; }
@@ -163,7 +166,7 @@
 /* Wraps, never clipped (A9: at 200% text a one-line "JAMES HOFFMANN · V60" lost the brewer). */
 .rowMeta { overflow-wrap: break-word; min-width: 0; }
 /* Numbers never ellipsize: they keep their width and the words give way. */
-.rowNums { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; white-space: nowrap; }
+.rowNums { flex: none; margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; white-space: nowrap; }
 .rowMore {
   flex: none;
   width: 36px;
