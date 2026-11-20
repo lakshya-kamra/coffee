@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-17",
+  "updated": "2026-11-19",
   "recipes": [
     {
       "id": "hoffmann-v60",
@@ -25,6 +25,12 @@
           "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique",
           "note": "Written-up version of the video: 30 g / 500 g, 60 g bloom, 300 g by 1:15, 500 g by 1:45."
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Rinse the paper thoroughly with hot water, then dump the rinse water.",
@@ -111,6 +117,13 @@
           "url": "https://hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-tetsu-kasuya",
           "note": "Interview with Kasuya; a later variant times the last two pours at 2:10 and 2:40."
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Rinse the paper, add the grounds and level the bed.",
@@ -199,10 +212,18 @@
           "note": "Aggregator write-up of the video's numbers."
         }
       ],
+      "level": "easy",
+      "needs": [
+        "grinder"
+      ],
       "prep": [
         "Preheat the press with hot water and dump it.",
         "Add grounds, put the press on the scale, zero it.",
         "Leave the plunger out entirely for now."
+      ],
+      "prepNoScale": [
+        "Add {coffee} to the press.",
+        "Measure {water} of water in a jug."
       ],
       "tips": [
         "Do not plunge to the bottom. Push just below the surface and pour.",
@@ -235,7 +256,7 @@
           "targetWaterG": null
         },
         {
-          "kind": "Serve",
+          "kind": "Stir",
           "title": "Skim",
           "detail": "Scoop the foam and floaters off with two spoons and bin them.",
           "startSec": 260,
@@ -280,10 +301,18 @@
           "note": "Written summary in the video description."
         }
       ],
+      "level": "easy",
+      "needs": [
+        "grinder"
+      ],
       "prep": [
         "Put a paper filter in the cap. No rinsing, no preheating. Hoffmann tested it and it makes no difference.",
         "Stand the AeroPress on the mug, add the coffee, put it all on the scale and zero it.",
         "Bring the water to the boil and use it straight away."
+      ],
+      "prepNoScale": [
+        "Stand the AeroPress on the mug and add {coffee}.",
+        "Measure {water} of water in a jug."
       ],
       "tips": [
         "The plunger only goes in early to stop the drip. That is its whole job here.",
@@ -347,6 +376,11 @@
       "sourceNote": "ADAPTED from Hedrick's publicly described AeroPress approach: fine grind, aggressive early agitation, slow press, no bypass. These numbers are not from one Hedrick recipe. For the numbers from his 'A Very Good Aeropress Recipe' video, use \"A Very Good AeroPress\".",
       "fidelity": "adapted",
       "sources": [],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Rinse the paper. Standard orientation, brewer on the mug.",
         "Add grounds and shake the brewer to level them."
@@ -427,6 +461,12 @@
           "note": "A one-pour 22 g V60 with no water weight or temperature given."
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
+      ],
       "prep": [
         "Rinse the paper well. The seal against the cone matters.",
         "Level the bed. Zero the scale."
@@ -485,6 +525,11 @@
       "sourceNote": "ADAPTED from Hedrick's general light-roast espresso guidance: long ratio, extended low-pressure pre-infusion, thorough WDT, puck screen. This is not a single published recipe. Dial it to your machine.",
       "fidelity": "adapted",
       "sources": [],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Weigh 18 g into the basket. WDT thoroughly — this matters more than the tamp.",
         "Level, tamp once, no tapping. Puck screen on top if you have one.",
@@ -541,6 +586,12 @@
           "url": "https://www.youtube.com/watch?v=MPDfn--vxK8",
           "note": "2012 Hario V60 video. No written recipe."
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Rinse paper, level bed, zero scale.",
@@ -600,6 +651,12 @@
       "sourceNote": "ADAPTED, and not Gagné's own recipe: a low-agitation, Melodrip-style take on ideas he explores on Coffee ad Astra. He publishes a different V60 recipe (22 g / 352 g, three spins); use \"Gagné's V60\" for that.",
       "fidelity": "adapted",
       "sources": [],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
+      ],
       "prep": [
         "Rinse paper. Level the bed carefully — distribution is doing the work here.",
         "If you have a Melodrip or a fine spray, use it. Otherwise pour from low and slow."
@@ -672,6 +729,12 @@
           "note": "His general pour-over method: 65 g per litre."
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
+      ],
       "prep": [
         "Rinse the Chemex paper very thoroughly. Thick paper, real papery taste if you skip this.",
         "Dump the rinse water, add grounds, level, zero."
@@ -742,6 +805,12 @@
           "url": "https://onyxcoffeelab.com/pages/brew-guides",
           "note": "Current guides are per coffee."
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Rinse the wave filter and seat it flat in the brewer.",
@@ -814,6 +883,12 @@
           "note": "'How I ACTUALLY Make Coffee At Home', pour-over chapter at 6:32. No written recipe."
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
+      ],
       "prep": [
         "Rinse the paper and preheat the mug or carafe with the rinse water.",
         "Add grounds, tap the dripper flat, zero the scale.",
@@ -881,6 +956,11 @@
       "sourceNote": "The widely used Hario Switch hybrid pattern rather than one person's recipe. For named Switch recipes, see Kasuya, Fukahori and Bøen.",
       "fidelity": "community",
       "sources": [],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Rinse paper. Valve OPEN to start.",
         "Add grounds, level, zero the scale."
@@ -952,6 +1032,8 @@
           "note": "Ultimate Moka Pot Technique. The description has no written recipe."
         }
       ],
+      "level": "easy",
+      "needs": [],
       "prep": [
         "Boil a kettle first. The boiler gets pre-boiled water, never cold water.",
         "Fill the boiler to just below the safety valve.",
@@ -1007,6 +1089,12 @@
           "url": "https://www.youtube.com/watch?v=1oB1oDrDkHM",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Use soft, filtered water, freshly boiled for lighter roasts.",
@@ -1097,6 +1185,11 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Preheat the brewer.",
         "Put 170 g of ice, straight from the freezer, in the carafe.",
@@ -1161,7 +1254,7 @@
       "grind": "Fine, like a moka pot or AeroPress setting (about a 250 micron burr gap). If unsure, err finer.",
       "tempC": 20,
       "blurb": "Fine grind, hard stir, twelve hours in the fridge, then just pour it off. No filter, no sludge, no fuss.",
-      "sourceNote": "From the written recipe in Hoffmann's 'Everything I Learned About Cold Brew' video description. He gives 'room temperature' water; 20 C is our stand-in. The 250 micron figure is a burr gap, not a particle size.",
+      "sourceNote": "From the written recipe in Hoffmann's 'Everything I Learned About Cold Brew' video description. He gives 'room temperature' water; 20 °C is our stand-in. The 250 micron figure is a burr gap, not a particle size.",
       "fidelity": "adapted",
       "sources": [
         {
@@ -1169,6 +1262,10 @@
           "url": "https://www.youtube.com/watch?v=AB0QLjroFss",
           "note": ""
         }
+      ],
+      "level": "easy",
+      "needs": [
+        "grinder"
       ],
       "prep": [
         "Use water you would happily brew filter coffee with, at room temperature.",
@@ -1225,8 +1322,8 @@
       "waterG": 280.0,
       "grind": "Medium-fine, a touch finer than your pour-over setting. Adjust so the brew takes 3:00.",
       "tempC": 93,
-      "blurb": "Percolate with hot water first, then close the valve and steep the rest in 70 C water. Sweet and round, with the bitterness kept out.",
-      "sourceNote": "Kasuya's Switch recipe as reported by two aggregators, neither of which links to Kasuya's own source: Outpost Coffee and Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/tetsu-kasuya-hybrid-method). Both give 20 g / 280 g, two 60 g open-valve pours, then 160 g of 70 C water with the valve closed, about 3:00 total. Outpost gives 90-95 C for the first pours and a 30 s steep; Honest Coffee Guide gives 93 C and a 10 s steep. The steps follow Outpost. We could not read Kasuya's own video.",
+      "blurb": "Percolate with hot water first, then close the valve and steep the rest in 70 °C water. Sweet and round, with the bitterness kept out.",
+      "sourceNote": "Kasuya's Switch recipe as reported by two aggregators, neither of which links to Kasuya's own source: Outpost Coffee and Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/tetsu-kasuya-hybrid-method). Both give 20 g / 280 g, two 60 g open-valve pours, then 160 g of 70 °C water with the valve closed, about 3:00 total. Outpost gives 90-95 °C for the first pours and a 30 s steep; Honest Coffee Guide gives 93 °C and a 10 s steep. The steps follow Outpost. We could not read Kasuya's own video.",
       "fidelity": "adapted",
       "sources": [
         {
@@ -1240,13 +1337,19 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Rinse the paper, then add the coffee and shake it flat.",
         "Valve OPEN to start.",
-        "Plan how you will get to 70 C quickly: a second kettle, or a splash of cold water into the first."
+        "Plan how you will get to 70 °C quickly: a second kettle, or a splash of cold water into the first."
       ],
       "tips": [
-        "Two temperatures are the trick: hot for the first 120 g, 70 C for the immersion.",
+        "Two temperatures are the trick: hot for the first 120 g, 70 °C for the immersion.",
         "Adjust the grind so the whole thing lands at about 3:00.",
         "Too strong? Add a little hot water to the cup at the end.",
         "Honest Coffee Guide's version steeps only 10 s and closes the valve again at about 3:00, even if it has not finished draining."
@@ -1263,15 +1366,15 @@
         {
           "kind": "Pour",
           "title": "Valve open, up to 120 g",
-          "detail": "Another 60 g. Let it drain for about 45 seconds while you cool the kettle to 70 C.",
+          "detail": "Another 60 g. Let it drain for about 45 seconds while you cool the kettle to 70 °C.",
           "startSec": 30,
           "endSec": 75,
           "targetWaterG": 120
         },
         {
           "kind": "Pour",
-          "title": "CLOSE, 160 g at 70 C",
-          "detail": "Close the valve and pour 160 g of 70 C water.",
+          "title": "CLOSE, 160 g at 70 °C",
+          "detail": "Close the valve and pour 160 g of 70 °C water.",
           "startSec": 75,
           "endSec": 90,
           "targetWaterG": 280
@@ -1305,7 +1408,7 @@
       "grind": "25 clicks on a Comandante C40. She gives no other grind measure.",
       "tempC": 93,
       "blurb": "A closed-valve bloom, then one continuous centre pour. The house Switch recipe at MAME, from the 2018 World Brewers Cup champion.",
-      "sourceNote": "From Fukahori's recipe as written in the European Coffee Trip video description, filmed with her: 14 g, 200 g at 93 C, 25 clicks on a Comandante, 50 g closed-valve bloom, open at 0:30, one 150 g centre pour finished by 1:10, 2:20 total. Wording is ours.",
+      "sourceNote": "From Fukahori's recipe as written in the European Coffee Trip video description, filmed with her: 14 g, 200 g at 93 °C, 25 clicks on a Comandante, 50 g closed-valve bloom, open at 0:30, one 150 g centre pour finished by 1:10, 2:20 total. Wording is ours.",
       "fidelity": "published",
       "sources": [
         {
@@ -1313,6 +1416,12 @@
           "url": "https://www.youtube.com/watch?v=3euEkTBxtEk",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Rinse a V60 02 paper in the Switch.",
@@ -1370,6 +1479,11 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Rinse a paper in a Switch 02.",
         "Add the coffee, level it, zero the scale.",
@@ -1425,7 +1539,7 @@
       "grind": "Coarse. Winton says he ground quite coarse, around 3.6 on his Kinu M47.",
       "tempC": 93,
       "blurb": "Five equal pours, thirty seconds apart, no stirring. The 2021 World Brewers Cup winner, about as simple as a championship recipe gets.",
-      "sourceNote": "Hario's video with Winton has no written recipe and could not be read. 20 g / 300 g, 93 C then 88 C, a metal V60, a Kinu M47, five pours and a 2:40 finish come from Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup, an aggregator citing the SCA rankings and a Barista Hustle interview with him). Five equal pours with about 30 s between them come from Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/matt-winton-v60-five-pour, an aggregator). 60 g per pour is 300 / 5.",
+      "sourceNote": "Hario's video with Winton has no written recipe and could not be read. 20 g / 300 g, 93 °C then 88 °C, a metal V60, a Kinu M47, five pours and a 2:40 finish come from Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup, an aggregator citing the SCA rankings and a Barista Hustle interview with him). Five equal pours with about 30 s between them come from Honest Coffee Guide (https://honestcoffeeguide.com/brew-recipes/matt-winton-v60-five-pour, an aggregator). 60 g per pour is 300 / 5.",
       "fidelity": "adapted",
       "sources": [
         {
@@ -1444,12 +1558,19 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Fold the paper seam, rinse and preheat. Winton used a metal V60 02.",
         "Add the coffee, shake it level, zero the scale."
       ],
       "tips": [
-        "His competition brew dropped to 88 C for the later pours. Leaving the kettle off its base between pours does it.",
+        "His competition brew dropped to 88 °C for the later pours. Leaving the kettle off its base between pours does it.",
         "Every pour is the same circular motion. Consistency is the recipe.",
         "Start the next pour once the bed has nearly drained, even if 30 seconds have not passed."
       ],
@@ -1515,7 +1636,7 @@
       "grind": "Not in the recap. Wikipedia lists a 1Zpresso ZP6 Special at 5.2. Aim for a 2:40 finish.",
       "tempC": 91,
       "blurb": "Five pours of 50 g with thirty quiet seconds between them. The 2023 World Brewers Cup winning recipe, on an Origami Air S.",
-      "sourceNote": "From Slow Pour Supply's recap of Medina's World Brewers Cup routine (an aggregator, and Origami's US seller): 15.5 g / 250 g, 91 C, five 50 g pours with 30 s of silent time, 2:40 total, 65 ppm water. Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup) agrees and adds the grinder (1Zpresso ZP6 Special at 5.2, citing 1Zpresso's Instagram).",
+      "sourceNote": "From Slow Pour Supply's recap of Medina's World Brewers Cup routine (an aggregator, and Origami's US seller): 15.5 g / 250 g, 91 °C, five 50 g pours with 30 s of silent time, 2:40 total, 65 ppm water. Wikipedia's World Brewers Cup table (https://en.wikipedia.org/wiki/World_Brewers_Cup) agrees and adds the grinder (1Zpresso ZP6 Special at 5.2, citing 1Zpresso's Instagram).",
       "fidelity": "published",
       "sources": [
         {
@@ -1528,6 +1649,13 @@
           "url": "https://en.wikipedia.org/wiki/World_Brewers_Cup",
           "note": ""
         }
+      ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Origami Air S with a conical paper filter.",
@@ -1599,8 +1727,8 @@
       "waterG": 200.0,
       "grind": "A blend: 75% ground at about 1000 microns and 25% at about 800 microns, on a 1Zpresso K-Pro.",
       "tempC": 95,
-      "blurb": "First pour at 70 C, the rest at 95 C, four even pours. The 2022 World Brewers Cup winner, on an Orea V3 with a Kalita 185 paper.",
-      "sourceNote": "Only source is Wikipedia's World Brewers Cup table (an aggregator), which cites her 2022 World Brewers Cup finals routine (https://www.youtube.com/watch?v=sTroaHo5zsk) and Sprudge: 14 g / 200 mL, 70 C first pour then 95 C, four 50 g pours every 30 s, 75% at 1000 and 25% at 800 microns on a 1Zpresso K-Pro. Finish time is not published; the drawdown end is our estimate.",
+      "blurb": "First pour at 70 °C, the rest at 95 °C, four even pours. The 2022 World Brewers Cup winner, on an Orea V3 with a Kalita 185 paper.",
+      "sourceNote": "Only source is Wikipedia's World Brewers Cup table (an aggregator), which cites her 2022 World Brewers Cup finals routine (https://www.youtube.com/watch?v=sTroaHo5zsk) and Sprudge: 14 g / 200 mL, 70 °C first pour then 95 °C, four 50 g pours every 30 s, 75% at 1000 and 25% at 800 microns on a 1Zpresso K-Pro. Finish time is not published; the drawdown end is our estimate.",
       "fidelity": "adapted",
       "sources": [
         {
@@ -1614,9 +1742,16 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Orea V3 with a Kalita 185 wave paper.",
-        "Two kettles, or one you can cool fast: 70 C for the first pour, 95 C for the rest.",
+        "Two kettles, or one you can cool fast: 70 °C for the first pour, 95 °C for the rest.",
         "If you can, grind three quarters of the dose coarse (about 1000 microns) and a quarter a little finer (about 800)."
       ],
       "tips": [
@@ -1625,7 +1760,7 @@
       "steps": [
         {
           "kind": "Bloom",
-          "title": "Pour 1 to 50 g at 70 C",
+          "title": "Pour 1 to 50 g at 70 °C",
           "detail": "Cool water for the first pour.",
           "startSec": 0,
           "endSec": 30,
@@ -1633,7 +1768,7 @@
         },
         {
           "kind": "Pour",
-          "title": "Pour 2 to 100 g at 95 C",
+          "title": "Pour 2 to 100 g at 95 °C",
           "detail": "Switch to hot water.",
           "startSec": 30,
           "endSec": 60,
@@ -1684,6 +1819,13 @@
           "url": "https://gota.cafe/en/recipes/april-brewer/patrik-rolf-april",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Rinse the paper in the April Brewer.",
@@ -1746,6 +1888,11 @@
           "url": "https://www.scottrao.com/blog/pulsar-recipe",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
       ],
       "prep": [
         "Wet the filter in the base with the valve open, then drain.",
@@ -1811,6 +1958,12 @@
           "url": "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao",
           "note": ""
         }
+      ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Rao uses a plastic V60 because it holds heat better.",
@@ -1901,6 +2054,11 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
       "prep": [
         "Close the valve and fill the base with water just above the ridges.",
         "Lay a dry paper on top, open the valve over the sink so the paper seats on the ridges, then close it.",
@@ -1959,6 +2117,10 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "grinder"
+      ],
       "prep": [
         "Pick a sturdy mug the AeroPress sits on well.",
         "Dry paper filter in the cap. With a Prismo, the paper goes on top of the metal disc.",
@@ -1973,7 +2135,7 @@
         {
           "kind": "Pour",
           "title": "Fill the chamber",
-          "detail": "Pour 100 C water until the chamber is full, about 260 g.",
+          "detail": "Pour 100 °C water until the chamber is full, about 260 g.",
           "startSec": 0,
           "endSec": 20,
           "targetWaterG": 260
@@ -2047,6 +2209,12 @@
           "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/",
           "note": ""
         }
+      ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Fold and rinse a white Hario paper with boiling water. Plastic V60.",
@@ -2129,10 +2297,18 @@
           "note": ""
         }
       ],
+      "level": "easy",
+      "needs": [
+        "grinder"
+      ],
       "prep": [
         "Rinse a paper filter with tap water for a few seconds.",
         "Light-roast coffee, freshly ground.",
         "AeroPress on a large cup or jug, on the scale."
+      ],
+      "prepNoScale": [
+        "AeroPress on a large cup or jug. Add {coffee}.",
+        "Measure {water} of water in a jug."
       ],
       "tips": [
         "Press with your body weight but not too hard.",
@@ -2200,6 +2376,11 @@
           "url": "https://timwendelboe.no/pages/how-to-brew-french-press-coffee",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
       ],
       "prep": [
         "Preheat the press with hot water and dump it just before brewing.",
@@ -2289,7 +2470,7 @@
       "grind": "Filter grind. Grind finer for small batches and coarser for big ones, and adjust by time.",
       "tempC": 96,
       "blurb": "Sixty-five grams per litre, one bloom, then a long steady pour. Clean and transparent, made for light roasts.",
-      "sourceNote": "Wendelboe's published pour-over method (65 g/L) applied to a Chemex. He does not publish a Chemex-specific recipe or a pour-over temperature. 96 C is our choice.",
+      "sourceNote": "Wendelboe's published pour-over method (65 g/L) applied to a Chemex. He does not publish a Chemex-specific recipe or a pour-over temperature. 96 °C is our choice.",
       "fidelity": "adapted",
       "sources": [
         {
@@ -2297,6 +2478,12 @@
           "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder"
       ],
       "prep": [
         "Rinse the paper well with hot water to get rid of paper taste. Dump the rinse water.",
@@ -2370,9 +2557,16 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Rinse the paper, add the coffee, level it, zero the scale.",
-        "Water at 200 F (93 C)."
+        "Water at 93 °C."
       ],
       "tips": [
         "Onyx publishes a micron grind for every coffee. Use their grind calculator to translate it to your grinder: https://onyxcoffeelab.com/pages/grind-size-calculator"
@@ -2432,9 +2626,17 @@
           "note": ""
         }
       ],
+      "level": "easy",
+      "needs": [
+        "grinder"
+      ],
       "prep": [
         "Coffee in first, press on the scale, zeroed.",
-        "Water at 205 F (96 C)."
+        "Water at 96 °C."
+      ],
+      "prepNoScale": [
+        "Add {coffee} to the press first.",
+        "Measure {water} of water in a jug."
       ],
       "tips": [
         "Short steep, so the grind does the work. Do not go coarser than about 800 microns."
@@ -2509,6 +2711,13 @@
           "url": "https://onyxcoffeelab.com/products/monarch",
           "note": ""
         }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "gooseneck",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Rinse the Wave filter and seat it flat.",
@@ -2587,7 +2796,7 @@
       "waterG": 170.0,
       "grind": "Comandante Trailmaster, 31 clicks, sifted at 200 microns to remove fines, chaff blown off",
       "tempC": 84,
-      "blurb": "Upright, 100 g of 84 C water, one cross-stir, a gentle press onto warm bypass water. Winner of the 2025 World AeroPress Championship (Australia).",
+      "blurb": "Upright, 100 g of 84 °C water, one cross-stir, a gentle press onto warm bypass water. Winner of the 2025 World AeroPress Championship (Australia).",
       "sourceNote": "From the official World AeroPress Championship recipe archive. The water total is 100 g brew water plus the 70 g bypass poured into the carafe first, so the last step's 170 g counts water used, not a new pour.",
       "fidelity": "published",
       "sources": [
@@ -2597,8 +2806,14 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
-        "Pour 70 g of 50 C water into the carafe first. That is your bypass.",
+        "Pour 70 g of 50 °C water into the carafe first. That is your bypass.",
         "Upright AeroPress with a Flow Control cap and two paper filters.",
         "Grind slowly, blow out the chaff and sift out fines below 200 microns.",
         "He used 125 ppm water."
@@ -2609,7 +2824,7 @@
       "steps": [
         {
           "kind": "Pour",
-          "title": "100 g at 84 C",
+          "title": "100 g at 84 °C",
           "detail": "AeroPress on the carafe, coffee in. Pour 100 g to wet all the grounds.",
           "startSec": 0,
           "endSec": 10,
@@ -2677,10 +2892,16 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress set around the 4 mark.",
         "One Aesir filter, rinsed.",
-        "Brew water about 85-90 ppm at 96 C. A little 0 ppm room-temperature water for the final dilution.",
+        "Brew water about 85-90 ppm at 96 °C. A little 0 ppm room-temperature water for the final dilution.",
         "A Melodrip helps for the two pours."
       ],
       "tips": [
@@ -2772,6 +2993,12 @@
           "url": "https://worldaeropresschampionship.com/pages/recipes",
           "note": ""
         }
+      ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
       ],
       "prep": [
         "Inverted AeroPress, one paper filter, rinsed.",
@@ -2876,9 +3103,15 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress, one AeroPress paper, rinsed.",
-        "Perfect Coffee Water at 90 C.",
+        "Perfect Coffee Water at 90 °C.",
         "Two-step grind and sift if you can. If not, a medium grind with as few fines as possible."
       ],
       "tips": [
@@ -2937,7 +3170,7 @@
         {
           "kind": "Serve",
           "title": "Bypass to 150 g",
-          "detail": "Top up with 90 C water until the cup weighs 150 g. About 90 g of water, 185 g in all.",
+          "detail": "Top up with 90 °C water until the cup weighs 150 g. About 90 g of water, 185 g in all.",
           "startSec": 130,
           "endSec": 150,
           "targetWaterG": 185
@@ -2954,7 +3187,7 @@
       "waterG": 200.0,
       "grind": "Macap Labo 70D at 7.0 (medium)",
       "tempC": 80,
-      "blurb": "Inverted, 80 C water, two sets of gentle stirs, no bypass. Winner of the 2021 World AeroPress Championship (Finland).",
+      "blurb": "Inverted, 80 °C water, two sets of gentle stirs, no bypass. Winner of the 2021 World AeroPress Championship (Finland).",
       "sourceNote": "From the official World AeroPress Championship recipe archive.",
       "fidelity": "published",
       "sources": [
@@ -2964,9 +3197,15 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress, two paper filters, rinsed.",
-        "He used Third Wave Water espresso formula at 80 C."
+        "He used Third Wave Water espresso formula at 80 °C."
       ],
       "tips": [
         "No dilution. All 200 g goes through the coffee.",
@@ -2976,7 +3215,7 @@
         {
           "kind": "Bloom",
           "title": "50 g",
-          "detail": "Pour 50 g at 80 C.",
+          "detail": "Pour 50 g at 80 °C.",
           "startSec": 0,
           "endSec": 10,
           "targetWaterG": 50
@@ -3059,12 +3298,18 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress, Aesir filter, rinsed.",
         "Soft water: she used Spa Blauw at about 30 ppm."
       ],
       "tips": [
-        "She cooled the cup to about 60 C by stirring and decanting before serving.",
+        "She cooled the cup to about 60 °C by stirring and decanting before serving.",
         "Dilute to taste. 100 g is the starting point, 120 g was her final."
       ],
       "steps": [
@@ -3103,7 +3348,7 @@
         {
           "kind": "Serve",
           "title": "Dilute",
-          "detail": "Add 100 g of water, then more to taste. She used 120 g, 220 g of water in all. Cool to about 60 C by stirring and decanting.",
+          "detail": "Add 100 g of water, then more to taste. She used 120 g, 220 g of water in all. Cool to about 60 °C by stirring and decanting.",
           "startSec": 60,
           "endSec": 90,
           "targetWaterG": 220
@@ -3130,9 +3375,15 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress, paper filter rinsed with hot water.",
-        "Brita-filtered water at 85 C.",
+        "Brita-filtered water at 85 °C.",
         "Do not preheat the server."
       ],
       "tips": [
@@ -3142,7 +3393,7 @@
         {
           "kind": "Pour",
           "title": "100 g over 30 s",
-          "detail": "Pour 100 g of 85 C water over 30 seconds.",
+          "detail": "Pour 100 g of 85 °C water over 30 seconds.",
           "startSec": 0,
           "endSec": 30,
           "targetWaterG": 100
@@ -3166,7 +3417,7 @@
         {
           "kind": "Serve",
           "title": "Top up",
-          "detail": "Add 60 g of 85 C water and 40 g of room-temperature water.",
+          "detail": "Add 60 g of 85 °C water and 40 g of room-temperature water.",
           "startSec": 90,
           "endSec": 110,
           "targetWaterG": 200
@@ -3193,9 +3444,15 @@
           "note": ""
         }
       ],
+      "level": "advanced",
+      "needs": [
+        "scale",
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Inverted AeroPress, paper filter, pre-wet.",
-        "Water at 84 C."
+        "Water at 84 °C."
       ],
       "tips": [
         "The concentrate is about 4.5% TDS. Dilute to taste within 160-200 g.",
@@ -3264,13 +3521,18 @@
           "note": ""
         }
       ],
+      "level": "medium",
+      "needs": [
+        "grinder",
+        "thermometer"
+      ],
       "prep": [
         "Paper filter in the cap. Standard orientation, brewer on the mug.",
         "Add the coffee and level the bed. Zero the scale.",
         "Light roast: 15 g. Medium: 16 g. Dark: 17 g."
       ],
       "tips": [
-        "Hedrick never brews above 95 C: about 90-92 C for light roasts, 88 C for medium, 82-84 C for dark.",
+        "Hedrick never brews above 95 °C: about 90-92 °C for light roasts, 88 °C for medium, 82-84 °C for dark.",
         "A slow press gives a cleaner cup with better texture.",
         "Coarser grind? Just let it sit longer before pressing.",
         "Do not reheat the kettle between pours."
@@ -3326,6 +3588,351 @@
         }
       ],
       "accent": "#8E7CC3"
+    },
+    {
+      "id": "3fe-classic-double",
+      "name": "A classic double",
+      "author": "3FE",
+      "brewer": "espresso-machine",
+      "doseG": 18.0,
+      "waterG": 36.0,
+      "grind": "Fine",
+      "tempC": 93,
+      "blurb": "The textbook double: 18 g in, 36 g out, in 25 to 30 seconds. A sensible first shot on any machine.",
+      "sourceNote": "Numbers from 3FE's espresso brew guide: 18 g in, 36 g out in 25 to 30 seconds, machine at 93 °C. The guide's recipe box also lists 230 g of water and 30 minutes, which don't match its own steps; we follow the steps. The wording is ours.",
+      "fidelity": "published",
+      "sources": [
+        {
+          "who": "3FE",
+          "url": "https://3fe.com/pages/espresso-brew-guide",
+          "note": "Espresso brew guide: 18 g dose, 36 g yield, 25-30 seconds, 93 °C, fine grind. Checked 2026-11-19."
+        }
+      ],
+      "level": "medium",
+      "needs": [
+        "scale",
+        "grinder"
+      ],
+      "prep": [
+        "Preheat the machine until the water is at 93 °C.",
+        "Flush the group head, then empty and wipe the portafilter.",
+        "Weigh 18 g of coffee into the basket and spread it evenly.",
+        "Tamp evenly and firmly on a flat surface. Wipe loose grounds off the rim."
+      ],
+      "tips": [
+        "Aim for 25 to 30 seconds. If the shot runs fast or slow, change the grind, not the dose.",
+        "Change one thing per shot, and write it down before you taste."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Pull to 36 g",
+          "detail": "Lock the portafilter in and start the shot straight away. Stop at 36 g in the cup, 25 to 30 seconds in.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 36
+        }
+      ],
+      "accent": "#B5714E"
+    },
+    {
+      "id": "allpress-drip-machine",
+      "name": "Batch brew in a drip machine",
+      "author": "Allpress Espresso",
+      "brewer": "drip-machine",
+      "doseG": 70.0,
+      "waterG": 1250.0,
+      "grind": "Medium-coarse, like rough sand or sea salt",
+      "tempC": 94,
+      "blurb": "A full pot from a filter machine: 70 g of coffee to 1.25 litres, a short bloom and one light stir.",
+      "sourceNote": "Allpress's Moccamaster recipe: 70 g (about 14 tablespoons) to 1.25 litres of cold water, medium-coarse, a 30-second bloom with the slide gate closed, one light stir once the coffee is covered, about 5 to 6 minutes in all. The machine heats the water itself: SCA-certified home brewers must hold 92-96 °C, and 94 °C is the middle of that, not Allpress's number. The 5:30 finish is the middle of their 5 to 6 minutes.",
+      "fidelity": "adapted",
+      "sources": [
+        {
+          "who": "Allpress Espresso",
+          "url": "https://allpress.com/coffee-guides/how-to-brew-moccamaster",
+          "note": "Large batch: 70 g (approx. 14 tbsp) freshly ground, medium-coarse, 1.25 l cold filtered water, 30 s bloom, light stir, about 5-6 minutes."
+        },
+        {
+          "who": "Moccamaster",
+          "url": "https://us.moccamaster.com/blogs/blog/how-to-make-a-perfect-cup-of-coffee-with-a-moccamaster",
+          "note": "55-60 g of ground coffee per litre, or two tablespoons per 6 oz of water; medium-coarse, 500-800 microns."
+        },
+        {
+          "who": "Moccamaster",
+          "url": "https://us.moccamaster.com/blogs/blog/certified-by-the-sca-moccamaster-and-the-golden-cup-standard",
+          "note": "SCA home brewer certification: water at the grounds 92-96 °C, contact time 4 to 8 minutes at full capacity."
+        }
+      ],
+      "level": "easy",
+      "needs": [],
+      "prep": [
+        "Put a paper filter in the basket and rinse it with water.",
+        "Add the coffee and shake the basket so the bed is level.",
+        "Fill the tank with cold, filtered water."
+      ],
+      "tips": [
+        "Turn the machine off once the tank is empty, so the pot doesn't sit on the hot plate.",
+        "For a smaller pot keep the ratio: Moccamaster says 55 to 60 g of coffee per litre, or two tablespoons per 6 oz of water.",
+        "Brewing a lot? Grind a little coarser."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Switch on, wait 30 seconds",
+          "detail": "If your machine has a drip-stop or slide gate, keep it closed for the first 30 seconds so the coffee blooms. Without one, just let it run.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Pour",
+          "title": "Let it brew",
+          "detail": "Open the gate. Once the coffee is covered with water, give it one light stir to break up dry spots. The whole pot takes about 5 to 6 minutes.",
+          "startSec": 30,
+          "endSec": 330,
+          "targetWaterG": 1250
+        }
+      ],
+      "accent": "#C98A4B"
+    },
+    {
+      "id": "copper-cow-phin",
+      "name": "Vietnamese phin",
+      "author": "Copper Cow Coffee",
+      "brewer": "phin",
+      "doseG": 14.0,
+      "waterG": 120.0,
+      "grind": "Medium-fine, a little finer than pour-over",
+      "tempC": 93,
+      "blurb": "A one-cup phin: about two tablespoons of coffee, a one-minute bloom, then let it drip for 3 to 5 minutes.",
+      "sourceNote": "Copper Cow's phin guide: 14 g (about 2 tablespoons) for a single-serve phin, about 1 oz of water to bloom for 60 seconds, about 4 oz of water in all, 190-205 °F, 3 to 5 minutes to brew. We read the 4 oz as the whole fill (120 g), take 93 °C from the middle of their range and give the top-up pour 30 seconds; the drip ends at 5 minutes, the top of their range.",
+      "fidelity": "adapted",
+      "sources": [
+        {
+          "who": "Copper Cow Coffee",
+          "url": "https://coppercowcoffee.com/blogs/blog-posts/how-to-use-a-phin",
+          "note": "How to use a phin: 14 g or about 2 tablespoons, medium-fine (ground coffee: medium or universal), 1 oz bloom for 60 seconds, about 4 oz of water, 190-205 °F, 3-5 minutes."
+        }
+      ],
+      "level": "easy",
+      "needs": [],
+      "prep": [
+        "Set the phin's plate and chamber on your cup or glass.",
+        "Add the coffee, shake it level and rest the filter insert on top. No need to press."
+      ],
+      "tips": [
+        "Dripping through in well under 3 minutes means go finer; much longer than 5, coarser.",
+        "Pre-ground works: Copper Cow says a medium or universal grind is fine."
+      ],
+      "steps": [
+        {
+          "kind": "Bloom",
+          "title": "Bloom with 30 g",
+          "detail": "Pour about 30 g of hot water over the coffee and wait a minute.",
+          "startSec": 0,
+          "endSec": 60,
+          "targetWaterG": 30
+        },
+        {
+          "kind": "Pour",
+          "title": "Fill the phin",
+          "detail": "Top up with the rest of the water and put the lid on.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": 120
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Let it drip",
+          "detail": "Leave it alone. It takes 3 to 5 minutes to drip through.",
+          "startSec": 90,
+          "endSec": 300,
+          "targetWaterG": null
+        }
+      ],
+      "accent": "#8FA05C"
+    },
+    {
+      "id": "tarykina-cezve",
+      "name": "Cezve in two and a half minutes",
+      "author": "Tetiana Tarykina",
+      "brewer": "cezve",
+      "doseG": 7.5,
+      "waterG": 60.0,
+      "grind": "Turkish: finer than espresso, like flour",
+      "tempC": 20,
+      "blurb": "A small, strong cezve on medium-high heat with three stirs, poured the moment it foams.",
+      "sourceNote": "Tarykina's recipe as Fresh Cup reported it: 7.5 g of Turkish-ground coffee, 60 ml of water, medium-high heat, stirs at 0:30, 1:00 and 1:30, poured when it starts to foam, 2:30 in all. She was the 2019 Ukrainian Cezve/Ibrik Champion. She gives no water temperature: the water goes in cold, as in Copenhagen Coffee Lab's guide, and the 20 °C is ours.",
+      "fidelity": "adapted",
+      "sources": [
+        {
+          "who": "Fresh Cup",
+          "url": "https://freshcup.com/turkish-coffee-revisited",
+          "note": "Tetiana Tarykina's cezve recipe: 7.5 g, 60 ml, medium-high heat, stir at 0:30, 1:00 and 1:30, pour when it foams, 2:30 total."
+        },
+        {
+          "who": "Copenhagen Coffee Lab",
+          "url": "https://copenhagencoffeelab.com/en/blogs/inside-the-lab/tyrkisk-kaffe-sadan-brygger-du-den-rigtigt",
+          "note": "Cold, fresh water; a grind like flour; take it off before it boils over; let the grounds settle for a minute before drinking."
+        }
+      ],
+      "level": "medium",
+      "needs": [],
+      "prep": [
+        "Turkish-ground coffee: finer than espresso. Most shops sell it ready ground.",
+        "If you take sugar, add it now, with the coffee."
+      ],
+      "tips": [
+        "Never let it boil over: pour as soon as the foam rises.",
+        "Let the grounds settle for a minute before you drink."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Coffee and water in, heat on",
+          "detail": "Put the coffee and 60 g of cold water in the cezve and set it on medium-high heat.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 60
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir",
+          "detail": "A short stir to wet all the coffee.",
+          "startSec": 30,
+          "endSec": 60,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir again",
+          "detail": "Another short stir. Keep it on the heat.",
+          "startSec": 60,
+          "endSec": 90,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Stir",
+          "title": "Stir, then pour as it foams",
+          "detail": "One last stir. When the foam starts to rise, pour it into the cup, foam first.",
+          "startSec": 90,
+          "endSec": 150,
+          "targetWaterG": null
+        }
+      ],
+      "accent": "#C96A6A"
+    },
+    {
+      "id": "hario-syphon",
+      "name": "Syphon",
+      "author": "Hario",
+      "brewer": "siphon",
+      "doseG": 17.0,
+      "waterG": 250.0,
+      "grind": "Medium-fine",
+      "tempC": 100,
+      "blurb": "Hario's own syphon method: water up, coffee in, a few stirs, 70 seconds, heat off and three more stirs.",
+      "sourceNote": "Hario UK's syphon guide: 17 g medium-fine to 250 g of water (15 to 17 g per 250 g works), 3 to 5 circular stirs, heat turned down to hold the water up, heat off after 70 seconds and 3 good stirs, then it drains. The water is brought to the boil in the bowl, hence 100 °C. Hario gives no time for the last stirs or the drain: the 10 and 60 seconds are ours, so finish when it has drained.",
+      "fidelity": "adapted",
+      "sources": [
+        {
+          "who": "Hario UK",
+          "url": "https://www.hario.co.uk/pages/brew-guides-syphon",
+          "note": "Syphon brew guide: 17 g medium-fine, 250 g water, 3-5 circular stirs, 70 seconds, then heat off and 3 stirs."
+        }
+      ],
+      "level": "advanced",
+      "needs": [
+        "grinder"
+      ],
+      "prep": [
+        "Soak the cloth filter in warm water, set it in the upper chamber and hook the chain to the bottom of the funnel.",
+        "Fill the lower bowl with hot, filtered water and light the burner.",
+        "Rest the upper chamber in the bowl at an angle; when the water boils, seat it firmly.",
+        "Start the timer once the water has risen into the upper chamber."
+      ],
+      "tips": [
+        "Three to five stirs is plenty. Hario warns against stirring too much.",
+        "Let it cool a little before you drink it."
+      ],
+      "steps": [
+        {
+          "kind": "Steep",
+          "title": "Coffee in, stir, steep",
+          "detail": "Add the coffee and give it 3 to 5 circular stirs. Turn the burner down so the water just stays up.",
+          "startSec": 0,
+          "endSec": 70,
+          "targetWaterG": 250
+        },
+        {
+          "kind": "Stir",
+          "title": "Heat off, three stirs",
+          "detail": "Turn the heat off completely and give it 3 good stirs.",
+          "startSec": 70,
+          "endSec": 80,
+          "targetWaterG": null
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Let it drain",
+          "detail": "The coffee drains into the bowl. Lift off the upper chamber when it's done.",
+          "startSec": 80,
+          "endSec": 140,
+          "targetWaterG": null
+        }
+      ],
+      "accent": "#6C7BC4"
+    },
+    {
+      "id": "blue-tokai-south-indian-filter",
+      "name": "South Indian filter decoction",
+      "author": "Blue Tokai",
+      "brewer": "south-indian-filter",
+      "doseG": 18.0,
+      "waterG": 100.0,
+      "grind": "South Indian filter grind, as sold for the filter",
+      "tempC": 95,
+      "blurb": "A strong decoction that drips for ten minutes, for two or three cups with hot milk.",
+      "sourceNote": "Blue Tokai's South Indian filter guide: 18 g (about 9 teaspoons), levelled with the plunger and no pressure, 100 ml at 95 °C (about 1½ minutes off the boil), lid on, 9½ to 10 minutes to drip; then 50 ml of decoction with 60 ml of hot milk or 50 ml of hot water. The 30 seconds for the pour are ours and count inside their 10 minutes.",
+      "fidelity": "adapted",
+      "sources": [
+        {
+          "who": "Blue Tokai Coffee Roasters",
+          "url": "https://bluetokaicoffee.com/pages/south-indian-filter-brewing-guides",
+          "note": "South Indian filter guide: 18 g, 100 ml at 95 °C, lid on, 9.5-10 minutes; 50 ml decoction to 60 ml hot milk."
+        }
+      ],
+      "level": "easy",
+      "needs": [],
+      "prep": [
+        "Put the coffee in the upper chamber and set it on the lower one.",
+        "Level the coffee with the plunger and leave the plunger resting on top. No pressure."
+      ],
+      "tips": [
+        "For a cup: 50 ml of decoction with 60 ml of hot milk, or with 50 ml of hot water. Sugar to taste.",
+        "Pour it back and forth between two cups from a height for a foamy top.",
+        "One decoction makes 2 to 3 cups and keeps in the fridge for 3 days."
+      ],
+      "steps": [
+        {
+          "kind": "Pour",
+          "title": "Pour 100 g at 95 °C",
+          "detail": "Water about a minute and a half off the boil, poured into the top chamber over the plunger.",
+          "startSec": 0,
+          "endSec": 30,
+          "targetWaterG": 100
+        },
+        {
+          "kind": "Drawdown",
+          "title": "Lid on, let it drip",
+          "detail": "Keep the lid on the whole time to hold the heat. It takes 9½ to 10 minutes.",
+          "startSec": 30,
+          "endSec": 600,
+          "targetWaterG": null
+        }
+      ],
+      "accent": "#D2724A"
     }
   ]
 }

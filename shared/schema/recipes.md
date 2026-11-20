@@ -53,6 +53,9 @@ web app. One file, so both apps always show the same numbers.
 | `accent` | string | `#RRGGBB` (or `#AARRGGBB`). 1.x saved recipes wrote an ARGB number, which readers still accept. |
 | `isBuiltIn` | boolean | omitted here (default true); user recipes write false |
 | `basedOn` | string | optional: the id a user recipe was duplicated from |
+| `level` | string | v4, optional: `easy`, `medium` or `advanced`; omitted or `""` = not said (user recipes). Every built-in has one. Judged from the steps: one pour and a steep is easy; several timed pours, medium; competition recipes, two water temperatures or espresso, advanced. |
+| `needs` | string[] | v4, optional: kit the recipe really depends on, a subset of `scale` (several weighed pours or a weighed yield; one pour of all the water does not count), `gooseneck` (controlled pour-over pours), `grinder` (a grind pre-ground coffee does not offer), `thermometer` (a stated temperature of 93 °C or less, or two temperatures). Readers drop words they don't know. |
+| `prepNoScale` | string[] | v4, optional: prep lines for someone without a scale. They replace the `prep` lines that mention a scale, zeroing, taring or weighing, where the first of those stood. `{coffee}` becomes e.g. "6 level tablespoons of coffee" and `{water}` "500 ml (2 mugs)" (see `schema/units.md`). Every `easy` recipe whose prep mentions a scale has one. |
 
 ## Rules for changing it
 
@@ -64,7 +67,10 @@ web app. One file, so both apps always show the same numbers.
   change numbers; publish a corrected version under a new id.
 - A new recipe needs complete numbers from a cited source and at least one `sources` entry with
   a URL.
-- `RecipeIdsTest` (Android) checks ids, order, contiguous steps, pour targets and golden numbers.
+- Temperatures in prose are written "70 °C" or "90-95 °C" (a space, then °C). Both apps convert
+  that form to °F for people who use °F, with the pattern in `fixtures/domain-v4-cases.json`.
+- `RecipeIdsTest` (Android) checks ids, order, contiguous steps, pour targets, levels, needs,
+  prose temperatures and golden numbers; the web's recipe tests check the same.
 
 ## History
 
@@ -73,3 +79,14 @@ web app. One file, so both apps always show the same numbers.
   their authors' published numbers; corrected versions of five adapted recipes added as
   `hedrick-aeropress-very-good`, `rao-v60-spin`, `gagne-v60-adastra`, `wendelboe-pourover-chemex`
   and `onyx-kalita-monarch`; 25 new recipes added.
+- 2026-11-19 (v4): `level` and `needs` for every built-in; `prepNoScale` for the easy recipes that
+  weigh (Hoffmann's and Onyx's French press, Hoffmann's and Wendelboe's AeroPress). Prose
+  temperatures normalised to "N °C" (Onyx's "200 F (93 C)" now reads "93 °C"). Hoffmann's French
+  press "Skim" step is kind `Stir` (was `Serve`; title unchanged). Six recipes added for brewers
+  that had none, each from a page read on 2026-11-19: `3fe-classic-double` (3FE espresso guide),
+  `allpress-drip-machine` (Allpress Moccamaster recipe), `copper-cow-phin` (Copper Cow phin guide),
+  `tarykina-cezve` (Tetiana Tarykina via Fresh Cup), `hario-syphon` (Hario UK syphon guide) and
+  `blue-tokai-south-indian-filter` (Blue Tokai). All but the 3FE double are `adapted`: each
+  `sourceNote` names the numbers that are ours (a pour or drain time the source leaves out, a
+  temperature from the middle of a range). No drip-bag recipe: no maker's page with a dose was
+  found.

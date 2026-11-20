@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "updated": "2026-11-19",
+  "terms": [
+    {
+      "id": "ratio",
+      "term": "Ratio",
+      "short": "How much water for each gram of coffee. 1:16 means 16 g (about 16 ml) of water for every 1 g of coffee. More water tastes lighter; less tastes stronger.",
+      "aliases": ["brew ratio", "coffee to water"],
+      "sources": [
+        {"who": "Tim Wendelboe", "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee", "note": "His pour-over and filter ratio: 65 g of coffee per litre of water."},
+        {"who": "Moccamaster", "url": "https://us.moccamaster.com/blogs/blog/how-to-make-a-perfect-cup-of-coffee-with-a-moccamaster", "note": "55-60 g of ground coffee per litre."}
+      ]
+    },
+    {
+      "id": "dose",
+      "term": "Dose",
+      "short": "How much dry coffee you use.",
+      "aliases": ["coffee", "grams of coffee"],
+      "sources": []
+    },
+    {
+      "id": "yield",
+      "term": "Yield",
+      "short": "How much espresso ends up in the cup, by weight. A common double is 18 g of coffee in and about 36 g out.",
+      "aliases": ["in the cup", "beverage weight", "out"],
+      "sources": [
+        {"who": "3FE", "url": "https://3fe.com/pages/espresso-brew-guide", "note": "18 g dose, 36 g yield."}
+      ]
+    },
+    {
+      "id": "bloom",
+      "term": "Bloom",
+      "short": "A small first pour that just wets the coffee. Fresh coffee bubbles as gas escapes; waiting 30-45 seconds lets the rest of the water soak in evenly.",
+      "aliases": ["blooming"],
+      "sources": [
+        {"who": "James Hoffmann", "url": "https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique", "note": "Blooms with twice the coffee's weight in water for up to 45 seconds."}
+      ]
+    },
+    {
+      "id": "pour",
+      "term": "Pour",
+      "short": "Add water up to the amount shown, steadily rather than all at once.",
+      "aliases": ["pour to"],
+      "sources": [
+        {"who": "Scott Rao", "url": "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao", "note": "Pours in a steady stream with the kettle at a constant height."}
+      ]
+    },
+    {
+      "id": "swirl",
+      "term": "Swirl",
+      "short": "Gently spin the brewer so the coffee settles flat and no dry clumps are left.",
+      "aliases": ["spin", "Rao spin"],
+      "sources": [
+        {"who": "Jonathan Gagné", "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/", "note": "Uses the Rao spin to settle a flat bed and reduce channelling."}
+      ]
+    },
+    {
+      "id": "stir",
+      "term": "Stir",
+      "short": "Stir gently with a spoon to wet all the coffee or knock grounds off the sides.",
+      "aliases": ["stirring"],
+      "sources": [
+        {"who": "Scott Rao", "url": "https://www.scottrao.com/blog/2017/9/14/v60-video", "note": "Judicious stirring reduces channelling and makes extraction more even."}
+      ]
+    },
+    {
+      "id": "steep",
+      "term": "Steep",
+      "short": "Leave the coffee sitting in the water. Longer steeping pulls out more flavour.",
+      "aliases": ["steeping", "contact time"],
+      "sources": [
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: a longer brew extracts more."}
+      ]
+    },
+    {
+      "id": "press",
+      "term": "Press",
+      "short": "Push the plunger down slowly and steadily.",
+      "aliases": ["plunge"],
+      "sources": [
+        {"who": "Lance Hedrick", "url": "https://www.youtube.com/watch?v=CafyJ2p0Bgs", "note": "Presses the AeroPress slowly and gently."}
+      ]
+    },
+    {
+      "id": "drawdown",
+      "term": "Drawdown",
+      "short": "The time for the last of the water to drain through the coffee. Much faster than the recipe usually means the grind is too coarse; much slower, too fine.",
+      "aliases": ["draw-down", "drain"],
+      "sources": [
+        {"who": "Tim Wendelboe", "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee", "note": "Too long and bitter: grind coarser. Too short and weak: grind finer."},
+        {"who": "Scott Rao", "url": "https://www.scottrao.com/blog/pulsar-recipe", "note": "Steers by total brew time: finer when a brew finishes early, coarser when it runs long."}
+      ]
+    },
+    {
+      "id": "bed",
+      "term": "The coffee bed",
+      "short": "The layer of wet grounds left in the filter. A flat bed usually means the water went through evenly.",
+      "aliases": ["bed", "coffee bed", "bed exposed"],
+      "sources": [
+        {"who": "Jonathan Gagné", "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/", "note": "An even, flat bed for an even extraction."}
+      ]
+    },
+    {
+      "id": "channelling",
+      "term": "Channelling",
+      "short": "Water finding an easy path through the coffee and skipping the rest. It can make a cup taste sour and bitter at the same time.",
+      "aliases": ["channeling"],
+      "sources": [
+        {"who": "Jonathan Gagné", "url": "https://coffeeadastra.com/2018/11/30/brewing-better-coffee/", "note": "Channelling as one of the biggest obstacles to an even extraction."}
+      ]
+    },
+    {
+      "id": "tds",
+      "term": "TDS",
+      "short": "Total dissolved solids: how strong the coffee is, measured with a refractometer. Without one, skip it.",
+      "aliases": ["total dissolved solids", "strength", "refractometer"],
+      "sources": []
+    },
+    {
+      "id": "extraction",
+      "term": "Extraction",
+      "short": "How much of the coffee dissolved into your cup. Too little tastes sour and thin; too much tastes bitter and dry.",
+      "aliases": ["extraction yield", "EY"],
+      "sources": [
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: extract more with a finer grind or longer brew, less with a coarser grind or shorter brew."}
+      ]
+    },
+    {
+      "id": "grind",
+      "term": "Grind",
+      "short": "How fine the coffee is ground. Finer gives up flavour faster; coarser, slower. Sour usually means go finer, bitter coarser.",
+      "aliases": ["grind size", "grind setting"],
+      "sources": [
+        {"who": "Matt Perger (Barista Hustle)", "url": "https://www.baristahustle.com/?p=2185", "note": "Coffee Compass: finer extracts more, coarser less."},
+        {"who": "Tim Wendelboe", "url": "https://timwendelboe.no/pages/how-to-brew-pourover-and-filter-coffee", "note": "Adjusts the grind by brew time and taste."}
+      ]
+    },
+    {
+      "id": "clicks",
+      "term": "Clicks",
+      "short": "Hand grinders turn in steps you can feel. We count from fully closed, so the same number means the same grind on any grinder of that model.",
+      "aliases": ["click", "grind clicks"],
+      "sources": []
+    },
+    {
+      "id": "days-off-roast",
+      "term": "Days off roast",
+      "short": "Days since the coffee was roasted. Very fresh coffee is full of gas and lighter roasts need longer to rest; coffee kept somewhere warm goes stale sooner.",
+      "aliases": ["roast date", "rest", "freshness"],
+      "sources": [
+        {"who": "Scott Rao", "url": "https://www.scottrao.com/blog/restingbeans", "note": "Lighter roasts need more rest; warm storage ages beans faster."}
+      ]
+    },
+    {
+      "id": "immersion",
+      "term": "Immersion",
+      "short": "All the water sits with the coffee the whole time, like a French press. Steep time matters most.",
+      "aliases": ["full immersion", "steeped"],
+      "sources": []
+    },
+    {
+      "id": "percolation",
+      "term": "Percolation",
+      "short": "Water flows through the coffee and out, like a pour-over or drip machine. How fast it drains matters most.",
+      "aliases": ["pour-over", "drip"],
+      "sources": []
+    },
+    {
+      "id": "gooseneck",
+      "term": "Gooseneck kettle",
+      "short": "A kettle with a thin spout for a slow, steady pour. Nice for pour-over, but a normal kettle works if you pour gently.",
+      "aliases": ["gooseneck", "pour-over kettle"],
+      "sources": []
+    },
+    {
+      "id": "preinfusion",
+      "term": "Pre-infusion",
+      "short": "Wetting the espresso puck gently for a few seconds before full pressure, so water flows evenly.",
+      "aliases": ["pre-infusion", "preinfuse"],
+      "sources": []
+    },
+    {
+      "id": "shot-time",
+      "term": "Shot time",
+      "short": "Seconds from starting the pump to stopping it. Many recipes aim for about 25-30 seconds.",
+      "aliases": ["shot time", "extraction time"],
+      "sources": [
+        {"who": "3FE", "url": "https://3fe.com/pages/espresso-brew-guide", "note": "Aim for shots to run between 25 and 30 seconds."}
+      ]
+    },
+    {
+      "id": "bypass",
+      "term": "Bypass",
+      "short": "Hot water added after brewing, straight into the cup, to make it lighter.",
+      "aliases": ["dilution", "bypass water"],
+      "sources": []
+    },
+    {
+      "id": "zero-the-scale",
+      "term": "Zero the scale",
+      "short": "Press the scale's tare button with the brewer on it so it reads 0. Then it shows only the water you add.",
+      "aliases": ["tare", "zero", "zeroed"],
+      "sources": []
+    },
+    {
+      "id": "published",
+      "term": "Published numbers",
+      "short": "Every number in this recipe comes from the source it cites.",
+      "aliases": ["published"],
+      "sources": []
+    },
+    {
+      "id": "adapted",
+      "term": "Adapted",
+      "short": "Most numbers come from the source, but some are ours or the sources disagree. The note under the recipe says which.",
+      "aliases": ["adapted"],
+      "sources": []
+    },
+    {
+      "id": "community",
+      "term": "Community",
+      "short": "A common way to brew that many people use. It isn't any one person's recipe.",
+      "aliases": ["community"],
+      "sources": []
+    }
+  ]
+}

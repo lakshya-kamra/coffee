@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-17",
+  "updated": "2026-11-19",
   "grinders": [
     {
       "id": "1zpresso-k-ultra",
@@ -3529,6 +3529,33 @@
       ],
       "confidence": "low",
       "notes": "Very common budget flat-burr grinder; fines-heavy."
+    },
+    {
+      "id": "blade-grinder",
+      "brand": "Any",
+      "model": "Blade grinder",
+      "kind": "electric",
+      "burr": "blade",
+      "burrSizeMm": null,
+      "popularity": 1,
+      "setting": {
+        "style": "stepless",
+        "unit": "s",
+        "min": 0,
+        "max": 60,
+        "step": 1,
+        "lowerIsFiner": false,
+        "clicksPerRotation": null,
+        "micronsPerStep": null,
+        "dialReading": "No dial: the grind depends on how many seconds you run it.",
+        "entryHint": "Type the seconds you ground for.",
+        "dialFormat": "plain",
+        "settingUnit": "s"
+      },
+      "ranges": {},
+      "rangeSources": [],
+      "confidence": "low",
+      "notes": "Any spinning-blade grinder. It chops rather than grinds, so the result is uneven; longer runs give finer coffee. Pulse in short bursts and shake the grinder between them."
     }
   ]
 }

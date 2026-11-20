@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "about": "v4 domain parity cases (shared/schema/domain-v4.md). The web app (Vitest) and the Android app (JUnit) both run every case and must give exactly these outputs. Brewer and recipe ids are shared/catalog ids.",
+  "proseTempPattern": "(\\d+(?:\\.\\d+)?)(?:\\s*[-–]\\s*(\\d+(?:\\.\\d+)?))?\\s*°C",
+  "noScaleAmounts": [
+    {"in": {"doseG": 30, "waterG": 500, "method": "pourover", "form": ""}, "out": {"coffeeTbsp": 6, "coffee": "6 level tablespoons", "coffeeLine": "6 level tablespoons of coffee", "waterMl": 500, "mugs": 2, "water": "500 ml (2 mugs)", "basket": null}},
+    {"in": {"doseG": 22, "waterG": 360, "method": "pourover", "form": "whole"}, "out": {"coffeeTbsp": 4.5, "coffee": "4½ level tablespoons", "coffeeLine": "4½ level tablespoons of beans", "waterMl": 360, "mugs": 1.5, "water": "360 ml (1½ mugs)", "basket": null}},
+    {"in": {"doseG": 11, "waterG": 200, "method": "aeropress", "form": "ground"}, "out": {"coffeeTbsp": 2, "coffee": "2 level tablespoons", "coffeeLine": "2 level tablespoons of coffee", "waterMl": 200, "mugs": 1, "water": "200 ml (1 mug)", "basket": null}},
+    {"in": {"doseG": 3, "waterG": 150, "method": "pourover", "form": ""}, "out": {"coffeeTbsp": 1, "coffee": "1 level tablespoon", "coffeeLine": "1 level tablespoon of coffee", "waterMl": 150, "mugs": null, "water": "150 ml", "basket": null}},
+    {"in": {"doseG": 14, "waterG": 120, "method": "aeropress", "form": ""}, "out": {"coffeeTbsp": 3, "coffee": "3 level tablespoons", "coffeeLine": "3 level tablespoons of coffee", "waterMl": 120, "mugs": null, "water": "120 ml", "basket": null}},
+    {"in": {"doseG": 75, "waterG": 1000, "method": "coldBrew", "form": ""}, "out": {"coffeeTbsp": 15, "coffee": "15 level tablespoons", "coffeeLine": "15 level tablespoons of coffee", "waterMl": 1000, "mugs": 4, "water": "1000 ml (4 mugs)", "basket": null}},
+    {"in": {"doseG": 18, "waterG": 36, "method": "espresso", "form": ""}, "out": {"coffeeTbsp": null, "coffee": "", "coffeeLine": "Fill the basket level, then tamp.", "waterMl": 36, "mugs": null, "water": "36 ml", "basket": "Fill the basket level, then tamp."}},
+    {"in": {"doseG": 17, "waterG": 150, "method": "moka", "form": "ground"}, "out": {"coffeeTbsp": null, "coffee": "", "coffeeLine": "Fill the basket level; don't press it down. Water to just below the valve.", "waterMl": 150, "mugs": null, "water": "150 ml", "basket": "Fill the basket level; don't press it down. Water to just below the valve."}}
+  ],
+  "noScalePrep": [
+    {
+      "recipe": {"prep": ["Preheat the press with hot water and dump it.", "Add grounds, put the press on the scale, zero it.", "Leave the plunger out entirely for now."], "prepNoScale": ["Add {coffee} to the press.", "Measure {water} of water in a jug."], "doseG": 30, "waterG": 500, "method": "frenchPress"},
+      "fahrenheit": false, "form": "",
+      "out": ["Preheat the press with hot water and dump it.", "Add 6 level tablespoons of coffee to the press.", "Measure 500 ml (2 mugs) of water in a jug.", "Leave the plunger out entirely for now."]
+    },
+    {
+      "recipe": {"prep": ["Rinse paper, level bed, zero scale.", "Grind a click or two finer than your usual V60 setting."], "prepNoScale": [], "doseG": 22, "waterG": 350, "method": "pourover"},
+      "fahrenheit": true, "form": "whole",
+      "out": ["Measure 350 ml (1½ mugs) of water in a jug first.", "Measure 4½ level tablespoons of beans.", "Grind a click or two finer than your usual V60 setting."]
+    },
+    {
+      "recipe": {"prep": ["Weigh 18 g into the basket. WDT thoroughly.", "Level, tamp once, no tapping.", "Purge the group. Cup on the scale, zeroed."], "prepNoScale": [], "doseG": 18, "waterG": 45, "method": "espresso"},
+      "fahrenheit": false, "form": "",
+      "out": ["Fill the basket level, then tamp.", "Level, tamp once, no tapping."]
+    },
+    {
+      "recipe": {"prep": ["Rinse the paper, add the coffee, level it, zero the scale.", "Water at 93 °C."], "prepNoScale": [], "doseG": 15, "waterG": 250, "method": "pourover"},
+      "fahrenheit": true, "form": "",
+      "out": ["Measure 250 ml (1 mug) of water in a jug first.", "Measure 3 level tablespoons of coffee.", "Water at 199 °F."]
+    }
+  ],
+  "servingsPreset": [
+    {"recipe": "hoffmann-v60", "mugs": 1, "out": {"doseG": 15, "waterG": 250}},
+    {"recipe": "hoffmann-v60", "mugs": 2, "out": {"doseG": 30, "waterG": 500}},
+    {"recipe": "hoffmann-v60", "mugs": 3, "out": {"doseG": 45, "waterG": 750}},
+    {"recipe": "kasuya-46", "mugs": 1, "out": {"doseG": 16.7, "waterG": 250}}
+  ],
+  "renderTemps": [
+    {"in": {"text": "Water at 93 °C.", "unit": "f"}, "out": "Water at 199 °F."},
+    {"in": {"text": "Water at 93 °C.", "unit": "c"}, "out": "Water at 93 °C."},
+    {"in": {"text": "about 90-92 °C for light roasts, 88 °C for medium", "unit": "f"}, "out": "about 194-198 °F for light roasts, 190 °F for medium"},
+    {"in": {"text": "70 °C for the first pour, 95 °C for the rest.", "unit": "f"}, "out": "158 °F for the first pour, 203 °F for the rest."},
+    {"in": {"text": "Cool to about 60 °C by stirring.", "unit": "f"}, "out": "Cool to about 140 °F by stirring."},
+    {"in": {"text": "No temperature here, just 100 g.", "unit": "f"}, "out": "No temperature here, just 100 g."}
+  ],
+  "formatDuration": [
+    {"in": 0, "out": "0:00"},
+    {"in": 210, "out": "3:30"},
+    {"in": 3599, "out": "59:59"},
+    {"in": 3600, "out": "1 h"},
+    {"in": 43500, "out": "12 h 5 min"},
+    {"in": 87000, "out": "24 h 10 min"}
+  ],
+  "ratioPhrase": [
+    {"in": {"doseG": 15, "waterG": 250, "method": "pourover"}, "out": "1 part coffee to 16.7 parts water"},
+    {"in": {"doseG": 20, "waterG": 320, "method": "pourover"}, "out": "1 part coffee to 16 parts water"},
+    {"in": {"doseG": 18, "waterG": 36, "method": "espresso"}, "out": "1 part coffee to 2 parts espresso"},
+    {"in": {"doseG": 18, "waterG": 45, "method": "espresso"}, "out": "1 part coffee to 2.5 parts espresso"},
+    {"in": {"doseG": 0, "waterG": 250, "method": "pourover"}, "out": ""}
+  ],
+  "grindReference": [
+    {"in": "Medium-fine", "out": "like table salt"},
+    {"in": "Fine-medium, about table salt", "out": "like table salt"},
+    {"in": "Coarse, a step coarser than your usual paper-filter setting", "out": "like sea salt"},
+    {"in": "Medium, not as coarse as you think", "out": "like sand"},
+    {"in": "Medium-coarse, like rough sand or sea salt", "out": "like coarse sand"},
+    {"in": "Fine", "out": "like fine salt"},
+    {"in": "Extra fine", "out": "like flour"},
+    {"in": "Very coarse on a Timemore", "out": "like cracked pepper"},
+    {"in": "Turkish: finer than espresso, like flour", "out": "like flour"},
+    {"in": "Finer than your pour-over setting", "out": null},
+    {"in": "Espresso. Dial by taste, not by number", "out": null},
+    {"in": "", "out": null}
+  ],
+  "brewerFamily": [
+    {"in": "hario-v60-01", "out": "pourover:V60"},
+    {"in": "hario-v60-02", "out": "pourover:V60"},
+    {"in": "chemex", "out": "pourover:Chemex"},
+    {"in": "kalita-wave-185", "out": "pourover:Kalita"},
+    {"in": "hario-switch", "out": "pourover:Switch"},
+    {"in": "clever-dripper", "out": "pourover:Switch"},
+    {"in": "drip-machine", "out": "drip-machine"},
+    {"in": "drip-bag", "out": "drip-bag"},
+    {"in": "phin", "out": "phin"},
+    {"in": "south-indian-filter", "out": "south-indian-filter"},
+    {"in": "melodrip", "out": "accessory"},
+    {"in": "other", "out": "other"},
+    {"in": "aeropress", "out": "aeropress"},
+    {"in": "french-press", "out": "frenchPress"},
+    {"in": "cezve", "out": "turkish"},
+    {"in": "siphon", "out": "siphon"},
+    {"in": "espresso-machine", "out": "espresso"},
+    {"in": "moka-pot", "out": "moka"},
+    {"in": "cold-brew-jar", "out": "coldBrew"}
+  ],
+  "brewerArt": [
+    {"in": "drip-machine", "out": "Drip"},
+    {"in": "drip-bag", "out": "V60"},
+    {"in": "cezve", "out": "Cezve"},
+    {"in": "siphon", "out": "Siphon"},
+    {"in": "phin", "out": "Phin"},
+    {"in": "south-indian-filter", "out": "Phin"},
+    {"in": "chemex", "out": "Chemex"},
+    {"in": "moka-pot", "out": "Moka"},
+    {"in": "hario-switch", "out": "Switch"}
+  ],
+  "reviewSections": [
+    {"in": "hario-v60-02", "out": {"drawdown": true, "bed": true, "retained": true, "style": "percolation"}},
+    {"in": "kalita-wave-185", "out": {"drawdown": true, "bed": true, "retained": true, "style": "percolation"}},
+    {"in": "hario-switch", "out": {"drawdown": true, "bed": true, "retained": true, "style": "percolation"}},
+    {"in": "clever-dripper", "out": {"drawdown": true, "bed": true, "retained": false, "style": "immersion"}},
+    {"in": "drip-machine", "out": {"drawdown": false, "bed": true, "retained": true, "style": "percolation"}},
+    {"in": "drip-bag", "out": {"drawdown": false, "bed": false, "retained": true, "style": "percolation"}},
+    {"in": "phin", "out": {"drawdown": false, "bed": false, "retained": true, "style": "percolation"}},
+    {"in": "south-indian-filter", "out": {"drawdown": false, "bed": false, "retained": true, "style": "percolation"}},
+    {"in": "french-press", "out": {"drawdown": false, "bed": false, "retained": false, "style": "immersion"}},
+    {"in": "aeropress", "out": {"drawdown": false, "bed": false, "retained": false, "style": "immersion"}},
+    {"in": "cold-brew-jar", "out": {"drawdown": false, "bed": false, "retained": false, "style": "immersion"}},
+    {"in": "cezve", "out": {"drawdown": false, "bed": false, "retained": false, "style": "immersion"}},
+    {"in": "siphon", "out": {"drawdown": false, "bed": false, "retained": false, "style": "immersion"}},
+    {"in": "moka-pot", "out": {"drawdown": false, "bed": false, "retained": false, "style": "percolation"}},
+    {"in": "espresso-machine", "out": {"drawdown": false, "bed": false, "retained": false, "style": "espresso"}},
+    {"in": null, "out": {"drawdown": true, "bed": true, "retained": true, "style": "percolation"}}
+  ],
+  "methodLabels": [
+    {"in": "espresso", "out": {"water": "YIELD", "waterNote": "in the cup", "time": "SHOT TIME", "longTimes": false}},
+    {"in": "moka", "out": {"water": "WATER IN THE BASE", "waterNote": "", "time": "TIME", "longTimes": false}},
+    {"in": "coldBrew", "out": {"water": "WATER", "waterNote": "", "time": "TIME", "longTimes": true}},
+    {"in": "pourover", "out": {"water": "WATER", "waterNote": "", "time": "TIME", "longTimes": false}}
+  ],
+  "defaultTempUnit": [
+    {"in": "en-US", "out": "f"},
+    {"in": "en_US", "out": "f"},
+    {"in": "es-PR", "out": "f"},
+    {"in": "en-LR", "out": "f"},
+    {"in": "en-BS", "out": "f"},
+    {"in": "en-KY", "out": "f"},
+    {"in": "en-GB", "out": "c"},
+    {"in": "fr-FR", "out": "c"},
+    {"in": "zh-Hant-TW", "out": "c"},
+    {"in": "en", "out": "c"},
+    {"in": "", "out": "c"}
+  ],
+  "matchesLogQuery": {
+    "brew": {"recipeName": "The Ultimate V60 Technique", "recipeAuthor": "James Hoffmann", "beanLabel": "Café Bustelo — Espresso Style", "grinderLabel": "1Zpresso K-Ultra", "brewer": "Hario V60", "notes": "Bright, a bit sour", "nextTime": "Grind finer", "descriptors": ["Stone fruit"]},
+    "cases": [
+      {"query": "", "out": true},
+      {"query": "   ", "out": true},
+      {"query": "cafe", "out": true},
+      {"query": "CAFÉ bustelo", "out": true},
+      {"query": "hoffmann v60", "out": true},
+      {"query": "k-ultra", "out": true},
+      {"query": "stone", "out": true},
+      {"query": "finer", "out": true},
+      {"query": "sour bright", "out": true},
+      {"query": "chemex", "out": false},
+      {"query": "hoffmann chemex", "out": false}
+    ]
+  },
+  "firstBrew": {
+    "recipes": [
+      {"id": "v60-hard", "brewer": "hario-v60-02", "level": "advanced", "needs": ["scale", "gooseneck", "grinder"]},
+      {"id": "v60-easy", "brewer": "hario-v60-02", "level": "medium", "needs": ["scale", "grinder"]},
+      {"id": "press", "brewer": "french-press", "level": "easy", "needs": ["grinder"]},
+      {"id": "aero", "brewer": "aeropress", "level": "medium", "needs": []},
+      {"id": "moka", "brewer": "moka-pot", "level": "easy", "needs": []}
+    ],
+    "cases": [
+      {"settings": {"ownedBrewerIds": ["drip-machine"], "hasScale": true, "buysGround": false, "experience": ""}, "grinders": 1, "out": {"recipe": null, "noRecipeFor": ["drip-machine"]}},
+      {"settings": {"ownedBrewerIds": ["hario-v60-01"], "hasScale": true, "buysGround": false, "experience": "recipes"}, "grinders": 1, "out": {"recipe": "v60-easy", "noRecipeFor": []}},
+      {"settings": {"ownedBrewerIds": ["hario-v60-02"], "hasScale": false, "buysGround": false, "experience": "new"}, "grinders": 1, "out": {"recipe": "v60-easy", "noRecipeFor": []}},
+      {"settings": {"ownedBrewerIds": ["french-press", "aeropress"], "hasScale": true, "buysGround": true, "experience": ""}, "grinders": 0, "out": {"recipe": "aero", "noRecipeFor": []}},
+      {"settings": {"ownedBrewerIds": [], "hasScale": false, "buysGround": true, "experience": "new"}, "grinders": 0, "out": {"recipe": "moka", "noRecipeFor": []}},
+      {"settings": {"ownedBrewerIds": ["melodrip"], "hasScale": true, "buysGround": false, "experience": ""}, "grinders": 1, "out": {"recipe": "press", "noRecipeFor": []}},
+      {"settings": {"ownedBrewerIds": ["cezve", "moka-pot"], "hasScale": true, "buysGround": false, "experience": ""}, "grinders": 1, "out": {"recipe": "moka", "noRecipeFor": ["cezve"]}},
+      {"settings": {"ownedBrewerIds": ["chemex"], "hasScale": true, "buysGround": false, "experience": ""}, "grinders": 1, "out": {"recipe": null, "noRecipeFor": ["chemex"]}}
+    ]
+  },
+  "quickRead": [
+    {"name": "sour, percolation, adjustable", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Sour"]}, "out": ["Grind a little finer next time."]},
+    {"name": "sour, percolation, fixed", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Sour"], "grindKind": "preground"}, "out": ["Pour more slowly, and use water just off the boil."]},
+    {"name": "sour, immersion, adjustable", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Sour"], "grindKind": "blade"}, "out": ["Steep 30 seconds longer, or grind a little finer."]},
+    {"name": "sour, immersion, fixed", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Sour"], "grindKind": "preground"}, "out": ["Steep 1 minute longer."]},
+    {"name": "sour, espresso", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"faults": ["Sour"]}, "out": ["Let more out: aim for about 45 g, or grind finer."]},
+    {"name": "bitter, percolation, adjustable", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Bitter"]}, "out": ["Grind a little coarser next time."]},
+    {"name": "bitter, percolation, fixed", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Bitter"], "grindKind": "preground"}, "out": ["Use water a little cooler, about 90 °C."]},
+    {"name": "bitter, percolation, fixed, °F", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Bitter"], "grindKind": "preground"}, "opts": {"fahrenheit": true}, "out": ["Use water a little cooler, about 194 °F."]},
+    {"name": "bitter, immersion, adjustable", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Bitter"]}, "out": ["Steep 30 seconds less, or grind a little coarser."]},
+    {"name": "bitter, immersion, fixed", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Bitter"], "grindKind": "preground"}, "out": ["Steep 30 seconds less."]},
+    {"name": "bitter, espresso", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"faults": ["Bitter"]}, "out": ["Stop the shot sooner, or grind coarser."]},
+    {"name": "too weak, percolation, adjustable", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too weak"]}, "out": ["Grind a little finer next time.", "Or use a little more coffee: +2 g."]},
+    {"name": "too weak, percolation, fixed, no scale", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too weak"], "grindKind": "preground"}, "opts": {"hasScale": false}, "out": ["Pour more slowly, and use water just off the boil.", "Or use a little more coffee: +1 tbsp."]},
+    {"name": "too weak, immersion, adjustable", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too weak"]}, "out": ["Steep 30 seconds longer, or grind a little finer.", "Or use a little more coffee: +2 g."]},
+    {"name": "too weak, immersion, fixed", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too weak"], "grindKind": "preground"}, "out": ["Steep 1 minute longer.", "Or use a little more coffee: +2 g."]},
+    {"name": "too weak, espresso", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"faults": ["Too weak"]}, "out": ["Let more out: aim for about 45 g, or grind finer.", "Use a little more coffee: +1 g."]},
+    {"name": "too strong, percolation, adjustable", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too strong"]}, "out": ["Use a little less coffee, or add a splash of hot water to the cup."]},
+    {"name": "too strong, percolation, fixed", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too strong"], "grindKind": "preground"}, "out": ["Use a little less coffee, or add a splash of hot water to the cup."]},
+    {"name": "too strong, immersion, adjustable", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too strong"]}, "out": ["Use a little less coffee, or add a splash of hot water to the cup."]},
+    {"name": "too strong, immersion, fixed", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"faults": ["Too strong"], "grindKind": "preground"}, "out": ["Use a little less coffee, or add a splash of hot water to the cup."]},
+    {"name": "too strong, espresso", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"faults": ["Too strong"]}, "out": ["Add hot water for an Americano, or let a little more out."]},
+    {"name": "time, percolation, adjustable, slow", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 260}, "out": ["You ran 1:20 past the recipe's 3:00. That is a lot of extra contact — grind coarser if the cup came out heavy."]},
+    {"name": "time, percolation, fixed, fast", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 120, "grindKind": "preground"}, "out": ["You finished 1:00 early against 3:00. If the cup was thin, pour more slowly next time."]},
+    {"name": "time, immersion, adjustable, long", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 260}, "out": ["You steeped 1:20 longer than the recipe's 3:00. If it tasted heavy or bitter, stick to the recipe's time."]},
+    {"name": "time, immersion, fixed, short", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 120, "grindKind": "preground"}, "out": ["You stopped 1:00 before the recipe's 3:00. If it tasted thin or sour, give it the full time."]},
+    {"name": "time, espresso, long shot", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"totalTimeSec": 38}, "out": ["Your shot ran 0:38, longer than the recipe's 0:30. If it tasted bitter, grind a little coarser."]},
+    {"name": "time, espresso, fixed, quick shot", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"totalTimeSec": 22, "grindKind": "preground"}, "out": ["Your shot ran 0:22, quicker than the recipe's 0:30. If it tasted sour, let a little more out."]},
+    {"name": "time, cold brew in hours", "brewer": "cold-brew-jar", "recipe": {"totalSec": 43200, "doseG": 75}, "log": {"totalTimeSec": 46800}, "out": ["You steeped 1 h longer than the recipe's 12 h. If it tasted heavy or bitter, stick to the recipe's time."]},
+    {"name": "time ignored by data quality", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 260}, "opts": {"timeIgnored": true}, "out": ["Nothing obviously wrong in what you logged. If the cup still is not right, the next useful move is changing one variable and brewing it again."]},
+    {"name": "time under half the recipe is skipped", "brewer": "hario-v60-02", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"totalTimeSec": 80}, "out": ["Nothing obviously wrong in what you logged. If the cup still is not right, the next useful move is changing one variable and brewing it again."]},
+    {"name": "French press: no bed, no drawdown", "brewer": "french-press", "recipe": {"totalSec": 180, "doseG": 18}, "log": {"bedShape": "flat", "channeling": "obvious", "daysOffRoast": 2}, "out": ["Only 2 days off roast. Expect a lively bloom from all that CO2. Not a fault."]},
+    {"name": "drip machine has a bed", "brewer": "drip-machine", "recipe": {"totalSec": 330, "doseG": 70}, "log": {"bedShape": "flat"}, "out": ["Flat bed. Whatever you did not like about this cup, distribution was not it."]},
+    {"name": "espresso extraction yield", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"extractionYield": 20.04}, "out": ["Measured extraction yield 20.0%. Taste beats the number."]}
+  ],
+  "grindMissing": [
+    {"name": "pre-ground with no setting is not missing", "log": {"grindKind": "preground", "grindSetting": "", "grindClicks": null, "grindValue": null}, "missing": false},
+    {"name": "a dial brew with nothing recorded is", "log": {"grindKind": "", "grindSetting": "", "grindClicks": null, "grindValue": null}, "missing": true},
+    {"name": "a blade grinder records seconds", "log": {"grindKind": "blade", "grindSetting": "12 s", "grindClicks": null, "grindValue": 12}, "missing": false}
+  ]
+}

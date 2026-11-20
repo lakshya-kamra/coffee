@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-17",
+  "updated": "2026-11-19",
   "brewers": [
     {
       "id": "hario-v60-01",
@@ -343,6 +343,15 @@
       "method": "aeropress",
       "filter": "metal",
       "notes": "Small metal gravity filter set on the cup; usually served with condensed milk. Nguyen Coffee Supply recommends a fine grind for its phins; too fine and it stops dripping."
+    },
+    {
+      "id": "south-indian-filter",
+      "name": "South Indian filter",
+      "brand": "",
+      "category": "other",
+      "method": "pourover",
+      "filter": "metal",
+      "notes": "Two stacked steel cups. Coffee goes in the perforated top cup under a plunger disc that only levels it, hot water on top, and a strong decoction drips into the bottom cup over about ten minutes. Usually served with hot milk and sugar."
     },
     {
       "id": "siphon",

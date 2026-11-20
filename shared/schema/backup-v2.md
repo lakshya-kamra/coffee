@@ -7,7 +7,8 @@ Both apps are tested against the same files in `shared/fixtures/`:
 
 | File | What it is |
 | --- | --- |
-| `backup-v2-sample.json` | A v2 backup with every key, real catalog ids, one photo and three analyses: two as 2.0.0 stored them, and a trend with `brewUids`. |
+| `backup-v2-sample.json` | A v2 backup with every 2.0 key, real catalog ids, one photo and three analyses: two as 2.0.0 stored them, and a trend with `brewUids`. Kept exactly as 2.0.0 wrote it: it proves those files still read. |
+| `backup-v2.1-sample.json` | The same backup with every key added in 2.1 populated: a ground coffee, a blade grinder, a pre-ground brew with the fault "Too weak", and the four new settings. Writers match its key order. |
 | `coffee-brew-log-1-sample.json` | A 1.x export, including the non-standard numbers 1.x could write. |
 | `coffee-brew-log-1-expected.json` | What reading that export must give, uids included, and the catalog ids linking then sets. |
 
@@ -45,12 +46,26 @@ Change a fixture only together with this document and both apps.
 - `photos` is the last key, so a writer can stream the photos and a reader can take them out of
   the file one at a time.
 
+## Added in 2.1
+
+2.1 is not a new version: the file still says `"version": 2`, and every addition is an optional
+key a 2.0.0 reader ignores. Such a reader loses only the new keys; everything else reads as
+before. A 2.1 reader treats a missing new key as "not recorded" (the defaults below). New keys are
+written in the place this document lists them, and both apps test that against
+`backup-v2.1-sample.json`. Android's database is version 5 from 2.1 (`app.dbVersion`).
+
 ## settings
 
 All optional: `tempUnit` "c"|"f", `weightUnit` "g"|"oz", `darkMode` "system"|"light"|"dark",
 `haptics`, `soundCues`, `keepScreenOn`, `autoAdvanceSteps` (booleans), `name`, `ownedBrewerIds` [],
 `favouriteRoasterIds` [], `homeArea`, `defaultWaterId`, `defaultBeanUid`, `defaultGrinderUid`,
 `lastRecipeId`, `onboardingDone`.
+
+Added in 2.1, written after `onboardingDone` in this order: `experience` (""|"new"|"recipes"|"tinker",
+the answer to onboarding's "How do you make coffee now?"; "" = not asked), `hasScale` (boolean;
+false shows brewing amounts in spoons and ml), `reviewMode` ("quick"|"detailed"), `buysGround`
+(boolean). Left out, each means "say nothing", like every other setting. Settings that belong to
+one device (`soundCuesAsked`, `sidebarCollapsed`, `logView`) are never written.
 
 A reader changes only the keys the file carries. `defaultBeanUid` / `defaultGrinderUid` written as
 `null` mean "no default"; left out, they mean "say nothing".
@@ -80,6 +95,10 @@ custom address exactly as it checks one typed in.
 
 `processId` / `roastLevelId` `""` = not recorded.
 
+Added in 2.1, written after `roastIntentId`: `form` (""|"whole"|"ground"; "" = not recorded, read as
+whole beans) and `groundFor` (""|"filter"|"press"|"espresso"|"moka"; what ground coffee was ground
+for). An unknown value reads as "".
+
 ## grinders[]
 
 `uid`, `catalogId`, `brand`, `model`, `burr` ("conical"|"flat"|"ghost"|"blade"|null), `burrSizeMm`
@@ -88,6 +107,10 @@ custom address exactly as it checks one typed in.
 `dialFormat` (""|"plain"|"turns"|"turns-dot"|"number-tick:10")}, `defaultFilterSetting`,
 `defaultEspressoSetting` (number|null, stored units), `notes`, `isDefault`, `isArchived`,
 `updatedAt`.
+
+Added in 2.1, written last in `setting`: `settingUnit` (""|"s"). "s" means the setting is seconds of
+grinding: a blade grinder. Its `style` stays "stepless" (`min` 0, `max` 60, `step` 1) so a 2.0.0
+reader still opens it as an ordinary dial.
 
 `clicksPerRotation` unknown is written as `null` (both apps store 0). A grinder's numbers travel
 exactly as stored: a 1.x K-Ultra row saved at 10 clicks a turn stays at 10.
@@ -104,6 +127,10 @@ always °C), `waterId`, `totalTimeSec`, `drawdownSec`, `beverageG`, `tdsPercent`
 `overall` (0 = not rated), `descriptors` [], `faults` [], `notes`, `nextTime`, `isFavourite`,
 `sharedAt`.
 
+Added in 2.1, written after `grindValue`: `grindKind` (""|"dial"|"blade"|"preground"; "" = a dial or
+not recorded). A pre-ground brew has `grindSetting` "As bought" and no clicks or value; a blade brew
+keeps its seconds in `grindValue` and `grindSetting` "12 s".
+
 Enumerations (null = not recorded):
 
 - `flow`: stalled | slow | on-target | fast | gusher
@@ -112,12 +139,14 @@ Enumerations (null = not recorded):
 - `bed.channelling`: none | suspected | obvious
 
 `descriptors` / `faults` are the English chip labels the apps show (e.g. "Stone fruit",
-"Boozy / ferment-heavy"). Brews are written oldest first.
+"Boozy / ferment-heavy"). Added in 2.1: the faults "Too weak" and "Too strong" (the quick review's
+toggles); an older app shows them as the stored words. Brews are written oldest first.
 
 ## recipes[]
 
 The user's own recipes and their edits of built-ins, each exactly an entry of
-`shared/recipes.json` (see `schema/recipes.md`) plus `updatedAt`. An entry whose `id` is a built-in
+`shared/recipes.json` (see `schema/recipes.md`, including the 2.1 keys `level`, `needs` and
+`prepNoScale`) plus `updatedAt`, written last. An entry whose `id` is a built-in
 id is an edit of it; resetting it means deleting the entry. An entry a reader cannot open as a
 recipe is left out and reported.
 

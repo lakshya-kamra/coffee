@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-17",
+  "updated": "2026-11-19",
   "roasters": [
     {
       "id": "monogram",
@@ -217,7 +217,11 @@
       "country": "United States",
       "city": "Canton, Massachusetts",
       "area": "North America",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
     },
     {
       "id": "dark-matter",
@@ -284,7 +288,11 @@
       "country": "United States",
       "city": "Emeryville, California",
       "area": "North America",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
     },
     {
       "id": "madcap",
@@ -674,7 +682,11 @@
       "country": "United States",
       "city": "Seattle, Washington",
       "area": "North America",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
     },
     {
       "id": "victrola",
@@ -1158,7 +1170,11 @@
       "country": "Germany",
       "city": "Hamburg",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "dallmayr",
@@ -1166,7 +1182,11 @@
       "country": "Germany",
       "city": "Munich",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "man-versus-machine",
@@ -1238,7 +1258,11 @@
       "country": "Italy",
       "city": "Bologna",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "ditta-artigianale",
@@ -1261,7 +1285,11 @@
       "country": "Italy",
       "city": "Naples",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "illy",
@@ -1269,7 +1297,11 @@
       "country": "Italy",
       "city": "Trieste",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "lavazza",
@@ -1277,7 +1309,11 @@
       "country": "Italy",
       "city": "Turin",
       "area": "Europe",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
     },
     {
       "id": "rocket-bean",
@@ -2273,7 +2309,11 @@
       "country": "Japan",
       "city": "Kobe",
       "area": "East Asia",
-      "notable": "mainstream"
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "East Asia"
+      ]
     },
     {
       "id": "arabica-kyoto",
@@ -2925,6 +2965,115 @@
       "country": "New Zealand",
       "city": "Wellington",
       "area": "Oceania"
+    },
+    {
+      "id": "folgers",
+      "name": "Folgers",
+      "country": "United States",
+      "city": "",
+      "area": "North America",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
+    },
+    {
+      "id": "maxwell-house",
+      "name": "Maxwell House",
+      "country": "United States",
+      "city": "",
+      "area": "North America",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
+    },
+    {
+      "id": "cafe-bustelo",
+      "name": "Café Bustelo",
+      "country": "United States",
+      "city": "",
+      "area": "North America",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America"
+      ]
+    },
+    {
+      "id": "starbucks",
+      "name": "Starbucks",
+      "country": "United States",
+      "city": "",
+      "area": "North America",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "North America",
+        "Southeast Asia"
+      ]
+    },
+    {
+      "id": "jacobs",
+      "name": "Jacobs",
+      "country": "Germany",
+      "city": "",
+      "area": "Europe",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
+    },
+    {
+      "id": "douwe-egberts",
+      "name": "Douwe Egberts",
+      "country": "Netherlands",
+      "city": "",
+      "area": "Europe",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "Europe"
+      ]
+    },
+    {
+      "id": "bru",
+      "name": "Bru",
+      "country": "India",
+      "city": "",
+      "area": "South Asia",
+      "notable": "mainstream; the filter coffee powder is a coffee and chicory blend",
+      "mainstream": true,
+      "regions": [
+        "South Asia"
+      ]
+    },
+    {
+      "id": "tata-coffee-grand",
+      "name": "Tata Coffee Grand",
+      "country": "India",
+      "city": "",
+      "area": "South Asia",
+      "notable": "mainstream; the filter coffee powder is a coffee and chicory blend",
+      "mainstream": true,
+      "regions": [
+        "South Asia"
+      ]
+    },
+    {
+      "id": "key-coffee",
+      "name": "Key Coffee",
+      "country": "Japan",
+      "city": "",
+      "area": "East Asia",
+      "notable": "mainstream",
+      "mainstream": true,
+      "regions": [
+        "East Asia"
+      ]
     }
   ]
 }
