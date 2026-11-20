@@ -50,6 +50,9 @@ export function beanToDto(b: BeanRow): BeanDto {
     decafMethodId: b.decafMethodId,
     roastLevelId: b.roastLevelId,
     roastIntentId: b.roastIntentId,
+    // Rows from before v4 may lack these until written again.
+    form: b.form ?? "",
+    groundFor: b.groundFor ?? "",
     altitudeM: b.altitudeMasl,
     harvest: b.harvest,
     roastedOn: day(b.roastedOnEpochDay),
@@ -84,6 +87,7 @@ export function grinderToDto(g: GrinderRow): GrinderDto {
       clicksPerRotation: g.clicksPerRotation > 0 ? g.clicksPerRotation : null,
       micronsPerStep: g.micronsPerClick,
       dialFormat: g.dialFormat,
+      settingUnit: g.settingUnit ?? "",
     },
     defaultFilterSetting: g.defaultFilterSetting,
     defaultEspressoSetting: g.defaultEspressoSetting,
@@ -112,6 +116,7 @@ export function brewToDto(l: BrewRow, beanUid: (id: number) => string | null, gr
     grindSetting: l.grindSetting,
     grindClicks: l.grindClicks,
     grindValue: l.grindValue,
+    grindKind: l.grindKind ?? "",
     doseG: l.doseG,
     waterG: l.waterG,
     tempC: l.tempC,
@@ -243,6 +248,10 @@ export function settingsToDto(s: Settings, beanUid: (id: number) => string | nul
     defaultGrinderUid: s.defaultGrinderId > 0 ? grinderUid(s.defaultGrinderId) : null,
     lastRecipeId: s.lastRecipeId,
     onboardingDone: s.onboardingDone,
+    experience: s.experience,
+    hasScale: s.hasScale,
+    reviewMode: s.reviewMode,
+    buysGround: s.buysGround,
   };
 }
 
@@ -343,6 +352,8 @@ export function beanFromDto(d: BeanDto, fallbackMs: number): Omit<BeanRow, "id">
     isArchived: d.isArchived,
     createdAt,
     updatedAt: ms(d.updatedAt) ?? createdAt,
+    form: d.form,
+    groundFor: d.groundFor,
   };
 }
 
@@ -368,6 +379,7 @@ export function grinderFromDto(d: GrinderDto, fallbackMs: number): Omit<GrinderR
     catalogId: d.catalogId,
     dialFormat: d.setting.dialFormat,
     updatedAt: ms(d.updatedAt) ?? fallbackMs,
+    settingUnit: d.setting.settingUnit,
   };
 }
 
@@ -412,6 +424,7 @@ export function brewFromDto(d: BrewDto, beanId: number | null, grinderId: number
     nextTime: d.nextTime,
     isFavourite: d.isFavourite,
     sharedAt: ms(d.sharedAt),
+    grindKind: d.grindKind,
   };
 }
 

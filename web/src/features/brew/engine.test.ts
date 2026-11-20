@@ -25,7 +25,7 @@ const RECIPE: Recipe = {
   isBuiltIn: true,
   fidelity: "published",
   sources: [],
-  basedOn: null,
+  basedOn: null, level: "", needs: [], prepNoScale: [],
 };
 
 /** perf and wall advance together unless told otherwise (a sleeping device stops perf). */

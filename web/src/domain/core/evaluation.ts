@@ -92,9 +92,9 @@ export const TASTE_AXES: readonly { readonly key: TasteAxis; readonly label: str
   { key: "sweetness", label: "Sweetness", range: "dry → syrupy" },
   { key: "bitterness", label: "Bitterness", range: "none → harsh" },
   { key: "body", label: "Body", range: "watery → heavy" },
-  { key: "balance", label: "Balance", range: "disjointed → seamless" },
+  { key: "balance", label: "Balance", range: "one thing sticks out → all fits together" },
   { key: "aftertaste", label: "Aftertaste", range: "vanishes → lingers" },
-  { key: "clarity", label: "Clarity", range: "muddled → crystalline" },
+  { key: "clarity", label: "Clarity", range: "muddy → clean" },
 ];
 
 export function withTaste(t: TasteProfile, axis: TasteAxis, value: number): TasteProfile {
@@ -109,6 +109,8 @@ export const Descriptors = {
   FAULTS: [
     "Sour", "Bitter", "Astringent", "Drying", "Hollow", "Thin", "Muddy",
     "Papery", "Ashy", "Salty", "Vegetal", "Boozy / ferment-heavy",
+    // v4 (backup 2.1): the quick review's "Too weak" / "Too strong" toggles. Older apps show them as stored.
+    "Too weak", "Too strong",
   ],
 } as const;
 

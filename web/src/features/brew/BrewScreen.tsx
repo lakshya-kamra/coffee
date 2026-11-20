@@ -52,7 +52,8 @@ import { ScreenLock, wakeLockSupported } from "./wakeLock";
 import b from "./brew.module.css";
 
 /** Brewers that actually look like a cone with a bed in it. */
-const POUR_OVER = new Set(["V60", "Chemex", "Kalita", "Switch"]);
+// Drip and Siphon drew as V60 and Chemex before v4, so they keep the dripper.
+const POUR_OVER = new Set(["V60", "Chemex", "Kalita", "Switch", "Drip", "Siphon"]);
 /** How much of the setup mesh settles into the canvas behind the sticky Start bar. */
 const SETUP_FLOOR = 112;
 

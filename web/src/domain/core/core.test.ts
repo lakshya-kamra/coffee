@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { makeBrewer } from "./brewer";
 import { BrewMath, DEFAULT_TASTE } from "./evaluation";
-import { clipWords, clock, dayLabel, daysOffRoastLabel, epochDayOf, epochDayToIso, grams, greeting, groupedInt, isoToEpochDay, oneDp, plural, ratio, timeLabel } from "./format";
+import { clipWords, clock, dayLabel, daysOffRoastLabel, epochDayOf, epochDayToIso, grams, greeting, groupedInt, halves, isoToEpochDay, oneDp, plural, ratio, screenDate, screenDayLabel, screenTime, timeLabel, todayEyebrow } from "./format";
+import { EMPTY_LOG_FILTER, filterLog, isFilterActive, logCountLabel, type LogFilterable } from "./logQuery";
 import { quickRead, type QuickReadInput } from "./quickRead";
 import type { Recipe } from "./recipe";
 import { cupLabel, roastStatus, roastWord, scoreStatus, signedClock, timeStatus } from "./status";
@@ -122,20 +123,20 @@ describe("BrewMath", () => {
   });
 });
 
-describe("quickRead (BrewReport.quickRead)", () => {
+describe("quickRead v2 (BrewReport.quickRead)", () => {
   const recipe = {
     id: "r",
     steps: [
       { kind: "Pour", title: "", detail: "", startSec: 0, endSec: 120, targetWaterG: 250 },
       { kind: "Drawdown", title: "", detail: "", startSec: 120, endSec: 180, targetWaterG: null },
     ],
-    brewer: makeBrewer({ id: "hario-v60-02", label: "V60 02" }),
+    brewer: makeBrewer({ id: "hario-v60-02", label: "V60 02", category: "cone" }),
   } as unknown as Recipe;
   const base: QuickReadInput = { taste: DEFAULT_TASTE, faults: [], bedShape: null, channeling: null, totalTimeSec: 0, daysOffRoast: null, extractionYield: null };
 
   it("under-extracted, flat bed, long run, fresh beans, measured EY", () => {
     expect(quickRead({ ...base, faults: ["Sour"], bedShape: "flat", totalTimeSec: 250, daysOffRoast: 2, extractionYield: 20 }, recipe)).toEqual([
-      "Reads under-extracted: sharp up front, not much sweetness behind it. One change at a time — grind finer first, then hotter water, then more contact.",
+      "Grind a little finer next time.",
       "Flat bed. Whatever you did not like about this cup, distribution was not it.",
       "You ran 1:10 past the recipe's 3:00. That is a lot of extra contact — grind coarser if the cup came out heavy.",
       "Only 2 days off roast. Expect an aggressive bloom and a faster-than-usual drawdown from all that CO2. Not a fault.",
@@ -145,12 +146,38 @@ describe("quickRead (BrewReport.quickRead)", () => {
 
   it("over-extracted, stranded grounds, channelling, fast, old beans", () => {
     expect(quickRead({ ...base, faults: ["Bitter", "Drying"], bedShape: "high-and-dry", channeling: "obvious", totalTimeSec: 120, daysOffRoast: 40 }, recipe)).toEqual([
-      "Bitter plus drying is the over-extraction signature. Go a step coarser, or cut the contact time before you touch anything else.",
+      "Grind a little coarser next time.",
       "Grounds stranded up the wall never brewed at all — that is dose you paid for and did not extract. Swirl right after the bloom, or pour more centrally.",
       "You called obvious channelling — fix that before reading anything else into the taste. Channelled brews taste under and over extracted at the same time.",
       "You finished 1:00 early against 3:00. A fast drawdown with a thin cup means go finer.",
       "40 days off roast. Flat and papery at this age is the beans, not your technique.",
     ]);
+  });
+
+  it("pre-ground never says finer or coarser; no scale says tablespoons", () => {
+    const pre = { ...base, grindKind: "preground", faults: ["Too weak", "Bitter"], totalTimeSec: 250 };
+    expect(quickRead(pre, recipe, { hasScale: false, fahrenheit: true })).toEqual([
+      "Pour more slowly, and use water just off the boil.",
+      "Or use a little more coffee: +1 tbsp.",
+      "Use water a little cooler, about 194 °F.",
+      "You ran 1:10 past the recipe's 3:00. Pre-ground coffee often drains slowly; if the cup came out heavy, use a little less coffee next time.",
+    ]);
+  });
+
+  it("a French press never hears about drawdown or the bed", () => {
+    const press = makeBrewer({ id: "french-press", label: "French press", category: "immersion", method: "frenchPress" });
+    const lines = quickRead({ ...base, faults: ["Sour"], bedShape: "crater", totalTimeSec: 100, daysOffRoast: 2 }, recipe, { brewer: press });
+    expect(lines).toEqual([
+      "Steep 30 seconds longer, or grind a little finer.",
+      "You stopped 1:20 before the recipe's 3:00. If it tasted thin or sour, give it the full time.",
+      "Only 2 days off roast. Expect a lively bloom from all that CO2. Not a fault.",
+    ]);
+    expect(lines.join(" ")).not.toMatch(/drawdown/i);
+  });
+
+  it("time advice is skipped when the time cannot be the whole brew", () => {
+    expect(quickRead({ ...base, totalTimeSec: 60 }, recipe)).toEqual([quickRead(base, null)[0]]);
+    expect(quickRead({ ...base, totalTimeSec: 250 }, recipe, { timeIgnored: true })).toEqual([quickRead(base, null)[0]]);
   });
 
   it("one day off roast is singular", () => {
@@ -161,5 +188,44 @@ describe("quickRead (BrewReport.quickRead)", () => {
     expect(quickRead(base, null)).toEqual([
       "Nothing obviously wrong in what you logged. If the cup still is not right, the next useful move is changing one variable and brewing it again.",
     ]);
+  });
+});
+
+describe("v4 screen formats (locale-aware; exports stay pinned)", () => {
+  it("Today's eyebrow and screen times in en-US", () => {
+    const d = new Date(2026, 10, 19, 19, 5).getTime();
+    expect(todayEyebrow(d, "en-US")).toBe("EVENING · THU, NOV 19");
+    expect(screenTime(d, "en-US")).toBe("7:05 PM");
+    expect(screenDate(d, "en-GB")).toBe("19 Nov");
+    expect(screenDayLabel(d, d, "en-US")).toBe("Today");
+    // The pinned formats exports and prompts use are unchanged.
+    expect(timeLabel(d)).toBe("19:05");
+  });
+  it("halves", () => {
+    expect([halves(1), halves(1.5), halves(4.5), halves(0.5)]).toEqual(["1", "1½", "4½", "½"]);
+  });
+});
+
+describe("v4 log filters", () => {
+  const b = (p: Partial<LogFilterable>): LogFilterable => ({
+    recipeName: "", recipeAuthor: "", beanLabel: "", grinderLabel: "", brewer: "", notes: "", nextTime: "", descriptors: [],
+    startedAt: 0, overall: 0, isFavourite: false, recipeId: "", brewerId: null, ...p,
+  });
+  const brews = [
+    b({ id: 1, startedAt: 1, overall: 9, recipeId: "hoffmann-v60", brewerId: "hario-v60-02", beanLabel: "A" }),
+    b({ id: 2, startedAt: 2, overall: 6, isFavourite: true, recipeName: "One-off", brewer: "Chemex", beanLabel: "B" }),
+    b({ id: 3, startedAt: 3, overall: 8, recipeId: "hoffmann-v60", brewerId: "hario-v60-02", notes: "Café crème", beanLabel: "A" }),
+  ];
+  it("filters, sorts and counts", () => {
+    expect(filterLog(brews, EMPTY_LOG_FILTER).map((x) => x.id)).toEqual([3, 2, 1]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, sort: "best" }).map((x) => x.id)).toEqual([1, 3, 2]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, rated8: true, coffee: "A" }).map((x) => x.id)).toEqual([3, 1]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, favourites: true }).map((x) => x.id)).toEqual([2]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, recipe: "One-off" }).map((x) => x.id)).toEqual([2]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, brewer: "Chemex" }).map((x) => x.id)).toEqual([2]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, withPhotos: true }, new Set([1])).map((x) => x.id)).toEqual([1]);
+    expect(filterLog(brews, { ...EMPTY_LOG_FILTER, query: "cafe" }).map((x) => x.id)).toEqual([3]);
+    expect(isFilterActive(EMPTY_LOG_FILTER)).toBe(false);
+    expect([logCountLabel(1), logCountLabel(12)]).toEqual(["1 brew", "12 brews"]);
   });
 });

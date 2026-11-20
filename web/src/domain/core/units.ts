@@ -39,3 +39,33 @@ export function tempLabel(units: Units, c: number): string {
 export function bigWeight(units: Units, g: number): [value: string, unit: string] {
   return units.ounces ? [oneDp(g / GRAMS_PER_OUNCE), "oz"] : [grams(g), "g"];
 }
+
+// ---------------------------------------------------------------- v4 §4.15
+
+/** Regions that read temperatures in °F. */
+export const FAHRENHEIT_REGIONS: ReadonlySet<string> = new Set(["US", "PR", "GU", "VI", "AS", "MP", "UM", "LR", "BZ", "BS", "KY", "PW", "FM", "MH"]);
+
+/** The region of a BCP 47 tag ("en-US" → "US"), parsed as localCurrency does; null when there is none. */
+export function localeRegion(locale: string): string | null {
+  return /[-_]([A-Za-z]{2})\b/.exec(locale)?.[1]?.toUpperCase() ?? null;
+}
+
+/** "f" for a fresh install in a °F region, else "c". */
+export function defaultTempUnit(locale: string): "c" | "f" {
+  const region = localeRegion(locale);
+  return region != null && FAHRENHEIT_REGIONS.has(region) ? "f" : "c";
+}
+
+/**
+ * Prose temperatures are written "70 °C" or "90-95 °C" (shared/recipes.json). The same pattern
+ * is in shared/fixtures/domain-v4-cases.json, so both apps convert the same text.
+ */
+export const PROSE_TEMP = String.raw`(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*°C`;
+
+/** Recipe prose in the user's unit: "70 °C" → "158 °F" when unit is "f"; unchanged for "c". */
+export function renderTemps(text: string, unit: "c" | "f"): string {
+  if (unit !== "f") return text;
+  return text.replace(new RegExp(PROSE_TEMP, "g"), (_m, a: string, b: string | undefined) =>
+    b == null ? `${cToF(Number(a))} °F` : `${cToF(Number(a))}-${cToF(Number(b))} °F`,
+  );
+}

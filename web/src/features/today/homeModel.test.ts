@@ -57,7 +57,7 @@ describe("next brew", () => {
   const v60one = makeBrewer({ id: "hario-v60-01", label: "Hario V60-01", method: "pourover" });
   const aero = makeBrewer({ id: "aeropress", label: "AeroPress", method: "aeropress" });
   const r = (id: string, brewer: Brewer): Recipe => ({
-    id, name: id, author: "", brewer, doseG: 15, waterG: 250, grind: "", tempC: 94, blurb: "", sourceNote: "", prep: [], tips: [], steps: [], accent: 0, isBuiltIn: true, fidelity: "", sources: [], basedOn: null,
+    id, name: id, author: "", brewer, doseG: 15, waterG: 250, grind: "", tempC: 94, blurb: "", sourceNote: "", prep: [], tips: [], steps: [], accent: 0, isBuiltIn: true, fidelity: "", sources: [], basedOn: null, level: "", needs: [], prepNoScale: [],
   });
   const recipes = [r("aero-1", aero), r("v60-1", v60), r("v60-2", v60)];
   const byId = (id: string) => [v60, v60one, aero].find((b) => b.id === id) ?? null;

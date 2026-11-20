@@ -42,6 +42,14 @@ const ARTS: Record<BrewerArt, Art> = {
   Espresso: { line: "M20 34L72 34L66 70L26 70Z M71 40Q92 44 68 60 M10 82L84 82" },
   // A jar with a lid and a fill line.
   ColdBrew: { line: `${box(22, 26, 78, 90, 10)} M30 54L70 54`, solid: box(28, 10, 72, 22, 3) },
+  // v4 placeholders: the drawing each brewer showed before it had its own art. The Recipes
+  // package replaces them with real drawings.
+  Drip: { line: "M14 22L86 22L54 70L46 70Z M26 82L74 82 M50 70L50 82" },
+  Cezve: {
+    line: "M28 90L72 90L64 56L36 56Z M36 52L64 52L72 20L28 20Z M28 20L16 15 M44 12L56 12 M71 24L86 30L84 48L67 46",
+  },
+  Siphon: { line: "M22 10L78 10L56 46L80 90L20 90L44 46Z", solid: "M36 39L64 39L62 55L38 55Z" },
+  Phin: { line: `${box(30, 36, 70, 84)} ${box(36, 16, 64, 36)} M24 12L76 12 M22 90L78 90` },
 };
 
 export const BrewerIcon = memo(function BrewerIcon({

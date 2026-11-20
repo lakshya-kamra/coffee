@@ -11,6 +11,14 @@ export type StepKind = (typeof STEP_KINDS)[number];
 
 export type Fidelity = "published" | "adapted" | "community" | "custom" | "";
 
+/** How much a recipe asks of you (v4 §6.4); "" = not said (user recipes). */
+export type RecipeLevel = "" | "easy" | "medium" | "advanced";
+export const RECIPE_LEVELS: readonly RecipeLevel[] = ["", "easy", "medium", "advanced"];
+
+/** Kit a recipe really depends on. */
+export type RecipeNeed = "scale" | "gooseneck" | "grinder" | "thermometer";
+export const RECIPE_NEEDS: readonly RecipeNeed[] = ["scale", "gooseneck", "grinder", "thermometer"];
+
 export interface RecipeSource {
   readonly who: string;
   readonly url: string;
@@ -48,6 +56,13 @@ export interface Recipe {
   readonly fidelity: Fidelity;
   readonly sources: readonly RecipeSource[];
   readonly basedOn: string | null;
+  readonly level: RecipeLevel;
+  readonly needs: readonly RecipeNeed[];
+  /**
+   * Prep lines for someone without a scale; they replace the lines that mention one. "{coffee}"
+   * and "{water}" are filled in by noScalePrep.
+   */
+  readonly prepNoScale: readonly string[];
 }
 
 /** The JSON shape in shared/recipes.json and in saved recipes (schema/recipes.md). */
@@ -70,6 +85,9 @@ export interface RecipeJson {
   fidelity?: string;
   sources?: { who: string; url?: string; note?: string }[];
   basedOn?: string | null;
+  level?: RecipeLevel;
+  needs?: RecipeNeed[];
+  prepNoScale?: string[];
 }
 
 export function stepDurationSec(s: RecipeStep): number {
@@ -258,6 +276,9 @@ export function decodeRecipe(raw: unknown, resolveBrewer: (s: string) => Brewer,
       fidelity,
       sources,
       basedOn: typeof o.basedOn === "string" && o.basedOn ? o.basedOn : null,
+      level: (RECIPE_LEVELS as readonly string[]).includes(str(o.level)) ? (str(o.level) as RecipeLevel) : "",
+      needs: RECIPE_NEEDS.filter((n) => strList(o.needs).includes(n)),
+      prepNoScale: strList(o.prepNoScale),
     }),
   };
 }
@@ -290,6 +311,9 @@ export function encodeRecipe(r: Recipe): RecipeJson {
     fidelity: r.fidelity,
     sources: r.sources.map((s) => ({ who: s.who, url: s.url, note: s.note })),
     basedOn: r.basedOn,
+    level: r.level,
+    needs: [...r.needs],
+    prepNoScale: [...r.prepNoScale],
   };
 }
 

@@ -21,6 +21,7 @@ import {
   type CatalogProvider,
   type CatalogRoaster,
   type CatalogWater,
+  type GlossaryTerm,
   type Principle,
   type ProcessTerm,
   type TermKind,
@@ -41,10 +42,11 @@ interface State {
   providers: readonly CatalogProvider[];
   recipes: readonly Recipe[];
   principles: readonly Principle[];
+  glossary: readonly GlossaryTerm[];
 }
 
 const state: State = {
-  grinders: [], roasters: [], origins: [], beans: EMPTY_VOCAB, brewers: [], water: [], providers: [], recipes: [], principles: [],
+  grinders: [], roasters: [], origins: [], beans: EMPTY_VOCAB, brewers: [], water: [], providers: [], recipes: [], principles: [], glossary: [],
 };
 const problemsByFile = new Map<CatalogName, readonly string[]>();
 const loaded = new Set<CatalogName>();
@@ -118,6 +120,12 @@ async function loadOne(name: CatalogName): Promise<void> {
       // Optional until Android WP-3 writes it: absence is not a problem.
       const p = raw === undefined ? { items: [], problems: [] } : N.parseList(file, raw, "principles", N.principle);
       state.principles = p.items;
+      problemsByFile.set(name, p.problems);
+      break;
+    }
+    case "glossary": {
+      const p = N.parseList(file, raw, "terms", N.glossaryTerm);
+      state.glossary = p.items;
       problemsByFile.set(name, p.problems);
       break;
     }
@@ -209,6 +217,7 @@ export const catalog = {
   get providers() { return state.providers; },
   get recipes() { return state.recipes; },
   get principles() { return state.principles; },
+  get glossary() { return state.glossary; },
   get problems(): readonly string[] {
     return CATALOG_NAMES.flatMap((n) => problemsByFile.get(n) ?? []);
   },
@@ -221,6 +230,8 @@ export const catalog = {
   waterById: (id: string | null | undefined) => lookup("water", state.water, id),
   provider: (id: string | null | undefined) => lookup("providers", state.providers, id),
   recipe: (id: string | null | undefined) => lookup("recipes", state.recipes, id),
+  /** A glossary term by id (findTerm in domain/core/glossary also takes aliases). */
+  term: (id: string | null | undefined) => lookup("glossary", state.glossary, id),
   process: (id: string | null | undefined): ProcessTerm | null => lookup("processes", state.beans.processes, id),
   varietal: (id: string | null | undefined): VarietalTerm | null => lookup("varietals", state.beans.varietals, id),
 
@@ -253,7 +264,7 @@ export const Brewers = {
 /** Test hook: forget everything so a test can load again. */
 export function resetCatalogForTests(): void {
   Object.assign(state, {
-    grinders: [], roasters: [], origins: [], beans: EMPTY_VOCAB, brewers: [], water: [], providers: [], recipes: [], principles: [],
+    grinders: [], roasters: [], origins: [], beans: EMPTY_VOCAB, brewers: [], water: [], providers: [], recipes: [], principles: [], glossary: [],
   });
   problemsByFile.clear();
   loaded.clear();

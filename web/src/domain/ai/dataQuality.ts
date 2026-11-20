@@ -199,7 +199,8 @@ export function checkBrew(
       }
     }
   }
-  if (clicks == null && log.grindValue == null && !log.grindSetting.trim()) {
+  // Pre-ground coffee has no grind to record (v4 §4.2); a blade grinder records seconds in grindValue.
+  if (log.grindKind !== "preground" && clicks == null && log.grindValue == null && !log.grindSetting.trim()) {
     add("GRIND_MISSING", Fields.GRIND, "Note", "No grind setting recorded.");
   }
 
@@ -223,7 +224,8 @@ export function checkBrew(
   }
 
   // ---- temperature
-  if (method !== "coldBrew" && (log.tempC < 60 || log.tempC > 100)) {
+  // Cold brew and a cezve both start from cold water.
+  if (method !== "coldBrew" && method !== "turkish" && (log.tempC < 60 || log.tempC > 100)) {
     add("TEMP_IMPLAUSIBLE", Fields.TEMP, "Distrust", `${log.tempC} °C can't be right for a hot brew.`, "The logged water temperature can't be right for a hot brew.");
   }
 

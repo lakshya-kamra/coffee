@@ -118,3 +118,56 @@ export function groupedInt(v: number): string {
   const s = String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return n < 0 ? "-" + s : s;
 }
+
+// ---------------------------------------------------------------- v4
+
+/** "3:30" under an hour; "12 h 5 min" (or "12 h") from an hour up, for cold brew (v4 §4.9). */
+export function formatDuration(totalSec: number): string {
+  const s = Math.max(0, Math.trunc(totalSec));
+  if (s < 3600) return clock(s);
+  const h = Math.trunc(s / 3600);
+  const m = Math.trunc((s % 3600) / 60);
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+}
+
+/** "1 part coffee to 16.7 parts water" ("…parts espresso" for espresso); "" without a dose. */
+export function ratioPhrase(doseG: number, waterG: number, method: string = ""): string {
+  if (doseG <= 0) return "";
+  const r = oneDp(waterG / doseG).replace(/\.0$/, "");
+  return `1 part coffee to ${r} parts ${method === "espresso" ? "espresso" : "water"}`;
+}
+
+/** 6 → "6", 2.5 → "2½": spoons and mugs come in halves. */
+export function halves(v: number): string {
+  const whole = Math.trunc(v);
+  return v - whole >= 0.5 ? (whole === 0 ? "½" : `${whole}½`) : String(whole);
+}
+
+// Screen dates and times follow the runtime locale (v4 §4.15). Exports and AI prompts keep the
+// pinned dayLabel / timeLabel above.
+
+/** "8:14 PM" in en-US, "20:14" in en-GB. */
+export function screenTime(epochMs: number, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date(epochMs));
+}
+
+/** "Nov 19" in en-US, "19 Nov" in en-GB. */
+export function screenDate(epochMs: number, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(epochMs));
+}
+
+/** "Today", "Yesterday", else screenDate. */
+export function screenDayLabel(epochMs: number, nowMs: number = Date.now(), locale?: string): string {
+  const day = epochDayOf(epochMs);
+  const today = epochDayOf(nowMs);
+  if (day === today) return "Today";
+  if (day === today - 1) return "Yesterday";
+  return screenDate(epochMs, locale);
+}
+
+/** Today's eyebrow: "EVENING · THU, NOV 19" in en-US. */
+export function todayEyebrow(nowMs: number = Date.now(), locale?: string): string {
+  const d = new Date(nowMs);
+  const date = new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric" }).format(d);
+  return `${greeting(d.getHours()).toUpperCase()} · ${date.toUpperCase()}`;
+}

@@ -23,7 +23,7 @@ const RECIPE: Recipe = {
   isBuiltIn: true,
   fidelity: "published",
   sources: [],
-  basedOn: null,
+  basedOn: null, level: "", needs: [], prepNoScale: [],
 };
 
 describe("journey models (JourneyLine.kt helpers)", () => {

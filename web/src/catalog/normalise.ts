@@ -13,6 +13,7 @@ import type {
   CatalogRoaster,
   CatalogWater,
   DescribedTerm,
+  GlossaryTerm,
   GrindRange,
   GrinderSetting,
   Principle,
@@ -149,6 +150,7 @@ function setting(o: Obj): GrinderSetting {
     dialReading: optStr(s, "dialReading"),
     entryHint: optStr(s, "entryHint"),
     dialFormat,
+    settingUnit: optStr(s, "settingUnit"),
   });
 }
 
@@ -194,6 +196,8 @@ export function roaster(o: Obj): CatalogRoaster {
     city: optStr(o, "city"),
     area: optStr(o, "area"),
     notable: optStr(o, "notable"),
+    mainstream: optBool(o, "mainstream", false),
+    regions: Object.freeze(strList(o, "regions")),
   };
 }
 
@@ -286,6 +290,18 @@ export function principle(o: Obj): Principle {
     who: optStr(o, "who"),
     url: optStr(o, "url"),
     note: optStr(o, "note"),
+  };
+}
+
+/** shared/glossary.json entry (schema/glossary.md). */
+export function glossaryTerm(o: Obj): GlossaryTerm {
+  return {
+    id: id(o),
+    term: reqStr(o, "term"),
+    short: reqStr(o, "short"),
+    more: optStr(o, "more"),
+    aliases: Object.freeze(strList(o, "aliases")),
+    sources: Object.freeze(sourceRefs(o, "sources")),
   };
 }
 

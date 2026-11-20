@@ -10,6 +10,19 @@ import type { RecipeJson } from "@/domain/core/recipe";
 export type BurrType = "conical" | "flat" | "ghost" | "blade";
 export type SettingStyle = "clicks" | "numbers" | "stepless" | "microns";
 export type PhotoKind = "bed" | "cup" | "bag" | "other";
+/** v4: "" = not recorded, treated as whole beans. */
+export type BeanFormId = "" | "whole" | "ground";
+/** v4: what pre-ground coffee was ground for; "" = not said. */
+export type GroundFor = "" | "filter" | "press" | "espresso" | "moka";
+/** v4: how the grind was set; "" = a dial or not recorded. */
+export type GrindKind = "" | "dial" | "blade" | "preground";
+/** v4: "s" = the setting is seconds of grinding (a blade grinder). */
+export type SettingUnit = "" | "s";
+
+export const BEAN_FORMS: readonly BeanFormId[] = ["", "whole", "ground"];
+export const GROUND_FOR: readonly GroundFor[] = ["", "filter", "press", "espresso", "moka"];
+export const GRIND_KINDS: readonly GrindKind[] = ["", "dial", "blade", "preground"];
+export const SETTING_UNITS: readonly SettingUnit[] = ["", "s"];
 
 export interface BeanRow {
   id?: number;
@@ -55,6 +68,10 @@ export interface BeanRow {
   isArchived: boolean;
   createdAt: number;
   updatedAt: number;
+  /** v4. Rows stored before v4 lack it until written again; read through withBeanDefaults. */
+  form: BeanFormId;
+  /** v4, only meaningful when form is "ground". */
+  groundFor: GroundFor;
 }
 
 export interface GrinderRow {
@@ -83,6 +100,8 @@ export interface GrinderRow {
   /** "" = auto (A§3.2). */
   dialFormat: string;
   updatedAt: number;
+  /** v4; settingStyle stays "stepless" for a blade grinder so 2.0.0 readers still open it. */
+  settingUnit: SettingUnit;
 }
 
 export interface BrewRow {
@@ -131,6 +150,8 @@ export interface BrewRow {
   nextTime: string;
   isFavourite: boolean;
   sharedAt: number | null;
+  /** v4: "preground" brews have grindSetting "As bought"; "blade" keeps seconds in grindValue. */
+  grindKind: GrindKind;
 }
 
 export interface SavedRecipeRow {
@@ -207,7 +228,7 @@ export function newBean(p: Partial<BeanRow> & { name: string }, now = Date.now()
     washingStation: "", lotTypeId: null, speciesId: null, varietalIds: [], varietal: "", processId: "", isDecaf: false,
     decafMethodId: null, roastLevelId: "", roastIntentId: null, roastedOnEpochDay: null, openedOnEpochDay: null,
     bagSizeG: null, price: "", priceAmount: null, currency: "", altitudeMasl: "", harvest: "", restDays: null,
-    tastingNotes: "", notes: "", isArchived: false, createdAt: now, updatedAt: now,
+    tastingNotes: "", notes: "", isArchived: false, createdAt: now, updatedAt: now, form: "", groundFor: "",
     ...p,
   };
 }
@@ -216,7 +237,7 @@ export function newGrinder(p: Partial<GrinderRow> & { brand: string; model: stri
   return {
     uid: newUid(), burrType: null, burrSizeMm: "", settingStyle: "clicks", clicksPerRotation: 0, micronsPerClick: null,
     lowerIsFiner: true, minSetting: 0, maxSetting: 40, step: 1, defaultFilterSetting: null, defaultEspressoSetting: null,
-    notes: "", isDefault: false, isArchived: false, catalogId: null, dialFormat: "", updatedAt: now,
+    notes: "", isDefault: false, isArchived: false, catalogId: null, dialFormat: "", updatedAt: now, settingUnit: "",
     ...p,
   };
 }
@@ -228,9 +249,31 @@ export function newBrew(p: Partial<BrewRow> = {}, now = Date.now()): BrewRow {
     grindValue: null, doseG: 0, waterG: 0, tempC: 0, waterId: null, totalTimeSec: 0, drawdownSec: null, beverageG: null,
     tdsPercent: null, extractionYield: null, flowFeel: null, bedShape: null, sludge: null, channeling: null, bedNotes: "",
     taste: { ...DEFAULT_TASTE }, overall: 0, descriptors: [], faults: [], notes: "", nextTime: "", isFavourite: false,
-    sharedAt: null,
+    sharedAt: null, grindKind: "",
     ...p,
   };
+}
+
+// Dexie has no version bump for v4 (no new index): rows written before v4 lack the new fields,
+// so every read path fills them in. A row is returned as it is when it already has them.
+
+function oneOfOr<T extends string>(v: unknown, allowed: readonly T[]): T {
+  return typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : allowed[0]!;
+}
+
+export function withBeanDefaults<T extends BeanRow>(r: T): T {
+  if (r.form !== undefined && r.groundFor !== undefined) return r;
+  return { ...r, form: oneOfOr(r.form, BEAN_FORMS), groundFor: oneOfOr(r.groundFor, GROUND_FOR) };
+}
+
+export function withGrinderDefaults<T extends GrinderRow>(r: T): T {
+  if (r.settingUnit !== undefined) return r;
+  return { ...r, settingUnit: "" };
+}
+
+export function withBrewDefaults<T extends BrewRow>(r: T): T {
+  if (r.grindKind !== undefined) return r;
+  return { ...r, grindKind: "" };
 }
 
 /** "Square Mile — Red Brick", or the name alone (BeanEntity.display). */

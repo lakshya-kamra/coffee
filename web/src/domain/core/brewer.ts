@@ -37,8 +37,13 @@ export function isFilterStyle(m: BrewMethod): boolean {
   return m !== "espresso" && m !== "moka" && m !== "coldBrew" && m !== "turkish";
 }
 
-/** The nine drawings BrewerIcon knows. Names match the 1.x enum. */
-export type BrewerArt = "V60" | "Chemex" | "Kalita" | "Switch" | "AeroPress" | "FrenchPress" | "Moka" | "Espresso" | "ColdBrew";
+/**
+ * The drawings BrewerIcon knows. The first nine names match the 1.x enum; Drip, Cezve, Siphon and
+ * Phin (v4) start as placeholders that reuse the nearest drawing until the screen packages draw them.
+ */
+export type BrewerArt =
+  | "V60" | "Chemex" | "Kalita" | "Switch" | "AeroPress" | "FrenchPress" | "Moka" | "Espresso" | "ColdBrew"
+  | "Drip" | "Cezve" | "Siphon" | "Phin";
 
 export interface Brewer {
   readonly id: string;
@@ -62,13 +67,17 @@ export function makeBrewer(p: Partial<Brewer> & { id: string; label: string }): 
   });
 }
 
-/** BrewerArts.of, exact precedence from A§2.5. */
+/** BrewerArts.of: A§2.5 precedence, plus the v4 arts for drip machines, cezves, siphons and phins. */
 export function brewerArt(b: Brewer): BrewerArt {
   if (b.id === "chemex") return "Chemex";
+  if (b.id === "drip-machine") return "Drip";
+  // Both are stacked metal gravity filters; the catalog files the phin under the AeroPress method.
+  if (b.id === "phin" || b.id === "south-indian-filter") return "Phin";
   switch (b.method) {
     case "moka":
-    case "turkish":
       return "Moka";
+    case "turkish":
+      return "Cezve";
     case "espresso":
       return "Espresso";
     case "coldBrew":
@@ -78,7 +87,7 @@ export function brewerArt(b: Brewer): BrewerArt {
     case "frenchPress":
       return "FrenchPress";
     case "siphon":
-      return "Chemex";
+      return "Siphon";
     case "pourover":
       if (b.category === "flat-bottom") return "Kalita";
       if (b.category === "hybrid" || b.category === "immersion") return "Switch";
@@ -113,9 +122,112 @@ export function brewerRowTag(b: Brewer): string {
   return brewerArt(b) === "FrenchPress" ? "Press" : brewerShortName(b);
 }
 
+/**
+ * Brewers with their own family (v4 §4.13): they never borrow a V60 or AeroPress recipe. The
+ * Melodrip (an accessory) and "other" get families that match nothing, not even each other.
+ */
+const OWN_FAMILY: Readonly<Record<string, string>> = {
+  "drip-machine": "drip-machine",
+  "drip-bag": "drip-bag",
+  phin: "phin",
+  "south-indian-filter": "south-indian-filter",
+  melodrip: "accessory",
+  other: "other",
+};
+
+/** Families that never match a recipe: ownedFamilies leaves them out. */
+export const NO_MATCH_FAMILIES: ReadonlySet<string> = new Set(["accessory", "other"]);
+
 /** Brewers that take the same recipes: art for pour-over (V60-01/02/03 are one family), method otherwise. */
 export function brewerFamily(b: Brewer): string {
-  return b.method === "pourover" ? `pourover:${brewerArt(b)}` : b.method;
+  return OWN_FAMILY[b.id] ?? (b.method === "pourover" ? `pourover:${brewerArt(b)}` : b.method);
+}
+
+/** The families of the brewers someone owns, without the ones that match nothing. */
+export function ownedFamilies(ownedBrewerIds: readonly string[], byId: (id: string) => Brewer | null): Set<string> {
+  const out = new Set<string>();
+  for (const id of ownedBrewerIds) {
+    const b = byId(id);
+    if (!b) continue;
+    const f = brewerFamily(b);
+    if (!NO_MATCH_FAMILIES.has(f)) out.add(f);
+  }
+  return out;
+}
+
+/** How the water meets the coffee: it decides which advice and which review sections apply. */
+export type BrewStyle = "percolation" | "immersion" | "espresso";
+
+/** An unknown brewer is treated as percolation (a filter brew), as data quality does. */
+export function brewStyle(b: Brewer | null): BrewStyle {
+  if (b == null) return "percolation";
+  if (b.id === "phin" || b.id === "south-indian-filter") return "percolation";
+  switch (b.method) {
+    case "espresso":
+      return "espresso";
+    case "frenchPress":
+    case "aeropress":
+    case "coldBrew":
+    case "turkish":
+    case "siphon":
+      return "immersion";
+    case "pourover":
+      return b.category === "immersion" ? "immersion" : "percolation";
+    case "moka":
+      return "percolation";
+  }
+}
+
+/** Which Review sections a brew gets (v4 §4.4). TDS and extraction always sit under "Advanced". */
+export interface ReviewSections {
+  /** Drawdown time, In cup and Flow. */
+  readonly drawdown: boolean;
+  /** Shape, surface, channelling. */
+  readonly bed: boolean;
+  /** "Retained by the bed". */
+  readonly retained: boolean;
+  readonly advanced: true;
+  readonly style: BrewStyle;
+}
+
+const DRAWDOWN_CATEGORIES: ReadonlySet<string> = new Set(["cone", "flat-bottom", "hybrid", "immersion"]);
+
+export function reviewSections(b: Brewer | null): ReviewSections {
+  const style = brewStyle(b);
+  // An unknown brewer keeps every section, as before v4.
+  const pourOver = b == null || (b.method === "pourover" && DRAWDOWN_CATEGORIES.has(b.category) && OWN_FAMILY[b.id] == null);
+  return {
+    drawdown: pourOver,
+    bed: pourOver || b?.id === "drip-machine",
+    retained: style === "percolation" && b?.method !== "moka",
+    advanced: true,
+    style,
+  };
+}
+
+/** Field labels that change by method (v4 §4.9). */
+export interface MethodLabels {
+  /** "WATER", "YIELD" or "WATER IN THE BASE". */
+  readonly water: string;
+  /** A short helper under the water label: "in the cup" for espresso, else "". */
+  readonly waterNote: string;
+  /** "TIME" or "SHOT TIME". */
+  readonly time: string;
+  /** Cold brew: durations read in hours ("12 h 5 min"), see formatDuration. */
+  readonly longTimes: boolean;
+}
+
+export function methodLabels(method: BrewMethod): MethodLabels {
+  switch (method) {
+    case "espresso":
+      return { water: "YIELD", waterNote: "in the cup", time: "SHOT TIME", longTimes: false };
+    case "moka":
+      return { water: "WATER IN THE BASE", waterNote: "", time: "TIME", longTimes: false };
+    case "coldBrew":
+      return { water: "WATER", waterNote: "", time: "TIME", longTimes: true };
+    default:
+      return { water: "WATER", waterNote: "", time: "TIME", longTimes: false };
+  }
 }
 
 export function unknownBrewer(raw: string): Brewer {

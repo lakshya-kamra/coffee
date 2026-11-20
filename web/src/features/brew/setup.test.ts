@@ -19,7 +19,7 @@ function recipe(p: Partial<Recipe> = {}): Recipe {
   return {
     id: "hoffmann-v60", name: "V60", author: "Hoffmann", brewer: V60, doseG: 15, waterG: 250, grind: "Medium-fine", tempC: 94, blurb: "", sourceNote: "",
     prep: [], tips: [], steps: [{ kind: "Pour", title: "Pour", detail: "", startSec: 0, endSec: 120, targetWaterG: 250 }], accent: 0xff000000,
-    isBuiltIn: true, fidelity: "published", sources: [], basedOn: null, ...p,
+    isBuiltIn: true, fidelity: "published", sources: [], basedOn: null, level: "", needs: [], prepNoScale: [], ...p,
   };
 }
 

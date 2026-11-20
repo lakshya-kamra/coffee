@@ -49,7 +49,7 @@ const hoffmann: Recipe = Object.freeze<Recipe>({
   isBuiltIn: true,
   fidelity: "published",
   sources: [{ who: "James Hoffmann", url: "https://www.youtube.com/watch?v=AI4ynXzkSQo", note: "" }],
-  basedOn: null,
+  basedOn: null, level: "", needs: [], prepNoScale: [],
 });
 
 const codes = (r: Recipe) => check(r).map((i) => i.code);

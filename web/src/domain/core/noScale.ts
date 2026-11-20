@@ -1,0 +1,94 @@
+/**
+ * No-scale brewing (v4 §4.3, D10): spoons, ml and mugs rendered from the stored grams. Grams stay
+ * the truth; nothing here is ever saved. Kotlin twin: domain/NoScale.kt, same results (the parity
+ * cases are in shared/fixtures/domain-v4-cases.json).
+ */
+import type { BrewMethod } from "./brewer";
+import { halves, roundToInt } from "./format";
+import { scaledToWater, type Recipe } from "./recipe";
+import { renderTemps, type Units } from "./units";
+
+/** Grams of ground coffee in one level tablespoon (shared/schema/units.md). */
+export const GROUND_COFFEE_G_PER_LEVEL_TBSP = 5;
+/** One mug, for "500 ml (2 mugs)" and the servings presets. */
+export const ML_PER_MUG = 250;
+/** Below this, no mug count is shown. */
+const MUGS_FROM_ML = 200;
+
+/** "" = not recorded (treated as whole), as BeanRow.form. */
+export type BeanForm = "" | "whole" | "ground";
+
+export interface NoScaleAmounts {
+  /** Level tablespoons, in halves, at least 1; null for espresso and moka (the basket sets the dose). */
+  readonly coffeeTbsp: number | null;
+  /** "6 level tablespoons"; "" for espresso and moka. */
+  readonly coffee: string;
+  /** "6 level tablespoons of coffee" ("… of beans" before a blade grinder); the basket line for espresso and moka. */
+  readonly coffeeLine: string;
+  readonly waterMl: number;
+  /** In halves, at least 1; null under 200 ml. */
+  readonly mugs: number | null;
+  /** "500 ml (2 mugs)" or "150 ml". */
+  readonly water: string;
+  /** Espresso and moka: how to fill the basket instead of spoons. */
+  readonly basket: string | null;
+}
+
+const ESPRESSO_BASKET = "Fill the basket level, then tamp.";
+const MOKA_BASKET = "Fill the basket level; don't press it down. Water to just below the valve.";
+
+function toHalves(v: number): number {
+  return roundToInt(v * 2) / 2;
+}
+
+/**
+ * `form` "whole" means beans measured before grinding (a blade grinder at home), so the line
+ * reads "of beans"; anything else is coffee already ground.
+ */
+export function noScaleAmounts(doseG: number, waterG: number, method: BrewMethod, form: BeanForm = ""): NoScaleAmounts {
+  const waterMl = Math.max(0, roundToInt(waterG));
+  const mugs = waterMl >= MUGS_FROM_ML ? Math.max(1, toHalves(waterMl / ML_PER_MUG)) : null;
+  const water = mugs == null ? `${waterMl} ml` : `${waterMl} ml (${halves(mugs)} ${mugs === 1 ? "mug" : "mugs"})`;
+  const basket = method === "espresso" ? ESPRESSO_BASKET : method === "moka" ? MOKA_BASKET : null;
+  if (basket != null) return { coffeeTbsp: null, coffee: "", coffeeLine: basket, waterMl, mugs, water, basket };
+  const tbsp = Math.max(1, toHalves(Math.max(0, doseG) / GROUND_COFFEE_G_PER_LEVEL_TBSP));
+  const coffee = `${halves(tbsp)} level ${tbsp === 1 ? "tablespoon" : "tablespoons"}`;
+  return { coffeeTbsp: tbsp, coffee, coffeeLine: `${coffee} ${form === "whole" ? "of beans" : "of coffee"}`, waterMl, mugs, water, basket: null };
+}
+
+/** A prep line that needs a scale: weighing, zeroing or taring. */
+export const SCALE_LINE = /\b(scales?|zero(?:ed)?|tare|weigh)\b/i;
+
+const GENERIC_NO_SCALE = ["Measure {water} of water in a jug first.", "Measure {coffee}."];
+
+/**
+ * The prep list for someone without a scale: the lines that mention one are replaced, where the
+ * first of them stood, by the recipe's prepNoScale, else by the basket line (espresso, moka), else
+ * by the two generic measuring lines. Every line has its temperatures in the user's unit.
+ */
+export function noScalePrep(
+  recipe: Pick<Recipe, "prep" | "prepNoScale" | "doseG" | "waterG" | "brewer">,
+  units: Units,
+  form: BeanForm = "",
+): string[] {
+  const a = noScaleAmounts(recipe.doseG, recipe.waterG, recipe.brewer.method, form);
+  const fill = (s: string) => s.replaceAll("{coffee}", a.coffeeLine).replaceAll("{water}", a.water);
+  const replacement = recipe.prepNoScale.length > 0 ? recipe.prepNoScale.map(fill) : a.basket != null ? [a.basket] : GENERIC_NO_SCALE.map(fill);
+  const out: string[] = [];
+  let replaced = false;
+  for (const line of recipe.prep) {
+    if (!SCALE_LINE.test(line)) {
+      out.push(line);
+    } else if (!replaced) {
+      out.push(...replacement);
+      replaced = true;
+    }
+  }
+  const unit = units.fahrenheit ? "f" : "c";
+  return out.map((l) => renderTemps(l, unit));
+}
+
+/** "1 mug", "2 mugs", "3 mugs": 250 ml of water each, the dose from the recipe's ratio. */
+export function servingsPreset(recipe: Recipe, mugs: number): Recipe {
+  return scaledToWater(recipe, ML_PER_MUG * mugs);
+}

@@ -4,7 +4,7 @@
  */
 import { encodeRecipe, type Recipe } from "@/domain/core/recipe";
 import { db } from "./db";
-import type { AnalysisRow, BeanRow, BrewRow, GrinderRow, PhotoRow, SavedRecipeRow } from "./schema";
+import { withBrewDefaults, type AnalysisRow, type BeanRow, type BrewRow, type GrinderRow, type PhotoRow, type SavedRecipeRow } from "./schema";
 import { KV } from "./settings";
 
 /** What a reload needs to resume a running brew (web-spec §12.5). */
@@ -56,8 +56,9 @@ export const repo = {
       if (b) await db.brew_logs.put({ ...b, isFavourite: !b.isFavourite, updatedAt: Date.now() });
     });
   },
-  brewByUid(uid: string): Promise<BrewRow | undefined> {
-    return db.brew_logs.where("uid").equals(uid).first();
+  async brewByUid(uid: string): Promise<BrewRow | undefined> {
+    const row = await db.brew_logs.where("uid").equals(uid).first();
+    return row && withBrewDefaults(row);
   },
 
   // ------------------------------------------------------------ beans

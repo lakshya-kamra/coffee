@@ -29,6 +29,8 @@ export interface GrinderSetting {
   readonly entryHint: string;
   /** Optional extension (lead decision 1): "plain" | "turns" | "turns-dot" | "number-tick:<n>". */
   readonly dialFormat: string | null;
+  /** v4: "s" = the setting is seconds of grinding (a blade grinder); "" otherwise. */
+  readonly settingUnit: string;
 }
 
 export interface CatalogGrinder {
@@ -56,6 +58,10 @@ export interface CatalogRoaster {
   readonly city: string;
   readonly area: string;
   readonly notable: string;
+  /** v4: a supermarket brand (Folgers, Lavazza, Bru…), sorted after the user's region and favourites. */
+  readonly mainstream: boolean;
+  /** v4: `area` values where the brand is sold; [] for specialty roasters. */
+  readonly regions: readonly string[];
 }
 
 export interface CatalogOrigin {
@@ -157,8 +163,10 @@ export interface Principle {
 
 export type TermKind = "species" | "process" | "varietal" | "lotType" | "decaf" | "roastLevel" | "roastIntent";
 
-export type CatalogName = "grinders" | "roasters" | "origins" | "beans" | "brewers" | "water" | "providers" | "recipes" | "principles";
+export type CatalogName = "grinders" | "roasters" | "origins" | "beans" | "brewers" | "water" | "providers" | "recipes" | "principles" | "glossary";
 
 export const CATALOG_NAMES: readonly CatalogName[] = [
-  "brewers", "recipes", "beans", "grinders", "roasters", "origins", "water", "providers", "principles",
+  "brewers", "recipes", "beans", "grinders", "roasters", "origins", "water", "providers", "principles", "glossary",
 ];
+
+export type { GlossarySource, GlossaryTerm } from "@/domain/core/glossary";

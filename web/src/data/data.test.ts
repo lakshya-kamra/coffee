@@ -6,8 +6,8 @@ import { makeBrewer } from "@/domain/core/brewer";
 import type { Recipe } from "@/domain/core/recipe";
 import { db } from "./db";
 import { mergeRecipes, repo } from "./repo";
-import { newBean, newBrew, newGrinder, type AnalysisRow, type PhotoRow } from "./schema";
-import { aiPrefs, DEFAULT_SETTINGS, settings } from "./settings";
+import { newBean, newBrew, newGrinder, type AnalysisRow, type BeanRow, type BrewRow, type GrinderRow, type PhotoRow } from "./schema";
+import { aiPrefs, DEFAULT_SETTINGS, initialReviewMode, settings, withSettingsDefaults } from "./settings";
 import { store } from "./store";
 
 function photo(p: Partial<PhotoRow>): PhotoRow {
@@ -168,9 +168,46 @@ describe("hot store", () => {
 
 describe("recipe merge (CoffeeRepository.recipes)", () => {
   const r = (id: string, name = id): Recipe =>
-    ({ id, name, author: "", brewer: makeBrewer({ id: "chemex", label: "Chemex" }), doseG: 1, waterG: 2, grind: "", tempC: 90, blurb: "", sourceNote: "", prep: [], tips: [], steps: [], accent: 0xff000000, isBuiltIn: true, fidelity: "", sources: [], basedOn: null });
+    ({ id, name, author: "", brewer: makeBrewer({ id: "chemex", label: "Chemex" }), doseG: 1, waterG: 2, grind: "", tempC: 90, blurb: "", sourceNote: "", prep: [], tips: [], steps: [], accent: 0xff000000, isBuiltIn: true, fidelity: "", sources: [], basedOn: null, level: "", needs: [], prepNoScale: [] });
   it("built-ins in order, a saved edit replaces its original, then the user's own", () => {
     const merged = mergeRecipes([r("a"), r("b"), r("c")], [r("custom-1"), r("b", "My b")]);
     expect(merged.map((x) => `${x.id}:${x.name}`)).toEqual(["a:a", "b:My b", "c:c", "custom-1:custom-1"]);
+  });
+});
+
+describe("v4 settings and rows stored before v4", () => {
+  it("a fresh install in the US reads °F; a stored unit never changes", () => {
+    expect(withSettingsDefaults(null, "en-US").tempUnit).toBe("f");
+    expect(withSettingsDefaults(null, "en-GB").tempUnit).toBe("c");
+    expect(withSettingsDefaults({ tempUnit: "c" }, "en-US").tempUnit).toBe("c");
+    const fresh = withSettingsDefaults(null, "en-GB");
+    expect([fresh.experience, fresh.hasScale, fresh.reviewMode, fresh.buysGround, fresh.soundCuesAsked]).toEqual(["", true, "quick", false, false]);
+  });
+
+  it("reviewMode: quick when fresh, detailed for an install that already had brews, kept once stored", () => {
+    expect(initialReviewMode(null, 0)).toBe("quick");
+    expect(initialReviewMode({ name: "Sam" }, 4)).toBe("detailed");
+    expect(initialReviewMode({ reviewMode: "quick" }, 4)).toBeNull();
+  });
+
+  it("store.init stores detailed for an existing install with brews", async () => {
+    await db.kv.put({ key: "settings", value: { ...DEFAULT_SETTINGS, reviewMode: undefined } });
+    await repo.insertBrew(newBrew());
+    await store.init();
+    expect((await settings.get()).reviewMode).toBe("detailed");
+  });
+
+  it("rows written before v4 read with the new fields filled in (no Dexie version bump)", async () => {
+    const { form: _f, groundFor: _g, ...oldBean } = newBean({ name: "Old" });
+    const { settingUnit: _s, ...oldGrinder } = newGrinder({ brand: "A", model: "B" });
+    const { grindKind: _k, ...oldBrew } = newBrew({ recipeName: "Old" });
+    await db.beans.add(oldBean as BeanRow);
+    await db.grinders.add(oldGrinder as GrinderRow);
+    await db.brew_logs.add(oldBrew as BrewRow);
+    await store.init();
+    expect(store.get().beans[0]).toMatchObject({ form: "", groundFor: "" });
+    expect(store.get().grinders[0]!.settingUnit).toBe("");
+    expect(store.get().brews[0]!.grindKind).toBe("");
+    expect((await repo.brewByUid(oldBrew.uid))!.grindKind).toBe("");
   });
 });

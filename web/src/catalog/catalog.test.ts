@@ -1,6 +1,7 @@
 // Mirrors A§2.8 CatalogParseTest + LegacyIdsTest, reading the same shared/ files the app ships.
 import { beforeAll, describe, expect, it } from "vitest";
 import { BREW_METHOD_IDS } from "@/domain/core/brewer";
+import { findTerm, termForStepKind } from "@/domain/core/glossary";
 import { LegacyIds } from "@/domain/core/legacyIds";
 import { Brewers, catalog } from "./catalog";
 import { KEBAB } from "./normalise";
@@ -107,5 +108,34 @@ describe("catalog", () => {
     expect(catalog.label("process", "washed")).toBe("Washed");
     expect(catalog.label("process", "no-such-process")).toBeNull();
     expect(catalog.process("natural")?.id).toBe("natural");
+  });
+});
+
+describe("v4 catalog additions", () => {
+  it("glossary.json loads every term, explains every step kind it names, and cites https sources", () => {
+    expect(catalog.glossary.length).toBeGreaterThanOrEqual(27);
+    for (const t of catalog.glossary) {
+      expect(KEBAB.test(t.id), t.id).toBe(true);
+      expect(t.short.length, t.id).toBeGreaterThan(10);
+      for (const s of t.sources) expect(s.url.startsWith("https://"), `${t.id} ${s.url}`).toBe(true);
+    }
+    for (const id of ["bloom", "pour", "swirl", "stir", "steep", "press", "drawdown", "ratio", "grind", "tds", "days-off-roast"]) {
+      expect(catalog.term(id), id).not.toBeNull();
+    }
+    expect(findTerm(catalog.glossary, "EY")?.id).toBe("extraction");
+    expect(termForStepKind("Serve")).toBeNull();
+  });
+
+  it("south-indian-filter, blade-grinder and mainstream roasters", () => {
+    expect(Brewers.byId("south-indian-filter")).toMatchObject({ category: "other", method: "pourover", filter: "metal" });
+    expect(catalog.grinder("blade-grinder")).toMatchObject({ brand: "Any", model: "Blade grinder", burr: "blade" });
+    expect(catalog.grinder("blade-grinder")!.setting).toMatchObject({ style: "stepless", min: 0, max: 60, step: 1, settingUnit: "s" });
+    const mainstream = catalog.roasters.filter((r) => r.mainstream);
+    expect(mainstream.length).toBeGreaterThanOrEqual(19);
+    for (const r of mainstream) expect(r.regions.length, r.id).toBeGreaterThan(0);
+    expect(catalog.roaster("folgers")!.regions).toEqual(["North America"]);
+    expect(catalog.roaster("square-mile")!.mainstream).toBe(false);
+    // Generic waters the onboarding offers first.
+    for (const id of ["tap-unfiltered", "tap-filtered", "bottled-spring"]) expect(catalog.waterById(id), id).not.toBeNull();
   });
 });

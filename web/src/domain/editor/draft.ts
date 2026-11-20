@@ -6,7 +6,7 @@
  */
 import type { Brewer } from "@/domain/core/brewer";
 import { grams } from "@/domain/core/format";
-import { STEP_KINDS, type Fidelity, type Recipe, type RecipeSource, type RecipeStep, type StepKind } from "@/domain/core/recipe";
+import { STEP_KINDS, type Fidelity, type Recipe, type RecipeLevel, type RecipeNeed, type RecipeSource, type RecipeStep, type StepKind } from "@/domain/core/recipe";
 
 export type EditorMode = "new" | "edit" | "duplicate";
 
@@ -40,6 +40,10 @@ export interface RecipeDraft {
   readonly sources: readonly RecipeSource[];
   readonly basedOn: string | null;
   readonly sourceNote: string;
+  /** Carried through unedited, so saving a recipe never drops them (v4 §6.4). */
+  readonly level: RecipeLevel;
+  readonly needs: readonly RecipeNeed[];
+  readonly prepNoScale: readonly string[];
 }
 
 /** Steps that put water on the scale: the editor always offers "pour to" for these. */
@@ -98,6 +102,9 @@ export function draftFromRecipe(r: Recipe): RecipeDraft {
     sources: r.sources,
     basedOn: r.basedOn,
     sourceNote: r.sourceNote,
+    level: r.level,
+    needs: r.needs,
+    prepNoScale: r.prepNoScale,
   };
 }
 
@@ -122,6 +129,9 @@ export function blankDraft(author: string, rand?: () => number): RecipeDraft {
     sources: [],
     basedOn: null,
     sourceNote: "",
+    level: "",
+    needs: [],
+    prepNoScale: [],
   };
 }
 
@@ -179,6 +189,9 @@ export function recipeFromDraft(d: RecipeDraft, resolveBrewer: (id: string) => B
     fidelity: d.fidelity,
     sources: d.sources,
     basedOn: d.basedOn,
+    level: d.level,
+    needs: d.needs,
+    prepNoScale: d.prepNoScale.map((p) => p.trim()).filter(Boolean),
   });
 }
 

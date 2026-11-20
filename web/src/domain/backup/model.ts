@@ -45,6 +45,11 @@ export interface SettingsDto {
   defaultGrinderUid?: string | null;
   lastRecipeId?: string;
   onboardingDone?: boolean;
+  // Added in 2.1
+  experience?: "" | "new" | "recipes" | "tinker";
+  hasScale?: boolean;
+  reviewMode?: "quick" | "detailed";
+  buysGround?: boolean;
 }
 
 export interface AiProviderDto {
@@ -85,6 +90,10 @@ export interface BeanDto {
   /** "" = not recorded. */
   roastLevelId: string;
   roastIntentId: string | null;
+  /** Added in 2.1: "" | "whole" | "ground". */
+  form: "" | "whole" | "ground";
+  /** Added in 2.1: "" | "filter" | "press" | "espresso" | "moka". */
+  groundFor: "" | "filter" | "press" | "espresso" | "moka";
   /** "1700" or "1700-1900". */
   altitudeM: string;
   harvest: string;
@@ -114,6 +123,8 @@ export interface GrinderSettingDto {
   micronsPerStep: number | null;
   /** "" | "plain" | "turns" | "turns-dot" | "number-tick:10" */
   dialFormat: string;
+  /** Added in 2.1: "" | "s" (seconds of grinding, a blade grinder). */
+  settingUnit: "" | "s";
 }
 
 export interface GrinderDto {
@@ -156,6 +167,8 @@ export interface BrewDto {
   grindSetting: string;
   grindClicks: number | null;
   grindValue: number | null;
+  /** Added in 2.1: "" | "dial" | "blade" | "preground". */
+  grindKind: "" | "dial" | "blade" | "preground";
   doseG: number;
   waterG: number;
   /** Always °C. */
@@ -246,20 +259,21 @@ export const KEYS = {
   settings: [
     "tempUnit", "weightUnit", "darkMode", "haptics", "soundCues", "keepScreenOn", "autoAdvanceSteps", "name", "ownedBrewerIds",
     "favouriteRoasterIds", "homeArea", "defaultWaterId", "defaultBeanUid", "defaultGrinderUid", "lastRecipeId", "onboardingDone",
+    "experience", "hasScale", "reviewMode", "buysGround",
   ],
   bean: [
     "uid", "name", "roaster", "roasterId", "origin", "originId", "region", "farm", "producer", "washingStation", "lotTypeId", "speciesId",
-    "varietalIds", "varietal", "processId", "isDecaf", "decafMethodId", "roastLevelId", "roastIntentId", "altitudeM", "harvest", "roastedOn",
+    "varietalIds", "varietal", "processId", "isDecaf", "decafMethodId", "roastLevelId", "roastIntentId", "form", "groundFor", "altitudeM", "harvest", "roastedOn",
     "openedOn", "restDays", "bagSizeG", "priceAmount", "currency", "priceText", "tastingNotes", "notes", "isArchived", "createdAt", "updatedAt",
   ],
   grinder: [
     "uid", "catalogId", "brand", "model", "burr", "burrSizeMm", "setting", "defaultFilterSetting", "defaultEspressoSetting", "notes",
     "isDefault", "isArchived", "updatedAt",
   ],
-  grinderSetting: ["style", "min", "max", "step", "lowerIsFiner", "clicksPerRotation", "micronsPerStep", "dialFormat"],
+  grinderSetting: ["style", "min", "max", "step", "lowerIsFiner", "clicksPerRotation", "micronsPerStep", "dialFormat", "settingUnit"],
   brew: [
     "uid", "startedAt", "updatedAt", "recipeId", "recipeName", "recipeAuthor", "brewerId", "brewerLabel", "beanUid", "beanLabel",
-    "daysOffRoast", "grinderUid", "grinderLabel", "grindSetting", "grindClicks", "grindValue", "doseG", "waterG", "tempC", "waterId",
+    "daysOffRoast", "grinderUid", "grinderLabel", "grindSetting", "grindClicks", "grindValue", "grindKind", "doseG", "waterG", "tempC", "waterId",
     "totalTimeSec", "drawdownSec", "beverageG", "tdsPercent", "extractionYield", "flow", "bed", "taste", "overall", "descriptors", "faults",
     "notes", "nextTime", "isFavourite", "sharedAt",
   ],

@@ -8,7 +8,10 @@ import type { CatalogName } from "./types";
 type Loader = () => Promise<unknown>;
 
 const catalogFiles = import.meta.glob<unknown>("@shared/catalog/*.json", { import: "default" });
-const rootFiles = import.meta.glob<unknown>(["@shared/recipes.json", "@shared/principles.json"], { import: "default" });
+const rootFiles = import.meta.glob<unknown>(["@shared/recipes.json", "@shared/principles.json", "@shared/glossary.json"], { import: "default" });
+
+/** Files at the root of shared/ rather than in shared/catalog/. */
+const ROOT: ReadonlySet<CatalogName> = new Set<CatalogName>(["recipes", "principles", "glossary"]);
 
 function find(files: Record<string, Loader>, fileName: string): Loader | undefined {
   // Keys keep the alias or a relative form depending on the Vite version; match the file name.
@@ -18,11 +21,11 @@ function find(files: Record<string, Loader>, fileName: string): Loader | undefin
 
 /** Path shown in problem lines, relative to shared/. */
 export function sourcePath(name: CatalogName): string {
-  return name === "recipes" || name === "principles" ? `${name}.json` : `catalog/${name}.json`;
+  return ROOT.has(name) ? `${name}.json` : `catalog/${name}.json`;
 }
 
 /** The parsed JSON of one shared file, or undefined when it does not exist in this build. */
 export async function readShared(name: CatalogName): Promise<unknown> {
-  const loader = name === "recipes" || name === "principles" ? find(rootFiles, `${name}.json`) : find(catalogFiles, `${name}.json`);
+  const loader = ROOT.has(name) ? find(rootFiles, `${name}.json`) : find(catalogFiles, `${name}.json`);
   return loader ? loader() : undefined;
 }

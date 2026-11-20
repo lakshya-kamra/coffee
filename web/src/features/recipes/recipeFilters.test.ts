@@ -10,7 +10,7 @@ const aero = makeBrewer({ id: "aeropress", label: "AeroPress", method: "aeropres
 
 const r = (id: string, author: string, brewer: Brewer, isBuiltIn = true): Recipe => ({
   id, name: `${author} ${brewer.label}`, author, brewer, doseG: 15, waterG: 250, grind: "", tempC: 94, blurb: id === "rao" ? "Spin the bed" : "", sourceNote: "",
-  prep: [], tips: [], steps: [], accent: 0, isBuiltIn, fidelity: isBuiltIn ? "published" : "custom", sources: [], basedOn: null,
+  prep: [], tips: [], steps: [], accent: 0, isBuiltIn, fidelity: isBuiltIn ? "published" : "custom", sources: [], basedOn: null, level: "", needs: [], prepNoScale: [],
 });
 
 const ALL = [r("hoff", "James Hoffmann", v60), r("rao", "Scott Rao", v60), r("onyx", "Onyx", kalita), r("mine", "Me", aero, false)];

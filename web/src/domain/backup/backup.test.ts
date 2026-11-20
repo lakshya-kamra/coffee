@@ -12,7 +12,7 @@ import { linkBean, linkGrinder, matchGrinder, matchOrigin, matchRoaster, norm, s
 import { planBackup, planTable, type Existing } from "./merge";
 import { KEYS, type BackupDoc } from "./model";
 import { readBackupText } from "./read";
-import { analysisFromDto, analysisToDto, beanFromDto, brewFromDto, grinderFromDto, photoFromDto, snapshotToDoc } from "./rows";
+import { analysisFromDto, analysisToDto, beanFromDto, beanToDto, brewFromDto, brewToDto, grinderFromDto, grinderToDto, photoFromDto, snapshotToDoc } from "./rows";
 import { sanitizeNonStandardNumbers } from "./sanitize";
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../../shared/fixtures/${name}`, import.meta.url));
@@ -96,6 +96,62 @@ describe("codec", () => {
     expect(r.doc.brews[1]!.startedAt).toBe("2026-11-12T08:01:00.000Z");
   });
   if (sample == null) console.warn("shared/fixtures/backup-v2-sample.json is missing: fixture test skipped");
+
+  // ---- backup 2.1 (v4): the same version 2, with new optional keys.
+  const sample21 = readFixture("backup-v2.1-sample.json");
+  it.skipIf(sample21 == null)("shared/fixtures/backup-v2.1-sample.json reads every new key", async () => {
+    const r = await readBackupText(sample21!, builtIns());
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.preview.problems).toEqual([]);
+    expect(r.preview.counts).toEqual({ brews: 3, beans: 2, grinders: 2, recipes: 1, analyses: 3, photos: 1 });
+    expect(r.doc.settings).toMatchObject({ experience: "new", hasScale: false, reviewMode: "quick", buysGround: true });
+    expect(r.doc.beans.map((b) => [b.form, b.groundFor])).toEqual([["whole", ""], ["ground", "filter"]]);
+    expect(r.doc.grinders.map((g) => g.setting.settingUnit)).toEqual(["", "s"]);
+    expect(r.doc.brews.map((b) => b.grindKind)).toEqual(["dial", "", "preground"]);
+    expect(r.doc.brews[2]!.faults).toEqual(["Too weak"]);
+  });
+
+  it.skipIf(sample21 == null)("2.1 round-trips losslessly, keys in the fixture's order", () => {
+    const json = JSON.parse(sample21!) as Record<string, unknown>;
+    const once = decodeV2(json);
+    expect(once.problems).toEqual([]);
+    const written = JSON.parse(encode(once.doc)) as Record<string, unknown> & BackupDoc;
+    expect(decodeV2(written).doc).toEqual(once.doc);
+    const fixture = json as unknown as BackupDoc;
+    const keys = (o: unknown) => Object.keys(o as object);
+    // Settings are decoded key by key; the fixture itself is in the writer's order.
+    expect(keys(fixture.settings)).toEqual([...KEYS.settings]);
+    expect(keys(written.beans[1])).toEqual(keys(fixture.beans[1]));
+    expect(keys(written.grinders[1])).toEqual(keys(fixture.grinders[1]));
+    expect(keys(written.grinders[1]!.setting)).toEqual(keys(fixture.grinders[1]!.setting));
+    expect(keys(written.brews[2])).toEqual(keys(fixture.brews[2]));
+    // And through the rows: DTO -> row -> DTO keeps every new value.
+    const bean = once.doc.beans[1]!;
+    expect(beanToDto({ ...beanFromDto(bean, 0), id: 1 })).toEqual(bean);
+    const grinder = once.doc.grinders[1]!;
+    expect(grinderToDto({ ...grinderFromDto(grinder, 0), id: 1 })).toEqual(grinder);
+    const brew = once.doc.brews[2]!;
+    expect(brewToDto({ ...brewFromDto(brew, 1, null), id: 1 }, () => brew.beanUid, () => null)).toEqual(brew);
+  });
+
+  it.skipIf(sample21 == null)("a 2.1 file read by the 2.0 rules loses only the new keys", () => {
+    const json = JSON.parse(sample21!) as Record<string, Record<string, unknown>[] | Record<string, unknown>>;
+    // What a 2.0.0 reader sees: the same file with the 2.1 keys ignored.
+    const old = JSON.parse(sample21!) as typeof json;
+    for (const k of ["experience", "hasScale", "reviewMode", "buysGround"]) delete (old.settings as Record<string, unknown>)[k];
+    for (const b of old.beans as Record<string, unknown>[]) { delete b.form; delete b.groundFor; }
+    for (const g of old.grinders as Record<string, Record<string, unknown>>[]) delete g.setting!.settingUnit;
+    for (const b of old.brews as Record<string, unknown>[]) delete b.grindKind;
+    const now = decodeV2(json).doc;
+    const then = decodeV2(old).doc;
+    expect(then.settings).toEqual({ ...now.settings, experience: undefined, hasScale: undefined, reviewMode: undefined, buysGround: undefined });
+    expect(then.beans).toEqual(now.beans.map((b) => ({ ...b, form: "", groundFor: "" })));
+    expect(then.grinders).toEqual(now.grinders.map((g) => ({ ...g, setting: { ...g.setting, settingUnit: "" } })));
+    expect(then.brews).toEqual(now.brews.map((b) => ({ ...b, grindKind: "" })));
+    expect(then.analyses).toEqual(now.analyses);
+    expect(then.photos).toEqual(now.photos);
+  });
 });
 
 describe("1.x reader", () => {

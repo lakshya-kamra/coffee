@@ -2,7 +2,12 @@
  * Settings (web-spec §8.4; Android Settings + A§5, same defaults) and the non-secret AI prefs
  * (web-spec §14.2). Both live in the kv table; the hot store mirrors them for synchronous reads.
  */
+import { defaultTempUnit } from "@/domain/core/units";
 import { db } from "./db";
+
+/** Onboarding's "How do you make coffee now?" (v4 §4.1); "" = not asked yet. */
+export type Experience = "" | "new" | "recipes" | "tinker";
+export type ReviewMode = "quick" | "detailed";
 
 export interface Settings {
   lastRecipeId: string;
@@ -28,6 +33,21 @@ export interface Settings {
   startupTasksVersion: number;
   /** Web only (rule 13): "Motion: Match system / Reduce motion". */
   motion: "system" | "reduced";
+  // ---- v4 (backup 2.1)
+  experience: Experience;
+  /** false: brewing amounts show in tablespoons and ml (grams stay the stored truth). */
+  hasScale: boolean;
+  /** "quick" on a fresh install; an install that already had brews reads "detailed" (store.init). */
+  reviewMode: ReviewMode;
+  /** "I buy ground coffee": brews default to pre-ground. */
+  buysGround: boolean;
+  // ---- v4, this device only: never written to a backup
+  /** The chime question has been answered. */
+  soundCuesAsked: boolean;
+  /** Large windows: the sidebar folded to the rail. */
+  sidebarCollapsed: boolean;
+  /** Log layout on wide windows. */
+  logView: "list" | "table";
 }
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
@@ -53,7 +73,18 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   pendingNotices: [],
   startupTasksVersion: 0,
   motion: "system",
+  experience: "",
+  hasScale: true,
+  reviewMode: "quick",
+  buysGround: false,
+  soundCuesAsked: false,
+  sidebarCollapsed: false,
+  logView: "list",
 });
+
+function browserLocale(): string {
+  return typeof navigator === "undefined" ? "en-GB" : navigator.language;
+}
 
 export interface AiProviderPrefs {
   model: string;
@@ -78,9 +109,20 @@ export const DEFAULT_AI_PREFS: Readonly<AiPrefs> = Object.freeze({ layout: 2, ac
 export const KV = { settings: "settings", ai: "ai", activeBrew: "activeBrew" } as const;
 
 /** Defaults filled in for any key a stored object lacks (older rows, imports). */
-export function withSettingsDefaults(raw: unknown): Settings {
+export function withSettingsDefaults(raw: unknown, locale: string = browserLocale()): Settings {
   const o = raw != null && typeof raw === "object" ? (raw as Partial<Settings>) : {};
-  return { ...DEFAULT_SETTINGS, ...o };
+  // A fresh install takes °F where the region uses it (v4 §4.15); a stored value never changes.
+  return { ...DEFAULT_SETTINGS, tempUnit: defaultTempUnit(locale), ...o };
+}
+
+/**
+ * reviewMode for a settings object that has never stored one: quick on a fresh install, detailed
+ * for someone who already has brews (they are used to every section open). Null when stored.
+ */
+export function initialReviewMode(raw: unknown, brewCount: number): ReviewMode | null {
+  const o = raw != null && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  if (o.reviewMode === "quick" || o.reviewMode === "detailed") return null;
+  return brewCount > 0 ? "detailed" : "quick";
 }
 
 export function withAiDefaults(raw: unknown): AiPrefs {

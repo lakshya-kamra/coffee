@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { Brewers, catalog } from "@/catalog/catalog";
+import { draftFromRecipe, recipeFromDraft } from "@/domain/editor/draft";
 import { LegacyIds } from "./legacyIds";
+import { SCALE_LINE } from "./noScale";
 import {
   accentHex,
   decodeRecipe,
@@ -132,5 +134,45 @@ describe("shared/recipes.json (skips until Android WP-1 writes it)", () => {
     expect([h.doseG, h.waterG, h.tempC, totalSec(h), h.steps.length]).toEqual([30, 500, 100, 210, 6]);
     const k = catalog.recipe("kasuya-46")!;
     expect([k.doseG, k.waterG, k.tempC, totalSec(k)]).toEqual([20, 300, 92, 210]);
+  });
+});
+
+describe("v4 recipe data (§6.4)", () => {
+  it("every built-in has a level and needs; easy ones that weigh have prepNoScale", () => {
+    const all = catalog.recipes;
+    if (all.length === 0) return;
+    for (const r of all) {
+      expect(["easy", "medium", "advanced"], r.id).toContain(r.level);
+      if (r.level === "easy" && r.prep.some((p) => SCALE_LINE.test(p))) expect(r.prepNoScale.length, r.id).toBeGreaterThan(0);
+    }
+    const press = catalog.recipe("hoffmann-french-press")!;
+    expect([press.level, press.needs]).toEqual(["easy", ["grinder"]]);
+    expect(press.steps.find((s) => s.title === "Skim")!.kind).toBe("Stir");
+    expect(catalog.recipe("wac-2025-pop")!.needs).toEqual(["scale", "grinder", "thermometer"]);
+  });
+
+  it("prose temperatures are written 'N °C' everywhere", () => {
+    for (const r of catalog.recipes) {
+      const text = [r.blurb, r.sourceNote, ...r.prep, ...r.tips, ...r.steps.flatMap((s) => [s.title, s.detail])].join("\n");
+      expect(text, r.id).not.toMatch(/\d C(?![A-Za-z0-9])|\d+ F \(/);
+    }
+    expect(catalog.recipe("onyx-cone-1cup")!.prep).toContain("Water at 93 °C.");
+  });
+
+  it("level, needs and prepNoScale survive encode / decode and the editor draft", () => {
+    const r = { ...catalog.recipe("hoffmann-french-press")!, isBuiltIn: false };
+    const back = decodeRecipe(JSON.parse(JSON.stringify(encodeRecipe(r))), Brewers.resolve, false);
+    expect(back.ok && [back.value.level, back.value.needs, back.value.prepNoScale]).toEqual([r.level, r.needs, r.prepNoScale]);
+    const viaDraft = recipeFromDraft(draftFromRecipe(r), Brewers.resolve);
+    expect([viaDraft.level, viaDraft.needs, viaDraft.prepNoScale]).toEqual([r.level, r.needs, r.prepNoScale]);
+    expect(decodeRecipe({ ...encodeRecipe(r), level: "expert", needs: ["scale", "spoon"] }, Brewers.resolve).ok && decodeRecipe({ ...encodeRecipe(r), level: "expert", needs: ["scale", "spoon"] }, Brewers.resolve)).toMatchObject({ value: { level: "", needs: ["scale"] } });
+  });
+
+  it("new v4 recipes cite an https source", () => {
+    for (const id of ["3fe-classic-double", "allpress-drip-machine", "copper-cow-phin", "tarykina-cezve", "hario-syphon", "blue-tokai-south-indian-filter"]) {
+      const r = catalog.recipe(id);
+      if (!r) continue;
+      expect(r.sources.some((s) => s.url.startsWith("https://")), id).toBe(true);
+    }
   });
 });

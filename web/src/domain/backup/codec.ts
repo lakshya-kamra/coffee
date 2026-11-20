@@ -170,6 +170,11 @@ export function detect(text: string): BackupKind {
 const BURRS: readonly BurrId[] = ["conical", "flat", "ghost", "blade"];
 const STYLES: readonly SettingStyleId[] = ["clicks", "numbers", "stepless", "microns"];
 const PHOTO_KINDS: readonly PhotoKindId[] = ["bed", "cup", "bag", "other"];
+// Added in 2.1. An unknown value reads as "" (not recorded), never as an error.
+const BEAN_FORM_IDS = ["whole", "ground"] as const;
+const GROUND_FOR_IDS = ["filter", "press", "espresso", "moka"] as const;
+const SETTING_UNIT_IDS = ["s"] as const;
+const GRIND_KIND_IDS = ["dial", "blade", "preground"] as const;
 
 /** v2 ids, and leniently the 1.x labels / Kotlin enum names for the same thing. */
 function enumId<T extends string>(v: unknown, table: Readonly<Record<string, T | "">>): T | null {
@@ -218,6 +223,8 @@ export function decodeBean(o: Obj): BeanDto | string {
     decafMethodId: strOrNull(o.decafMethodId),
     roastLevelId: str(o.roastLevelId),
     roastIntentId: strOrNull(o.roastIntentId),
+    form: oneOf(o.form, BEAN_FORM_IDS) ?? "",
+    groundFor: oneOf(o.groundFor, GROUND_FOR_IDS) ?? "",
     altitudeM: typeof o.altitudeM === "number" ? String(o.altitudeM) : str(o.altitudeM),
     harvest: str(o.harvest),
     roastedOn: dateOrNull(o.roastedOn),
@@ -256,6 +263,7 @@ export function decodeGrinder(o: Obj): GrinderDto | string {
       clicksPerRotation: cpr != null && cpr > 0 ? cpr : null,
       micronsPerStep: numOrNull(s.micronsPerStep),
       dialFormat: str(s.dialFormat),
+      settingUnit: oneOf(s.settingUnit, SETTING_UNIT_IDS) ?? "",
     },
     defaultFilterSetting: numOrNull(o.defaultFilterSetting),
     defaultEspressoSetting: numOrNull(o.defaultEspressoSetting),
@@ -289,6 +297,7 @@ export function decodeBrew(o: Obj): BrewDto | string {
     grindSetting: str(o.grindSetting),
     grindClicks: intOrNull(o.grindClicks),
     grindValue: numOrNull(o.grindValue),
+    grindKind: oneOf(o.grindKind, GRIND_KIND_IDS) ?? "",
     doseG: num(o.doseG),
     waterG: num(o.waterG),
     tempC: int(o.tempC),
@@ -388,7 +397,11 @@ export function decodeSettings(v: unknown): SettingsDto | null {
   if (w) out.weightUnit = w;
   const d = oneOf(v.darkMode, ["system", "light", "dark"] as const);
   if (d) out.darkMode = d;
-  for (const k of ["haptics", "soundCues", "keepScreenOn", "autoAdvanceSteps", "onboardingDone"] as const) {
+  const e = oneOf(v.experience, ["", "new", "recipes", "tinker"] as const);
+  if (e != null) out.experience = e;
+  const rm = oneOf(v.reviewMode, ["quick", "detailed"] as const);
+  if (rm) out.reviewMode = rm;
+  for (const k of ["haptics", "soundCues", "keepScreenOn", "autoAdvanceSteps", "onboardingDone", "hasScale", "buysGround"] as const) {
     const b = boolOrNull(v[k]);
     if (b != null) out[k] = b;
   }

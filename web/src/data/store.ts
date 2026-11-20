@@ -10,8 +10,13 @@ import { Brewers, catalog } from "@/catalog/catalog";
 import { decodeRecipe, type Recipe } from "@/domain/core/recipe";
 import { db } from "./db";
 import { mergeRecipes, type ActiveBrew } from "./repo";
-import type { BeanRow, BrewRow, GrinderRow, KvRow, SavedRecipeRow } from "./schema";
-import { KV, withAiDefaults, withSettingsDefaults, type AiPrefs, type Settings } from "./settings";
+import { withBeanDefaults, withBrewDefaults, withGrinderDefaults, type BeanRow, type BrewRow, type GrinderRow, type KvRow, type SavedRecipeRow } from "./schema";
+import { initialReviewMode, KV, settings as settingsRepo, withAiDefaults, withSettingsDefaults, type AiPrefs, type Settings } from "./settings";
+
+// Rows stored before v4 get their new fields here, so nothing downstream sees undefined.
+const readBeans = async () => (await db.beans.toArray()).map(withBeanDefaults);
+const readGrinders = async () => (await db.grinders.toArray()).map(withGrinderDefaults);
+const readBrews = async () => (await db.brew_logs.orderBy("startedAt").reverse().toArray()).map(withBrewDefaults);
 
 export interface Snapshot {
   readonly ready: boolean;
@@ -102,9 +107,9 @@ function applyKv(rows: readonly KvRow[], base: Snapshot): Snapshot {
 
 async function readAll(): Promise<Snapshot> {
   const [beans, grinders, brews, savedRecipes, kv] = await Promise.all([
-    db.beans.toArray(),
-    db.grinders.toArray(),
-    db.brew_logs.orderBy("startedAt").reverse().toArray(),
+    readBeans(),
+    readGrinders(),
+    readBrews(),
     db.saved_recipes.toArray(),
     db.kv.toArray(),
   ]);
@@ -159,18 +164,22 @@ export const store = {
 
   /** Loads every table before first render, then keeps the snapshot live. */
   async init(): Promise<void> {
-    emit(await readAll());
+    const first = await readAll();
+    emit(first);
+    // v4 §6.1: an install that already had brews keeps every Review section open.
+    const review = initialReviewMode((await db.kv.get(KV.settings))?.value, first.brews.length);
+    if (review != null) await settingsRepo.set("reviewMode", review);
     subs.forEach((s) => s.unsubscribe());
     subs = [
-      watch(() => db.beans.toArray(), (rows) => {
+      watch(readBeans, (rows) => {
         const beans = reconcile(snap.beans, rows);
         if (beans !== snap.beans) emit({ ...snap, beans });
       }),
-      watch(() => db.grinders.toArray(), (rows) => {
+      watch(readGrinders, (rows) => {
         const grinders = reconcile(snap.grinders, rows);
         if (grinders !== snap.grinders) emit({ ...snap, grinders });
       }),
-      watch(() => db.brew_logs.orderBy("startedAt").reverse().toArray(), (rows) => {
+      watch(readBrews, (rows) => {
         const brews = reconcile(snap.brews, rows);
         if (brews !== snap.brews) emit({ ...snap, brews });
       }),
