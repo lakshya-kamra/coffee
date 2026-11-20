@@ -137,7 +137,7 @@ class BrewReviewTodayTest {
         if (classic != null) {
             val t = ShotTarget.of(classic)
             assertTrue(t.stated)
-            assertEquals("25-30 s", t.label)
+            assertEquals("25–30 s", t.label)
             assertTrue(t.contains(27))
             assertFalse(t.contains(31))
         }

@@ -135,7 +135,7 @@ object BrewReport {
         val target = shot?.highSec ?: recipe?.totalSec ?: 0
         if (!opts.timeIgnored && timeUsable(actual, target)) {
             val delta = shot?.offBy(actual) ?: (actual - target)
-            // "0:35" for a shot that ends at a time, "25-30 s" for a band the recipe states.
+            // "0:35" for a shot that ends at a time, "25–30 s" for a band the recipe states.
             val aim = if (shot?.stated == true) shot.label else formatDuration(target)
             when {
                 espresso -> when {

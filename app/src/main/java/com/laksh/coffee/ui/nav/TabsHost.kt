@@ -31,8 +31,12 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -122,6 +126,9 @@ fun <T> TabsHost(
     }
     val shown by rememberUpdatedState(visible)
     LaunchedEffect(driver, selectedIndex) { driver.switchTo(selectedIndex, shown) }
+    // Tab order runs right to left in an RTL layout (the bar's Row mirrors), so every horizontal
+    // move does too; the drivers think in start-to-end terms.
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     Box(modifier.fillMaxSize()) {
         alive.forEach { index ->
@@ -138,7 +145,11 @@ fun <T> TabsHost(
                             TabPage(
                                 onScreen = { visible && driver.shown(index) },
                                 z = { driver.z(index) },
-                                style = { with(driver) { style(index) } },
+                                takesInput = { index == driver.target },
+                                style = {
+                                    with(driver) { style(index) }
+                                    if (rtl) translationX = -translationX
+                                },
                             ) { content(tabs[index]) }
                         }
                     }
@@ -309,6 +320,8 @@ private class SlideDriver(
     private fun enter(page: SlidePage, direction: Float, reduce: Boolean) {
         val wasShown = page.shown
         val moving = page.pos.isRunning
+        // Read before the cancel: a cancelled animateTo zeroes the Animatable's velocity.
+        val speed = page.pos.velocity
         top += 1f
         page.z = top
         page.job?.cancel()
@@ -323,7 +336,7 @@ private class SlideDriver(
                 launch {
                     when {
                         reduce -> page.pos.animateTo(0f, tween(Motion.TabReducedMillis))
-                        moving -> page.pos.animateTo(0f, Motion.TabRetarget)
+                        moving -> page.pos.animateTo(0f, Motion.TabRetarget, initialVelocity = speed)
                         else -> page.pos.animateTo(0f, tween(Motion.TabSlideMillis, easing = Motion.Emphasized))
                     }
                 }
@@ -334,6 +347,7 @@ private class SlideDriver(
 
     private fun leave(page: SlidePage, direction: Float, reduce: Boolean) {
         val moving = page.pos.isRunning
+        val speed = page.pos.velocity
         page.job?.cancel()
         // Tapped away before its entrance even started (two taps a frame apart): it never showed.
         if (!page.shown) return
@@ -343,7 +357,7 @@ private class SlideDriver(
                     when {
                         // Reduced motion: a page caught mid-slide still glides home while it fades.
                         reduce -> page.pos.animateTo(0f, tween(Motion.TabReducedMillis))
-                        moving -> page.pos.animateTo(direction, Motion.TabRetarget)
+                        moving -> page.pos.animateTo(direction, Motion.TabRetarget, initialVelocity = speed)
                         else -> page.pos.animateTo(direction, tween(Motion.TabSlideMillis, easing = Motion.Emphasized))
                     }
                 }
@@ -378,10 +392,12 @@ private class SlideDriver(
 private fun TabPage(
     onScreen: () -> Boolean,
     z: () -> Float,
+    takesInput: () -> Boolean,
     style: GraphicsLayerScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
     val bg = CoffeeTheme.colors.bg
+    val takes by rememberUpdatedState(takesInput)
     Box(
         Modifier
             .fillMaxSize()
@@ -399,7 +415,20 @@ private fun TabPage(
             }
             .graphicsLayer(style)
             // Opaque, so a fading page never shows the one behind it.
-            .background(bg),
+            .background(bg)
+            // A page on its way out is still placed until it has faded, and the one coming in has
+            // not yet covered the strip it slides over: a tap there must not reach the old tab's
+            // controls. Consumed on the way down, so no clickable or scroll below acts on it. The
+            // handler also makes every placed page a hit, so a tap on a bare spot of the incoming
+            // page never falls through to the page under it.
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (!takes()) event.changes.forEach { it.consume() }
+                    }
+                }
+            },
     ) { content() }
 }
 

@@ -601,7 +601,9 @@ private fun AppShell(
                                 BottomBar(
                                     selected = selected,
                                     reduceMotion = reduceMotion,
-                                    onSelect = { tab -> if (atBase) selected = tab },
+                                    // False while a detail covers the tabs (the bar is still sliding
+                                    // away), so a dropped tap gives no switch haptic either.
+                                    onSelect = { tab -> atBase.also { if (it) selected = tab } },
                                 )
                             }
                         }
@@ -1152,7 +1154,8 @@ internal val PillSpring = spring(
 private fun BottomBar(
     selected: AppTab,
     reduceMotion: Boolean,
-    onSelect: (AppTab) -> Unit,
+    /** Returns whether the tap was taken. */
+    onSelect: (AppTab) -> Boolean,
 ) {
     val colors = CoffeeTheme.colors
     val pill = rememberNavPill(selected.ordinal, reduceMotion)
@@ -1207,7 +1210,7 @@ private fun BarItem(
     tab: AppTab,
     selected: Boolean,
     reduceMotion: Boolean,
-    onClick: () -> Unit,
+    onClick: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     val colors = CoffeeTheme.colors
@@ -1232,8 +1235,8 @@ private fun BarItem(
                 indication = null,
                 role = Role.Tab,
                 onClick = {
-                    if (!selected) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    onClick()
+                    // Only a switch that happens ticks.
+                    if (onClick() && !selected) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
                 },
             )
             // Inside the clickable, so the shrink never moves the edge a finger is lifted on.

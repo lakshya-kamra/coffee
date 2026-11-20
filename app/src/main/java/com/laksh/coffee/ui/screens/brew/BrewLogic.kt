@@ -103,12 +103,12 @@ object BrewKeys {
 object BrewWords {
     /**
      * "Pour to 300 g", "Bloom to 50 g", "Drawdown", else the step's own title. Without a scale
-     * ([hasScale] false) a pour is a jug reading, "Pour to about 300 ml", and a title's grams are
+     * ([hasScale] false) a pour reads in ml, "Pour to 352 ml", and a title's grams are
      * said as [NoScale.text] says them.
      */
     fun lead(step: RecipeStep, hasScale: Boolean = true): String {
         val target = step.targetWaterG
-        val amount = target?.let { if (hasScale) "$it g" else "about ${NoScale.aboutMl(it)} ml" }
+        val amount = target?.let { if (hasScale) "$it g" else "${NoScale.ml(it)} ml" }
         return when {
             step.kind == StepKind.Bloom && amount != null -> "Bloom to $amount"
             step.kind == StepKind.Pour && amount != null -> "Pour to $amount"
@@ -139,7 +139,7 @@ object BrewWords {
     fun saysTenLeft(step: RecipeStep, elapsedSec: Int): Boolean =
         step.durationSec > 30 && step.endSec - elapsedSec == 10
 
-    /** The step-change banner: "NEXT STEP · Pour to 300 g" ("… about 300 ml" without a scale). */
+    /** The step-change banner: "NEXT STEP · Pour to 300 g" ("… 300 ml" without a scale). */
     fun banner(step: RecipeStep, hasScale: Boolean = true): String = "NEXT STEP · ${lead(step, hasScale)}"
 }
 

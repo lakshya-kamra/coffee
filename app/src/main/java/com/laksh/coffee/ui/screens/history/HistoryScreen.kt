@@ -94,6 +94,7 @@ import com.laksh.coffee.domain.BedShape
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.LogFilter
 import com.laksh.coffee.domain.LogSort
+import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.ui.components.BedShapeIcon
 import com.laksh.coffee.ui.components.CoffeeConfirm
 import com.laksh.coffee.ui.components.Dripper
@@ -118,6 +119,7 @@ import com.laksh.coffee.ui.components.focusRing
 import com.laksh.coffee.ui.components.hoverTint
 import com.laksh.coffee.ui.components.scoreStatus
 import com.laksh.coffee.ui.components.signedClock
+import com.laksh.coffee.ui.components.shotTimeStatus
 import com.laksh.coffee.ui.components.timeStatus
 import com.laksh.coffee.ui.nav.LocalPaneSelection
 import com.laksh.coffee.ui.nav.PaneDetail
@@ -302,6 +304,7 @@ fun HistoryScreen(
                     LogEntryRow(
                         log = log,
                         targetSec = state.targetSecByRecipe[log.recipeId],
+                        shot = state.shotByRecipe[log.recipeId],
                         position = GroupPosition.of(i, dayLogs.size),
                         analysed = log.id in state.analysedIds,
                         wide = wide,
@@ -592,6 +595,7 @@ private val SingleShape = RoundedCornerShape(22.dp)
 private fun LogEntryRow(
     log: BrewLogEntity,
     targetSec: Int?,
+    shot: ShotTarget?,
     position: GroupPosition,
     analysed: Boolean,
     wide: Boolean,
@@ -606,8 +610,13 @@ private fun LogEntryRow(
     var menu by remember { mutableStateOf(false) }
     // On time says so in words: a green "0:00" beside "3:20" read as a second clock. Only a
     // miss shows the signed delta, because then the number is the news.
-    val delta = remember(log.totalTimeSec, targetSec) {
-        if (targetSec != null && targetSec > 0 && log.totalTimeSec > 0) {
+    val delta = remember(log.totalTimeSec, targetSec, shot) {
+        if (shot != null && log.totalTimeSec > 0) {
+            // A shot is judged against its band, as shot mode and Review judge it, and a miss is
+            // the seconds past the nearer edge: a 14 s gusher is never "on time" for 25-30 s.
+            val off = shot.offBy(log.totalTimeSec)
+            shotTimeStatus(log.totalTimeSec, shot).first to if (off == 0) "in band" else signedClock(off)
+        } else if (targetSec != null && targetSec > 0 && log.totalTimeSec > 0) {
             val status = timeStatus(log.totalTimeSec, targetSec).first
             status to if (status == Status.Good) "on time" else signedClock(log.totalTimeSec - targetSec)
         } else {

@@ -49,22 +49,23 @@ class V41FixesTest {
     }
 
     @Test
-    fun theBannerAndTheScreenReaderSayTheJugReading() {
+    fun theBannerAndTheScreenReaderSayTheStepsOwnMl() {
         val bloom = RecipeStep(StepKind.Bloom, "Bloom to 60 g", "Pour 60 g quickly.", 0, 45, 60)
         val pour = RecipeStep(StepKind.Pour, "Up to 300 g", "Hit 300 g by 1:15.", 45, 75, 304)
         val steep = RecipeStep(StepKind.Steep, "All 200 g", "Pour all 500 g straight onto the grounds.", 75, 240, null)
         assertEquals("Bloom to 60 g", BrewWords.lead(bloom))
-        assertEquals("Bloom to about 60 ml", BrewWords.lead(bloom, hasScale = false))
-        assertEquals("Pour to about 300 ml", BrewWords.lead(pour, hasScale = false))
+        assertEquals("Bloom to 60 ml", BrewWords.lead(bloom, hasScale = false))
+        // The exact target, the number the step card and the readout show too.
+        assertEquals("Pour to 304 ml", BrewWords.lead(pour, hasScale = false))
         assertEquals("All 200 ml", BrewWords.lead(steep, hasScale = false))
-        assertEquals("NEXT STEP · Pour to about 300 ml", BrewWords.banner(pour, hasScale = false))
+        assertEquals("NEXT STEP · Pour to 304 ml", BrewWords.banner(pour, hasScale = false))
         assertEquals("NEXT STEP · Pour to 304 g", BrewWords.banner(pour))
         val r = recipe(BrewMethod.PourOver, listOf(bloom, pour, steep), dose = 15.0, water = 250.0)
         assertEquals(
             "Step 3 of 3, All 200 ml. Pour all 500 ml straight onto the grounds.",
             BrewWords.step(r, 2, hasScale = false),
         )
-        assertEquals("Step 1 of 3, Bloom to about 60 ml. Pour 60 ml quickly. Next at 0:45.", BrewWords.step(r, 0, hasScale = false))
+        assertEquals("Step 1 of 3, Bloom to 60 ml. Pour 60 ml quickly. Next at 0:45.", BrewWords.step(r, 0, hasScale = false))
         // With a scale nothing changes.
         assertEquals("Step 1 of 3, Bloom to 60 g. Pour 60 g quickly. Next at 0:45.", BrewWords.step(r, 0))
     }
@@ -90,9 +91,9 @@ class V41FixesTest {
         assertEquals("14" to "tbsp", NoScale.coffee(70.0, BrewMethod.ColdBrew, hasScale = false))
         // The basket sets an espresso dose: it stays in grams, as setup shows it.
         assertEquals("18" to "g", NoScale.coffee(18.0, BrewMethod.Espresso, hasScale = false))
-        assertEquals(300, NoScale.aboutMl(304))
-        assertEquals(60, NoScale.aboutMl(55))
-        assertEquals(0, NoScale.aboutMl(-3))
+        assertEquals(304, NoScale.ml(304))
+        assertEquals(55, NoScale.ml(55))
+        assertEquals(0, NoScale.ml(-3))
     }
 
     // ------------------------------------------------------------ A3 detail cells

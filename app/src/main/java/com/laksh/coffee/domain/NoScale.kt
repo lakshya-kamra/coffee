@@ -130,8 +130,13 @@ object NoScale {
         return if (tbsp == null) grams(doseG) to "g" else halves(tbsp) to "tbsp"
     }
 
-    /** A pour as a jug is read: to the nearest 10 ml ("about 300 ml"). */
-    fun aboutMl(g: Int): Int = maxOf(0, (g / 10.0).roundToInt() * 10)
+    /**
+     * A water target without a scale: the recipe's grams read as ml, unrounded, so the status line
+     * and banner say the same number as the step card, the NEXT line, the readout and the recipe's
+     * timeline ([text] keeps it too): "Up to 352 ml" is never "about 350 ml" in the line below it.
+     * Web twin: targetMl in announce.ts.
+     */
+    fun ml(g: Int): Int = maxOf(0, g)
 
     /** "1 mug", "2 mugs", "3 mugs": 250 ml of water each, the dose from the recipe's ratio. */
     fun servings(recipe: Recipe, mugs: Int): Recipe = recipe.scaledToWater(ML_PER_MUG * mugs.toDouble())

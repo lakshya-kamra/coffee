@@ -47,6 +47,18 @@ object LegacyIds {
         "Medium" to "medium", "Medium-dark" to "medium-dark", "Dark" to "dark", "Unknown" to "",
     )
 
+    /**
+     * The (name, author) pairs 1.x wrote on a brew of a built-in recipe → recipes.json ids. 1.x
+     * stored no recipe id, so an old brew finds its recipe by these; they let a built-in be renamed
+     * or re-attributed without orphaning brews logged under its 1.x name.
+     */
+    val RECIPE: Map<Pair<String, String>, String> = linkedMapOf(
+        ("High-Extraction AeroPress" to "Lance Hedrick") to "hedrick-aeropress",
+        ("Light Roast Espresso" to "Lance Hedrick") to "hedrick-espresso",
+        ("Low-Agitation Pulse Pour" to "Jonathan Gagné") to "gagne-v60",
+        ("Switch Hybrid: Steep and Release" to "Community standard") to "switch-hybrid",
+    )
+
     /** Used only when brewers.json lacks a legacy id, so 1.x data always resolves. Labels are 1.x labels. */
     val FALLBACK_BREWERS: List<Brewer> = listOf(
         Brewer("hario-v60-02", "Hario V60", "Hario", "cone", BrewMethod.PourOver, "paper"),

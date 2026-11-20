@@ -6,6 +6,7 @@ import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.domain.ai.DataQuality
 import com.laksh.coffee.domain.ai.FlagCode
 import com.laksh.coffee.domain.catalog.Catalog
+import com.laksh.coffee.ui.screens.brew.BrewWords
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -107,6 +108,52 @@ class DomainV4ParityTest {
         list("noScaleText").forEach { c ->
             val text = c["in"].str() ?: c.s("text")
             assertEquals(c.toString(), c.s("out"), NoScale.text(text))
+        }
+    }
+
+    @Test
+    fun stepLeadNoScale() {
+        // The status line, banner and TalkBack lead for someone without a scale (web: stepLead).
+        if ("stepLeadNoScale" !in cases) return
+        list("stepLeadNoScale").forEach { c ->
+            val i = c.getValue("in").jsonObject
+            val step = RecipeStep(
+                kind = StepKind.valueOf(i.s("kind")),
+                title = i.s("title"),
+                detail = i.s("detail"),
+                startSec = 0,
+                endSec = 30,
+                targetWaterG = i["targetWaterG"]?.jsonPrimitive?.intOrNull,
+            )
+            assertEquals(c.toString(), c.s("out"), BrewWords.lead(step, hasScale = false))
+        }
+    }
+
+    @Test
+    fun shotBand() {
+        // One espresso target on both platforms (web: shotBand in shotTarget.ts).
+        if ("shotBand" !in cases) return
+        val espresso = Brewer(id = "x", label = "X", method = BrewMethod.Espresso)
+        list("shotBand").forEach { c ->
+            val r = c.getValue("recipe").jsonObject
+            val steps = r.getValue("steps").jsonArray.map { it.jsonObject }.map { s ->
+                RecipeStep(
+                    kind = StepKind.valueOf(s.s("kind")),
+                    title = s.s("title"),
+                    detail = s.s("detail"),
+                    startSec = s["startSec"]!!.jsonPrimitive.int,
+                    endSec = s["endSec"]!!.jsonPrimitive.int,
+                    targetWaterG = s["targetWaterG"]?.jsonPrimitive?.intOrNull,
+                )
+            }
+            val recipe = stub(espresso).copy(steps = steps, tips = r.getValue("tips").strings(), blurb = r.s("blurb"))
+            val o = c.getValue("out").jsonObject
+            val got = ShotTarget.of(recipe)
+            assertEquals(
+                c.s("name"),
+                listOf(o["from"]!!.jsonPrimitive.int, o["to"]!!.jsonPrimitive.int, o["stated"]!!.jsonPrimitive.boolean, o.s("label")),
+                listOf(got.lowSec, got.highSec, got.stated, got.label),
+            )
         }
     }
 

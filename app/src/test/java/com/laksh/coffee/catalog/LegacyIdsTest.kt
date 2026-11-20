@@ -30,6 +30,12 @@ class LegacyIdsTest {
     }
 
     @Test
+    fun everyLegacyRecipeIsAShippedBuiltIn() {
+        val ids = Catalog.recipes.map { it.id }.toSet()
+        LegacyIds.RECIPE.values.forEach { assertTrue("recipes.json lacks $it", it in ids) }
+    }
+
+    @Test
     fun oneXNamesAndLabelsResolve() {
         assertEquals("hario-v60-02", Brewers.resolve("Hario V60").id)
         assertEquals("hario-v60-02", Brewers.resolve("V60").id)

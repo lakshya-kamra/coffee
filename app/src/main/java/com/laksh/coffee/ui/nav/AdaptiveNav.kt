@@ -45,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +66,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.ui.components.CoffeeTooltip
@@ -115,8 +117,15 @@ private const val NavIconScale = 1.1f
 @Composable
 internal fun rememberNavPill(index: Int, reduceMotion: Boolean): Animatable<Float, AnimationVector1D> {
     val pill = remember { Animatable(index.toFloat(), visibilityThreshold = 0.0005f) }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(index, reduceMotion) {
-        if (reduceMotion) pill.snapTo(index.toFloat()) else pill.animateTo(index.toFloat(), PillSpring)
+        // Run in the composition's scope, not this effect's: a new tap cancels the old effect
+        // before the new one starts, and a cancelled animateTo zeroes the velocity, so the pill
+        // would lose its stretch for a frame. A direct animateTo reads the velocity first and
+        // only then lets the Animatable's own mutex cancel the old run.
+        scope.launch {
+            if (reduceMotion) pill.snapTo(index.toFloat()) else pill.animateTo(index.toFloat(), PillSpring)
+        }
     }
     return pill
 }
@@ -142,7 +151,9 @@ internal fun DrawScope.drawLiquidPill(
     val stretch = if (pill.isRunning) min(abs(pill.velocity) * StretchPerItem.toPx(), StretchMax.toPx()) else 0f
     val along = length + stretch
     val across = (thickness - stretch * Squash).coerceAtLeast(0f)
-    val centre = slot * (pill.value + 0.5f)
+    // A right-to-left Row puts the first item on the right; DrawScope never mirrors on its own.
+    val fromStart = slot * (pill.value + 0.5f)
+    val centre = if (!vertical && layoutDirection == LayoutDirection.Rtl) size.width - fromStart else fromStart
     val cross = (if (vertical) size.width else size.height) / 2f
     drawRoundRect(
         color = color,

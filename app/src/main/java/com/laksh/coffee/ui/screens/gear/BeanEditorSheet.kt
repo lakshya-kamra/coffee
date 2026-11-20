@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.DatePicker
@@ -37,6 +39,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -163,7 +166,7 @@ internal fun BeanEditorForm(bean: BeanEntity, savedId: Long, update: BeanUpdate)
     var more by remember { mutableStateOf(hasDetails(bean)) }
     val today = LocalToday.current.toEpochDay()
 
-    CoffeeSection(bean.name, bean.roaster, update, openPicker)
+    CoffeeSection(bean.name, bean.roaster, bean.roasterId, update, openPicker)
     FormSection(bean.form, bean.groundFor, update)
     RoastedSection(bean.roastedOnEpochDay, bean.roastLevelId, today, update)
     BagSizeField(bean.bagSizeG, update)
@@ -332,9 +335,12 @@ internal fun cleaned(b: BeanEntity): BeanEntity = b.copy(
 private fun CoffeeSection(
     name: String,
     roaster: String,
+    roasterId: String?,
     update: BeanUpdate,
     openPicker: (BeanPicker) -> Unit,
 ) {
+    val site = remember(roasterId) { Catalog.roaster(roasterId)?.siteUrl }
+    val uri = LocalUriHandler.current
     FieldWell(
         label = "COFFEE NAME",
         value = name,
@@ -350,6 +356,16 @@ private fun CoffeeSection(
         onClear = { update { it.copy(roasterId = null, roaster = "") } },
         helper = "Supermarket brands are on the list too.",
     )
+    // A catalog roaster's own site, in the browser; nothing is fetched by the app.
+    if (site != null) {
+        QuietButton(
+            "Roaster's site",
+            // No browser installed is not worth a crash.
+            { runCatching { uri.openUri(site) } },
+            Modifier.offset(x = (-8).dp),
+            icon = Icons.AutoMirrored.Rounded.OpenInNew,
+        )
+    }
 }
 
 /** Whole beans or ground, right under the roaster (v4 §4.2); ground coffee says what it is ground for. */

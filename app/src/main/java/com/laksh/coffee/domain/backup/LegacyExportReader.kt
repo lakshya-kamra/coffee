@@ -137,7 +137,11 @@ object LegacyExportReader {
             brews += BrewDto(
                 uid = uid(exportedAtRaw, "brew", id),
                 startedAt = startedAt,
-                recipeId = builtIns.firstOrNull { it.name == recipeName && it.author == recipeAuthor }?.id.orEmpty(),
+                // The current name first, then the 1.x name of a built-in renamed since.
+                recipeId = (
+                    builtIns.firstOrNull { it.name == recipeName && it.author == recipeAuthor }?.id
+                        ?: LegacyIds.RECIPE[recipeName.trim() to recipeAuthor.trim()]?.takeIf { id -> builtIns.any { it.id == id } }
+                    ).orEmpty(),
                 recipeName = recipeName,
                 recipeAuthor = recipeAuthor,
                 brewerId = LegacyIds.BREWER[brewerLabel.trim()],

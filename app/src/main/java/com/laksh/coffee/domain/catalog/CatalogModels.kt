@@ -65,7 +65,12 @@ data class CatalogRoaster(
     val mainstream: Boolean = false,
     /** v4: `area` values where the brand is sold; empty for specialty roasters. */
     val regions: List<String> = emptyList(),
-)
+    /** v4.1: the roaster's own homepage (a brand page on the owner's site for a few big brands); optional. */
+    val website: String = "",
+) {
+    /** [website] when it is safe to hand to a browser: https only, else null. */
+    val siteUrl: String? get() = website.trim().takeIf { it.startsWith("https://") && it.length > "https://".length }
+}
 
 /** One entry of shared/glossary.json (schema/glossary.md). */
 @Serializable

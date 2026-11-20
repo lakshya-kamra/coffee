@@ -18,6 +18,7 @@ import com.laksh.coffee.core.screenTime
 import com.laksh.coffee.domain.BrewMethod
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.MethodLabels
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.ReviewSections
 import com.laksh.coffee.domain.ShotTarget
 import com.laksh.coffee.ui.components.CoffeeConfirm
@@ -322,6 +323,7 @@ private fun BrewDetailContent(
                 grinder = grinder,
                 ts = ts,
                 distrusted = distrusted,
+                hasScale = state.hasScale,
             )
 
             // The answer before the details: the verdict when there is one, else how the timing went.
@@ -482,7 +484,7 @@ private fun BrewDetailContent(
                 ) {
                     Column(Modifier.weight(1f)) {
                         pass(Modifier.fillMaxWidth())
-                        TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, gutter = 0.dp)
+                        TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, hasScale = state.hasScale, gutter = 0.dp)
                         taste(Modifier.fillMaxWidth())
                         coffeeAndGear(Modifier.fillMaxWidth())
                         TheBed(log, gutter = 0.dp)
@@ -516,7 +518,7 @@ private fun BrewDetailContent(
                 Spacer(Modifier.height(20.dp))
                 analysis(Modifier.padding(horizontal = gutter).widthIn(max = 760.dp))
                 Column(Modifier.widthIn(max = 760.dp + gutter * 2)) {
-                    TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, gutter = gutter)
+                    TheBrew(log = log, recipe = recipe, ts = ts, timeTrusted = timeTrusted, bedExposedSec = bedExposedSec, hasScale = state.hasScale, gutter = gutter)
                     coffeeAndGear(Modifier.padding(horizontal = gutter))
                     TheBed(log, gutter = gutter)
                     BrewDetailPhotos(brewLogId = log.id, openUid = openPhoto, onOpen = { openPhoto = it }, gutter = gutter)
@@ -563,6 +565,7 @@ private fun BoardingPass(
     grinder: GrinderEntity?,
     ts: Pair<Status, String>,
     distrusted: Set<String>,
+    hasScale: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val c = CoffeeTheme.colors
@@ -615,12 +618,15 @@ private fun BoardingPass(
             }
             Spacer(Modifier.height(16.dp))
             val ratioLabel = ratio(log.doseG, log.waterG)
+            // Without a scale the water reads in ml, as everywhere else; the dose stays in grams,
+            // the number the ratio is built on (the web's pass does the same).
+            val water = NoScale.water(log.waterG, hasScale)
             RouteRow(
                 from = grams(log.doseG),
                 fromUnit = "g",
                 fromLabel = "COFFEE",
-                to = grams(log.waterG),
-                toUnit = "g",
+                to = water.first,
+                toUnit = water.second,
                 // "YIELD" for a shot, "WATER IN THE BASE" for a moka pot (v4 §4.9).
                 toLabel = labels.water,
                 nodes = nodes,
@@ -645,10 +651,11 @@ private fun TheBrew(
     ts: Pair<Status, String>,
     timeTrusted: Boolean,
     bedExposedSec: Int?,
+    hasScale: Boolean,
     gutter: Dp = 16.dp,
 ) {
-    val rows = remember(log, recipe, ts, timeTrusted, bedExposedSec) {
-        brewTimeline(log, recipe, ts.first, timeTrusted, bedExposedSec)
+    val rows = remember(log, recipe, ts, timeTrusted, bedExposedSec, hasScale) {
+        brewTimeline(log, recipe, ts.first, timeTrusted, bedExposedSec, hasScale)
     }
     if (recipe == null && rows.isEmpty()) return
 
@@ -848,6 +855,7 @@ private fun brewTimeline(
     finishStatus: Status,
     timeTrusted: Boolean,
     bedExposedSec: Int?,
+    hasScale: Boolean,
 ): List<TimelineRow> {
     if (recipe == null) {
         if (!timeTrusted) return emptyList()
@@ -862,7 +870,8 @@ private fun brewTimeline(
         )
     }
 
-    val planned = recipe.plannedTimelineRows()
+    // Read the way the recipe's own detail reads it: ml and spoons without a scale.
+    val planned = recipe.plannedTimelineRows(hasScale)
     val steps = planned.dropLast(1)
     val plannedDone = planned.lastOrNull()
     val bedRow = bedExposedSec?.let { sec ->

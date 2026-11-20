@@ -12,6 +12,7 @@ import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
 import com.laksh.coffee.data.repo.CoffeeRepository
 import com.laksh.coffee.data.db.CoffeeDatabase
+import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.domain.BrewReport
 import com.laksh.coffee.domain.LogFilter
 import com.laksh.coffee.domain.LogQuery
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -42,6 +44,8 @@ data class HistoryState(
     val analysedIds: Set<Long> = emptySet(),
     /** Planned total seconds per recipe id, so each row can show how far off target it ran. */
     val targetSecByRecipe: Map<String, Int> = emptyMap(),
+    /** Espresso recipes' shot bands: a shot is judged against its band, never a minute either side. */
+    val shotByRecipe: Map<String, ShotTarget> = emptyMap(),
     /** The search and filter chips (v4 §4.11). */
     val filter: LogFilter = LogFilter(),
     /** Brews with at least one photo, for "With photos". */
@@ -82,6 +86,9 @@ data class HistoryState(
     }
 }
 
+private fun shotTargets(recipes: List<Recipe>): Map<String, ShotTarget> =
+    recipes.filter { ShotTarget.applies(it) }.associate { it.id to ShotTarget.of(it) }
+
 private fun localDate(epochMs: Long): LocalDate =
     Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()).toLocalDate()
 
@@ -106,11 +113,17 @@ class HistoryViewModel(
 
     private val photos = repo.allLogs.map { runCatching { photoBrewIds() }.getOrDefault(emptySet()) }
 
-    private data class Base(val logs: List<BrewLogEntity>, val beans: List<BeanEntity>, val ids: Set<Long>, val targets: Map<String, Int>)
+    private data class Base(
+        val logs: List<BrewLogEntity>,
+        val beans: List<BeanEntity>,
+        val ids: Set<Long>,
+        val targets: Map<String, Int>,
+        val shots: Map<String, ShotTarget>,
+    )
 
     val state: StateFlow<HistoryState> = combine(
         combine(repo.allLogs, repo.activeBeans, analysis.analysedBrewIds, repo.recipes) { logs, beans, ids, recipes ->
-            Base(logs, beans, ids, recipes.associate { it.id to ShotTarget.targetSec(it) })
+            Base(logs, beans, ids, recipes.associate { it.id to ShotTarget.targetSec(it) }, shotTargets(recipes))
         },
         filter,
         pending,
@@ -121,6 +134,7 @@ class HistoryViewModel(
             beans = base.beans,
             analysedIds = base.ids,
             targetSecByRecipe = base.targets,
+            shotByRecipe = base.shots,
             filter = f,
             photoIds = photoIds,
         )
@@ -132,6 +146,7 @@ class HistoryViewModel(
             logs = repo.allLogsNow.orEmpty(),
             beans = repo.activeBeansNow.orEmpty(),
             targetSecByRecipe = repo.recipesNow.orEmpty().associate { it.id to ShotTarget.targetSec(it) },
+            shotByRecipe = shotTargets(repo.recipesNow.orEmpty()),
         ),
     )
 
@@ -209,6 +224,8 @@ data class BrewDetailState(
     val recipe: Recipe? = null,
     val bean: BeanEntity? = null,
     val grinder: GrinderEntity? = null,
+    /** Settings' "I have a scale": without one the pass's water and the planned steps read in ml. */
+    val hasScale: Boolean = true,
 ) {
     val quickRead: List<String>
         get() = log?.let { BrewReport.quickRead(it, recipe) } ?: emptyList()
@@ -217,6 +234,7 @@ data class BrewDetailState(
 class BrewDetailViewModel(
     private val repo: CoffeeRepository,
     private val logId: Long,
+    private val settings: StateFlow<Settings?> = MutableStateFlow(null),
 ) : ViewModel() {
 
     // Seeded from the hot caches when the brew is already there, so the page (not a loader) is
@@ -232,6 +250,7 @@ class BrewDetailViewModel(
             recipe = log.recipeId.takeIf { it.isNotBlank() }?.let { id -> repo.recipesNow?.firstOrNull { it.id == id } },
             bean = log.beanId?.let { id -> repo.allBeansNow?.firstOrNull { it.id == id } },
             grinder = log.grinderId?.let { id -> repo.activeGrindersNow?.firstOrNull { it.id == id } },
+            hasScale = settings.value?.hasScale ?: true,
         )
     }
 
@@ -253,8 +272,12 @@ class BrewDetailViewModel(
                     recipe = log.recipeId.takeIf { it.isNotBlank() }?.let { repo.recipeById(it) },
                     bean = log.beanId?.let { repo.bean(it) },
                     grinder = log.grinderId?.let { repo.grinder(it) },
+                    hasScale = _state.value.hasScale,
                 )
             }
+        }
+        viewModelScope.launch {
+            settings.collect { s -> if (s != null) _state.update { it.copy(hasScale = s.hasScale) } }
         }
     }
 
@@ -276,7 +299,7 @@ class BrewDetailViewModel(
 
     companion object {
         fun factory(logId: Long): ViewModelProvider.Factory = viewModelFactory {
-            initializer { BrewDetailViewModel(this.app.repository, logId) }
+            initializer { BrewDetailViewModel(this.app.repository, logId, this.app.settingsState) }
         }
     }
 }

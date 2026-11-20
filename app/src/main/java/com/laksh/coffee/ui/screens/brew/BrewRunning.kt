@@ -443,8 +443,8 @@ private fun ShortRunning(m: RunningModel) {
 @Composable
 private fun NextLine(m: RunningModel) {
     val next = m.recipe.steps.getOrNull(m.state.stepIndex + 1) ?: return
-    // Without a scale the dial reads "about 0 ml / 1250", so this line speaks ml too (as the web).
-    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to about ${NoScale.aboutMl(it)} ml" }.orEmpty()
+    // Without a scale the dial reads "0 ml / 1250", so this line speaks ml too (as the web).
+    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to ${NoScale.ml(it)} ml" }.orEmpty()
     Text(
         if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${BrewWords.prose(next.title, m.state.settings.hasScale)}",
         style = Micro,
@@ -610,6 +610,7 @@ private fun StepCardBody(
         if (!explain || termKey == null || recipe.steps.indexOfFirst { it.kind == s.kind } != index) null
         else runCatching { Catalog.term(termKey)?.short }.getOrNull()
     }
+    // From the exact targets, so the jug pours add up to the recipe's water.
     val jugMl = remember(recipe, index, hasScale) {
         if (hasScale) null else s.targetWaterG?.let { t -> t - (recipe.steps.take(index).mapNotNull { it.targetWaterG }.lastOrNull() ?: 0) }?.takeIf { it > 0 }
     }
@@ -640,7 +641,7 @@ private fun StepCardBody(
         Text(BrewWords.prose(s.title, hasScale), style = titleStyle, color = colors.inkHigh)
         if (jugMl != null) {
             Spacer(Modifier.height(2.dp))
-            Text("About ${NoScale.aboutMl(jugMl)} ml from your jug", style = type.bodyMedium, color = colors.inkMid)
+            Text("About $jugMl ml from your jug", style = type.bodyMedium, color = colors.inkMid)
         }
         Spacer(Modifier.height(6.dp))
         Text(BrewWords.prose(s.detail, hasScale), style = bodyStyle, color = colors.inkMid)
@@ -848,8 +849,8 @@ internal fun TimerClock(elapsed: LongState, style: TextStyle) {
 }
 
 /**
- * Grams so far against this step's target (the total when the step has none), or "about 60 ml /
- * 500" without a scale. It sits on a quiet plate, because the dial's water rises through this line.
+ * Grams so far against this step's target (the total when the step has none), or "60 ml / 500"
+ * without a scale, the same numbers the step says. It sits on a quiet plate, because the dial's water rises through this line.
  */
 @Composable
 private fun WaterReadout(elapsed: LongState, recipe: Recipe, target: Int, hasScale: Boolean, style: TextStyle, pourAll: Boolean) {
@@ -868,8 +869,7 @@ private fun WaterReadout(elapsed: LongState, recipe: Recipe, target: Int, hasSca
                 Text(" / $target", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkLow, maxLines = 1)
             }
             else -> {
-                Text("about ", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkMid, maxLines = 1)
-                Text("${NoScale.aboutMl(w)} ml", modifier = Modifier.alignByBaseline(), style = style, color = colors.inkHigh, maxLines = 1)
+                Text("$w ml", modifier = Modifier.alignByBaseline(), style = style, color = colors.inkHigh, maxLines = 1)
                 Text(" / $target", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkLow, maxLines = 1)
             }
         }
