@@ -131,6 +131,16 @@ object NoScale {
     }
 
     /**
+     * "30 g → 500 g" with a scale; "6 tbsp → 500 ml" (an espresso "18 g → 36 ml") without one: the
+     * recipe list rows' short route, the same numbers the cards and the brew read. Web twin: routeText.
+     */
+    fun route(doseG: Double, waterG: Double, method: BrewMethod, hasScale: Boolean): String {
+        val c = coffee(doseG, method, hasScale)
+        val w = water(waterG, hasScale)
+        return "${c.first} ${c.second} → ${w.first} ${w.second}"
+    }
+
+    /**
      * A water target without a scale: the recipe's grams read as ml, unrounded, so the status line
      * and banner say the same number as the step card, the NEXT line, the readout and the recipe's
      * timeline ([text] keeps it too): "Up to 352 ml" is never "about 350 ml" in the line below it.

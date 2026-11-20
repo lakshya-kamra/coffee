@@ -165,6 +165,8 @@ fun QuietButton(
     icon: ImageVector? = null,
     color: Color = Color.Unspecified,
     enabled: Boolean = true,
+    /** One line by default; a narrow column at large text passes more so the words wrap, never clip. */
+    maxLines: Int = 1,
 ) {
     val tint = color.takeOrElse { CoffeeTheme.colors.inkMid }
     val interaction = remember { MutableInteractionSource() }
@@ -196,7 +198,7 @@ fun QuietButton(
             text = text,
             style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
             color = tint,
-            maxLines = 1,
+            maxLines = maxLines,
         )
     }
 }

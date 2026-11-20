@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.clock
+import com.laksh.coffee.domain.BrewerFamilies
 import com.laksh.coffee.domain.StepKind
 import com.laksh.coffee.domain.Temperatures
 import com.laksh.coffee.ui.components.CoffeeConfirm
@@ -163,7 +164,11 @@ fun BrewScreen(
                 )
             }
             if (soundOn) tone()
-            latest.recipe?.steps?.getOrNull(index)?.let { s -> launch { flash.play(BrewWords.banner(s, latest.settings.hasScale), reduced) } }
+            latest.recipe?.let { r ->
+                r.steps.getOrNull(index)?.let { s ->
+                    launch { flash.play(BrewWords.banner(s, latest.settings.hasScale, BrewerFamilies.machinePours(r.brewer)), reduced) }
+                }
+            }
         }
     }
 

@@ -225,7 +225,7 @@ private fun OneColumn(
             // In a pane "Brew this" sits in the header, so nothing is pinned to the window.
             TopBar(recipe, onBack, onEdit, onDuplicate, onBrew = if (inPane) onBrew else null)
             Column(Modifier.padding(horizontal = 16.dp)) {
-                HeaderCard(recipe, sharedKeyPrefix, scroll)
+                HeaderCard(recipe, sharedKeyPrefix, scroll, state.hasScale)
                 BrewedLine(state)
                 Spacer(Modifier.height(12.dp))
                 NumbersCard(recipe, state)
@@ -286,7 +286,7 @@ private fun TwoColumns(
                         .fillMaxHeight()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    HeaderCard(recipe, sharedKeyPrefix, null)
+                    HeaderCard(recipe, sharedKeyPrefix, null, state.hasScale)
                     Spacer(Modifier.height(12.dp))
                     NumbersCard(recipe, state)
                     BrewedLine(state)
@@ -327,10 +327,13 @@ private fun TwoColumns(
  * the card still (the two-column page does not scroll it away).
  */
 @Composable
-private fun HeaderCard(recipe: Recipe, sharedKeyPrefix: String, scroll: ScrollState?) {
+private fun HeaderCard(recipe: Recipe, sharedKeyPrefix: String, scroll: ScrollState?, hasScale: Boolean) {
     val c = CoffeeTheme.colors
     val nodes = remember(recipe) { recipe.pourNodes() }
     val espresso = recipe.brewer.method == BrewMethod.Espresso
+    // The same numbers as the card that flies in here: spoons and ml without a scale.
+    val coffee = remember(recipe, hasScale) { NoScale.coffee(recipe.doseG, recipe.brewer.method, hasScale) }
+    val water = remember(recipe, hasScale) { NoScale.water(recipe.waterG, hasScale) }
     Box(
         Modifier
             .then(sharedBoundsModifier(key = SharedKeys.recipeHeader(sharedKeyPrefix, recipe.id), clip = CardShape))
@@ -364,11 +367,11 @@ private fun HeaderCard(recipe: Recipe, sharedKeyPrefix: String, scroll: ScrollSt
             Text(recipe.name, style = MaterialTheme.typography.headlineLarge, color = c.inkHigh, modifier = Modifier.asHeading())
             Spacer(Modifier.height(16.dp))
             RouteRow(
-                from = grams(recipe.doseG),
-                fromUnit = "g",
+                from = coffee.first,
+                fromUnit = coffee.second,
                 fromLabel = "COFFEE",
-                to = grams(recipe.waterG),
-                toUnit = "g",
+                to = water.first,
+                toUnit = water.second,
                 toLabel = if (espresso) "YIELD" else "WATER",
                 nodes = nodes,
                 midLabel = recipe.ratioLabel,

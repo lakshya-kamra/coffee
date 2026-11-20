@@ -6,6 +6,7 @@ import com.laksh.coffee.core.grams
 import com.laksh.coffee.data.db.entity.BeanEntity
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
+import com.laksh.coffee.domain.BrewerFamilies
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
@@ -104,10 +105,11 @@ object BrewWords {
     /**
      * "Pour to 300 g", "Bloom to 50 g", "Drawdown", else the step's own title. Without a scale
      * ([hasScale] false) a pour reads in ml, "Pour to 352 ml", and a title's grams are
-     * said as [NoScale.text] says them.
+     * said as [NoScale.text] says them. When the machine pours ([machine], a drip machine) there is
+     * no amount to pour to: the step reads in its own words ("Let it brew").
      */
-    fun lead(step: RecipeStep, hasScale: Boolean = true): String {
-        val target = step.targetWaterG
+    fun lead(step: RecipeStep, hasScale: Boolean = true, machine: Boolean = false): String {
+        val target = step.targetWaterG?.takeUnless { machine }
         val amount = target?.let { if (hasScale) "$it g" else "${NoScale.ml(it)} ml" }
         return when {
             step.kind == StepKind.Bloom && amount != null -> "Bloom to $amount"
@@ -126,8 +128,11 @@ object BrewWords {
         val next = recipe.steps.getOrNull(index + 1)
         val detail = prose(s.detail, hasScale).trim().let { d -> if (d.isEmpty()) "" else " " + (if (d.endsWith('.')) d else "$d.") }
         val tail = next?.let { " Next at ${clock(it.startSec)}." }.orEmpty()
-        return "Step ${index + 1} of ${recipe.steps.size}, ${lead(s, hasScale)}.$detail$tail"
+        return "Step ${index + 1} of ${recipe.steps.size}, ${lead(s, hasScale, BrewerFamilies.machinePours(recipe.brewer))}.$detail$tail"
     }
+
+    /** What the dial says instead of "0 ml / 1250" when the machine pours, not you. */
+    const val MACHINE_BREWING = "The machine is brewing"
 
     /** "Brew done, 3:32. Rate this brew." */
     fun done(elapsedSec: Int): String = "Brew done, ${clock(elapsedSec)}. Rate this brew."
@@ -140,7 +145,8 @@ object BrewWords {
         step.durationSec > 30 && step.endSec - elapsedSec == 10
 
     /** The step-change banner: "NEXT STEP · Pour to 300 g" ("… 300 ml" without a scale). */
-    fun banner(step: RecipeStep, hasScale: Boolean = true): String = "NEXT STEP · ${lead(step, hasScale)}"
+    fun banner(step: RecipeStep, hasScale: Boolean = true, machine: Boolean = false): String =
+        "NEXT STEP · ${lead(step, hasScale, machine)}"
 }
 
 // --------------------------------------------------------------------- shot mode

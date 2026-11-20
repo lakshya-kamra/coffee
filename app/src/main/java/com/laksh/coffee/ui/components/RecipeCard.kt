@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.formatDuration
-import com.laksh.coffee.core.grams
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.ui.nav.SharedKeys
 import com.laksh.coffee.ui.nav.sharedBoundsModifier
@@ -58,12 +58,17 @@ fun RecipeCard(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     sharedKeyPrefix: String? = null,
+    hasScale: Boolean = true,
 ) {
     val colors = CoffeeTheme.colors
     val interaction = remember { MutableInteractionSource() }
     val nodes = remember(recipe) { recipe.pourNodes() }
-    // Temperatures follow the unit you chose; the coffee and water stay in grams, as scales read.
+    // Temperatures follow the unit you chose. The coffee and water read in grams with a scale;
+    // without one, level tablespoons and ml, as the brew says them (espresso and moka keep the
+    // basket's grams of coffee). The web's card does the same.
     val units = LocalUnits.current
+    val coffee = remember(recipe, hasScale) { NoScale.coffee(recipe.doseG, recipe.brewer.method, hasScale) }
+    val water = remember(recipe, hasScale) { NoScale.water(recipe.waterG, hasScale) }
 
     Column(
         modifier
@@ -138,11 +143,11 @@ fun RecipeCard(
 
         Column(Modifier.padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp)) {
             RouteRow(
-                from = grams(recipe.doseG),
-                fromUnit = "g",
+                from = coffee.first,
+                fromUnit = coffee.second,
                 fromLabel = "COFFEE",
-                to = grams(recipe.waterG),
-                toUnit = "g",
+                to = water.first,
+                toUnit = water.second,
                 toLabel = "WATER",
                 nodes = nodes,
                 midLabel = recipe.ratioLabel,

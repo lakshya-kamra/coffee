@@ -53,9 +53,13 @@ data class Brewer(
 ) {
     val art: BrewerArt get() = BrewerArts.of(this)
 
-    /** "V60", "Kalita", "French press"… : 1.x short names for legacy ids, else label minus a leading brand, at most 14 chars. */
+    /**
+     * "V60", "Kalita", "French press"… : 1.x short names for legacy ids, a written short name where
+     * the label would be cut mid-word ("Drip machine", not "Automatic dri…"), else the label minus
+     * a leading brand, at most 14 chars. Web twin: brewerShortName.
+     */
     val shortName: String
-        get() = LEGACY_SHORT[id] ?: run {
+        get() = LEGACY_SHORT[id] ?: SHORT[id] ?: run {
             val bare = if (brand.isNotBlank() && label.startsWith(brand, ignoreCase = true)) {
                 label.substring(brand.length).trim().ifBlank { label }
             } else {
@@ -75,6 +79,9 @@ data class Brewer(
             "hario-switch" to "Switch", "aeropress" to "AeroPress", "french-press" to "French press",
             "moka-pot" to "Moka", "espresso-machine" to "Espresso", "cold-brew-jar" to "Cold brew",
         )
+
+        /** v4 brewers whose label does not fit 14 chars whole: the same words on the web. */
+        private val SHORT = mapOf("drip-machine" to "Drip machine")
     }
 }
 
@@ -118,6 +125,13 @@ object BrewerFamilies {
     fun of(b: Brewer): String = OWN[b.id] ?: if (b.method == BrewMethod.PourOver) "pourover:${b.art.name}" else b.method.id
 
     internal fun hasOwnFamily(b: Brewer): Boolean = b.id in OWN
+
+    /**
+     * The machine pours, not you: an automatic drip machine (its own family). A running brew then
+     * shows no pour readout, jug amount or "Pour to" target, only "The machine is brewing".
+     * Web twin: machinePours in brewer.ts.
+     */
+    fun machinePours(b: Brewer?): Boolean = b != null && of(b) == "drip-machine"
 
     /** The families of the brewers someone owns, without the ones that match nothing. */
     fun owned(ownedBrewerIds: Collection<String>, byId: (String) -> Brewer? = Brewers::byId): Set<String> =

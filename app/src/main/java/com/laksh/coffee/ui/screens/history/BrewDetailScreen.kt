@@ -576,8 +576,8 @@ private fun BoardingPass(
         recipe?.brewer?.method ?: (Brewers.byId(log.brewerId) ?: brewerFromLabel(log.brewer))?.method ?: BrewMethod.PourOver
     }
     val labels = remember(method) { MethodLabels.of(method) }
-    val cells = remember(log, recipe, grinder, ts, distrusted, units, labels) {
-        passCells(log, recipe, grinder, ts, distrusted, units, labels)
+    val cells = remember(log, recipe, grinder, ts, distrusted, units, labels, hasScale) {
+        passCells(log, recipe, grinder, ts, distrusted, units, labels, hasScale)
     }
 
     SoftCard(modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
@@ -787,6 +787,7 @@ private fun passCells(
     distrusted: Set<String>,
     units: Units,
     labels: MethodLabels,
+    hasScale: Boolean,
 ): List<Cell> {
     val clicks = log.grindClicks
     // The way the dial reads it: "dial 7.5" on a numbered ring, "6 turns + 6" on a plain one.
@@ -835,7 +836,9 @@ private fun passCells(
         .ignoredIf(Fields.DRAWDOWN in distrusted)
         .takeIf { sections.drawdown || log.drawdownSec != null }
 
-    val inCup = Cell(label = "IN CUP", value = log.beverageG?.let(::grams), unit = "g")
+    // In ml without a scale, as the WATER beside it and Review read it.
+    val cup = log.beverageG?.let { NoScale.water(it, hasScale) }
+    val inCup = Cell(label = "IN CUP", value = cup?.first, unit = cup?.second ?: if (hasScale) "g" else "ml")
         .ignoredIf(Fields.BEVERAGE in distrusted)
         // A shot's cup is already the YIELD above; a second "45 g" beside "45 ml" reads as two numbers.
         .takeIf { (sections.drawdown || log.beverageG != null) && sections.style != BrewStyle.Espresso }

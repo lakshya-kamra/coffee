@@ -337,6 +337,7 @@ private fun LazyListScope.startFrom(state: HomeUiState, a: TodayActions, layout:
                         modifier = Modifier.width(232.dp),
                         compact = true,
                         sharedKeyPrefix = SharedKeys.FROM_HOME,
+                        hasScale = state.settings.hasScale,
                     )
                 }
             }
@@ -358,6 +359,7 @@ private fun LazyListScope.startFrom(state: HomeUiState, a: TodayActions, layout:
                             modifier = Modifier.weight(1f),
                             compact = true,
                             sharedKeyPrefix = SharedKeys.FROM_HOME,
+                            hasScale = state.settings.hasScale,
                         )
                     }
                     repeat(cols - row.size) { Spacer(Modifier.weight(1f)) }

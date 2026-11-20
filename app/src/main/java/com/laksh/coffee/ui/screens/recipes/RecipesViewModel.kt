@@ -52,6 +52,8 @@ data class RecipeListState(
     val sort: RecipeSort = RecipeSort.Suggested,
     /** Recipe id to your brews of it, for "Most brewed" and "Best rated". */
     val stats: Map<String, RecipeStats> = emptyMap(),
+    /** false: the cards and rows read the coffee in level tablespoons and the water in ml (A1). */
+    val hasScale: Boolean = true,
 ) {
     // CORE's families: a drip machine, phin or drip bag never borrows a V60 recipe, and an owned
     // Melodrip (an accessory) matches nothing rather than everything.
@@ -141,14 +143,18 @@ class RecipesViewModel(repo: CoffeeRepository, settings: StateFlow<Settings?>) :
         combine(
             repo.recipes,
             filters,
-            settings.map { it?.ownedBrewerIds.orEmpty() }.distinctUntilChanged(),
+            settings.map { (it?.ownedBrewerIds.orEmpty()) to (it?.hasScale ?: true) }.distinctUntilChanged(),
             stats,
-        ) { recipes, f, owned, st ->
-            RecipeListState(recipes, f.query, f.brewer, f.author, f.mine, f.myBrewers, owned, f.sort, st)
+        ) { recipes, f, (owned, hasScale), st ->
+            RecipeListState(recipes, f.query, f.brewer, f.author, f.mine, f.myBrewers, owned, f.sort, st, hasScale)
         }.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            RecipeListState(repo.recipesNow.orEmpty(), ownedBrewerIds = settings.value?.ownedBrewerIds.orEmpty()),
+            RecipeListState(
+                repo.recipesNow.orEmpty(),
+                ownedBrewerIds = settings.value?.ownedBrewerIds.orEmpty(),
+                hasScale = settings.value?.hasScale ?: true,
+            ),
         )
 
     fun setQuery(v: String) = filters.update { it.copy(query = v) }

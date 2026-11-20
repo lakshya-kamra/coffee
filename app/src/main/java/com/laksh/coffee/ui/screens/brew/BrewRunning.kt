@@ -83,6 +83,7 @@ import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.domain.BrewStyle
+import com.laksh.coffee.domain.BrewerFamilies
 import com.laksh.coffee.domain.Glossary
 import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
@@ -131,7 +132,10 @@ internal class RunningModel(
     val onNext: () -> Unit,
     val onBed: () -> Unit,
     val onFinish: () -> Unit,
-)
+) {
+    /** A drip machine pours for you: no pour readout, jug amount or "Pour to" target (web: machinePours). */
+    val machine: Boolean = BrewerFamilies.machinePours(recipe.brewer)
+}
 
 /**
  * The timer (v4 §3.5): portrait, stage or short, chosen from the space it has and recomputed live.
@@ -363,7 +367,7 @@ private fun StepList(m: RunningModel, modifier: Modifier = Modifier) {
                 )
                 Column(Modifier.weight(1f)) {
                     Text(
-                        BrewWords.lead(s, m.state.settings.hasScale),
+                        BrewWords.lead(s, m.state.settings.hasScale, m.machine),
                         style = MaterialTheme.typography.titleMedium,
                         color = when {
                             now -> colors.inkHigh
@@ -444,7 +448,9 @@ private fun ShortRunning(m: RunningModel) {
 private fun NextLine(m: RunningModel) {
     val next = m.recipe.steps.getOrNull(m.state.stepIndex + 1) ?: return
     // Without a scale the dial reads "0 ml / 1250", so this line speaks ml too (as the web).
-    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to ${NoScale.ml(it)} ml" }.orEmpty()
+    // A drip machine pours for you: nothing to pour up to.
+    val target = next.targetWaterG?.takeUnless { m.machine }
+        ?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to ${NoScale.ml(it)} ml" }.orEmpty()
     Text(
         if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${BrewWords.prose(next.title, m.state.settings.hasScale)}",
         style = Micro,
@@ -532,14 +538,19 @@ private fun Dial(
                 // the ring and the clock are both the whole brew.
                 Text("OF ${formatDuration(m.recipe.totalSec)}", style = Micro, color = colors.inkLow)
                 Spacer(Modifier.height(8.dp))
-                WaterReadout(
-                    elapsed = m.timer.elapsedMs,
-                    recipe = m.recipe,
-                    target = state.step?.targetWaterG ?: m.recipe.waterG.roundToInt(),
-                    hasScale = state.settings.hasScale,
-                    style = gramsStyle,
-                    pourAll = !state.settings.hasScale && pourAll(m.recipe, state.stepIndex),
-                )
+                if (m.machine) {
+                    // The machine pours: a water count would sit at "0 ml / 1250" all brew.
+                    if (!state.done) MachineReadout()
+                } else {
+                    WaterReadout(
+                        elapsed = m.timer.elapsedMs,
+                        recipe = m.recipe,
+                        target = state.step?.targetWaterG ?: m.recipe.waterG.roundToInt(),
+                        hasScale = state.settings.hasScale,
+                        style = gramsStyle,
+                        pourAll = !state.settings.hasScale && pourAll(m.recipe, state.stepIndex),
+                    )
+                }
             }
         }
     }
@@ -580,6 +591,7 @@ private fun StepCard(
                 scrollInside = scrollInside,
                 hasScale = m.state.settings.hasScale,
                 explain = m.state.firstEver,
+                machine = m.machine,
             )
         }
     }
@@ -600,6 +612,7 @@ private fun StepCardBody(
     scrollInside: Boolean,
     hasScale: Boolean,
     explain: Boolean,
+    machine: Boolean,
 ) {
     val colors = CoffeeTheme.colors
     val type = MaterialTheme.typography
@@ -610,9 +623,10 @@ private fun StepCardBody(
         if (!explain || termKey == null || recipe.steps.indexOfFirst { it.kind == s.kind } != index) null
         else runCatching { Catalog.term(termKey)?.short }.getOrNull()
     }
-    // From the exact targets, so the jug pours add up to the recipe's water.
-    val jugMl = remember(recipe, index, hasScale) {
-        if (hasScale) null else s.targetWaterG?.let { t -> t - (recipe.steps.take(index).mapNotNull { it.targetWaterG }.lastOrNull() ?: 0) }?.takeIf { it > 0 }
+    // From the exact targets, so the jug pours add up to the recipe's water. A drip machine's
+    // water goes in its tank, never from a jug.
+    val jugMl = remember(recipe, index, hasScale, machine) {
+        if (hasScale || machine) null else s.targetWaterG?.let { t -> t - (recipe.steps.take(index).mapNotNull { it.targetWaterG }.lastOrNull() ?: 0) }?.takeIf { it > 0 }
     }
 
     // At 200 % text the instruction can outgrow the card: it scrolls, and its edges fade so the
@@ -797,7 +811,7 @@ private fun BrewStatus(state: BrewUiState, anchor: TimerAnchor, elapsed: LongSta
             state.waitingForTap -> StatusLine(status = Status.Attention, lead = "Time for the next step", detail = "tap Next")
             step == null -> StatusLine(status = Status.Live, lead = "Brewing", live = true)
             else -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                StatusLine(status = Status.Live, lead = BrewWords.lead(step, state.settings.hasScale), modifier = Modifier.weight(1f, fill = false), live = true)
+                StatusLine(status = Status.Live, lead = BrewWords.lead(step, state.settings.hasScale, BrewerFamilies.machinePours(state.recipe?.brewer)), modifier = Modifier.weight(1f, fill = false), live = true)
                 StepCountdown(elapsed = elapsed, endSec = step.endSec)
             }
         }
@@ -873,6 +887,25 @@ private fun WaterReadout(elapsed: LongState, recipe: Recipe, target: Int, hasSca
                 Text(" / $target", modifier = Modifier.alignByBaseline(), style = MaterialTheme.typography.bodyMedium, color = colors.inkLow, maxLines = 1)
             }
         }
+    }
+}
+
+/** A drip machine's dial: the same quiet plate as [WaterReadout], with a plain status in it. */
+@Composable
+private fun MachineReadout() {
+    val colors = CoffeeTheme.colors
+    Box(
+        Modifier
+            .clip(PillShape)
+            .background(colors.surface1.copy(alpha = 0.72f))
+            .padding(horizontal = 10.dp, vertical = 2.dp),
+    ) {
+        Text(
+            BrewWords.MACHINE_BREWING,
+            style = MaterialTheme.typography.titleMedium,
+            color = colors.inkHigh,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

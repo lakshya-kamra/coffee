@@ -71,7 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.formatDuration
-import com.laksh.coffee.core.grams
+import com.laksh.coffee.domain.NoScale
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.ui.components.BrewerIcon
 import com.laksh.coffee.ui.components.EyebrowLabel
@@ -269,6 +269,7 @@ private fun PhoneList(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe
                         .animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick())
                         .padding(start = 16.dp, end = 16.dp, top = 12.dp),
                     sharedKeyPrefix = SharedKeys.FROM_RECIPES,
+                    hasScale = state.hasScale,
                 )
             }
         }
@@ -304,6 +305,7 @@ private fun CardGrid(state: RecipeListState, vm: RecipesViewModel, onOpenRecipe:
                     onClick = { onOpenRecipe(recipe.id) },
                     modifier = Modifier.animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick()),
                     sharedKeyPrefix = SharedKeys.FROM_RECIPES,
+                    hasScale = state.hasScale,
                 )
             }
         }
@@ -346,6 +348,7 @@ private fun PaneList(
                 RecipeRow(
                     recipe = recipe,
                     selected = recipe.id == selected,
+                    hasScale = state.hasScale,
                     onClick = { onOpenRecipe(recipe.id) },
                     modifier = Modifier
                         .animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick())
@@ -358,7 +361,7 @@ private fun PaneList(
 
 /** ~76dp: identity dot and name, the brewer, dose to water and time. */
 @Composable
-private fun RecipeRow(recipe: Recipe, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun RecipeRow(recipe: Recipe, selected: Boolean, hasScale: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = CoffeeTheme.colors
     val interaction = remember { MutableInteractionSource() }
     val shape = RoundedCornerShape(14.dp)
@@ -387,7 +390,7 @@ private fun RecipeRow(recipe: Recipe, selected: Boolean, onClick: () -> Unit, mo
             }
             Text(recipe.name, style = MaterialTheme.typography.titleMedium, color = c.inkHigh, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(
-                "${recipe.brewer.shortName} · ${grams(recipe.doseG)} g → ${grams(recipe.waterG)} g · ${formatDuration(recipe.totalSec)}",
+                "${recipe.brewer.shortName} · ${NoScale.route(recipe.doseG, recipe.waterG, recipe.brewer.method, hasScale)} · ${formatDuration(recipe.totalSec)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = c.inkMid,
             )

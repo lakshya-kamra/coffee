@@ -454,7 +454,8 @@ internal fun NavSidebar(
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                 .padding(vertical = 8.dp),
         ) {
-            QuietButton("Keyboard shortcuts  ?", onShortcuts)
+            // At 200 % text the sidebar is too narrow for one line: it wraps rather than clip to "Keyboard".
+            QuietButton("Keyboard shortcuts  ?", onShortcuts, maxLines = 3)
         }
     }
 }
