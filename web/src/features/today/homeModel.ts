@@ -79,9 +79,13 @@ export function headline(logs: readonly BrewRow[]): Headline {
   return { status: "neutral", lead: "Brewing steady", detail: av != null ? `avg ${oneDp(av)}` : null };
 }
 
-export function playfulTitle(brewsTodayCount: number): string {
+/**
+ * `hasHistory`: brews on earlier days. "No coffee yet." would read as if the log were empty to
+ * someone with a hundred brews in it, so a quiet day says so instead (A7, same words on Android).
+ */
+export function playfulTitle(brewsTodayCount: number, hasHistory = false): string {
   switch (brewsTodayCount) {
-    case 0: return "No coffee yet.";
+    case 0: return hasHistory ? "None yet today." : "No coffee yet.";
     case 1: return "One down.";
     case 2: return "Two down.";
     default: return `${brewsTodayCount} today. Steady on.`;

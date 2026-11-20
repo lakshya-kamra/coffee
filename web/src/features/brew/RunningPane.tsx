@@ -24,7 +24,8 @@ import { findTerm, termForStepKind } from "@/domain/core/glossary";
 import { stepBoundaries, totalSec, waterAt, waterAtF, type Recipe, type RecipeStep } from "@/domain/core/recipe";
 import { renderTemps } from "@/domain/core/units";
 import { BrewRing, JourneyLine, journeyNodes, useFrame, writeText, type BrewEngineView, type JourneyNode } from "@/viz";
-import { stepLead } from "./announce";
+import { noScaleText } from "@/domain/core/noScale";
+import { aboutMl, stepLead } from "./announce";
 import type { BrewEngine, EngineState } from "./engine";
 import type { RunLayout } from "./layout";
 import b from "./brew.module.css";
@@ -60,8 +61,8 @@ export interface RunningProps {
   onBed: () => void;
 }
 
-/** "about 60 ml": a jug is read to the nearest 10 ml. */
-const aboutMl = (g: number) => Math.max(0, Math.round(g / 10) * 10);
+/** A step title or detail as this person reads it: grams become ml and spoons without a scale (A1). */
+const prose = (text: string, hasScale: boolean) => (hasScale ? text : noScaleText(text));
 
 export const RunningPane = memo(function RunningPane(p: RunningProps) {
   const { recipe, engine, st, seek, layout } = p;
@@ -123,7 +124,7 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
     />
   );
   const finish = <FinishButton layout={layout} done={st.done} finishing={p.finishing} onFinish={p.onFinish} />;
-  const status = <BrewStatus st={st} step={step} engine={engine} finishing={p.finishing} />;
+  const status = <BrewStatus st={st} step={step} engine={engine} finishing={p.finishing} hasScale={p.hasScale} />;
   const bedMarked = st.bedExposedSec != null ? <StatusLine status="good" lead="Bed exposed" rest={`at ${clock(st.bedExposedSec)}`} /> : null;
 
   return (
@@ -324,9 +325,9 @@ function StepCard({
             {clock(s.startSec)}–{clock(s.endSec)}
           </span>
         </div>
-        <h2 className={`step-title ${b.stepTitle}`}>{s.title}</h2>
+        <h2 className={`step-title ${b.stepTitle}`}>{prose(s.title, hasScale)}</h2>
         {jugMl != null && <p className="t-body-m">About {aboutMl(jugMl)} ml from your jug</p>}
-        {s.detail && <p className={`${layout === "stage" ? "t-body-l" : "t-body-m"} ink-mid`}>{renderTemps(s.detail, fahrenheit ? "f" : "c")}</p>}
+        {s.detail && <p className={`${layout === "stage" ? "t-body-l" : "t-body-m"} ink-mid`}>{prose(renderTemps(s.detail, fahrenheit ? "f" : "c"), hasScale)}</p>}
         {short && <p className={`t-body-s ${b.glossLine}`}>{short}</p>}
         {bedHelp && (
           <p className="t-body-s ink-mid">
@@ -337,7 +338,7 @@ function StepCard({
           <div className={b.next}>
             <HairLine />
             <span className="micro ink-low">NEXT · {clock(next.startSec)}</span>
-            <span className="t-body-m ink-mid">{next.title}</span>
+            <span className="t-body-m ink-mid">{prose(next.title, hasScale)}</span>
           </div>
         )}
       </m.div>
@@ -369,7 +370,7 @@ function StepList({ recipe, index, hasScale }: { recipe: Recipe; index: number; 
         return (
           <li key={i} className={b.listItem} data-state={state} aria-current={state === "current" ? "step" : undefined}>
             <span className={`num-inline ${b.listTime}`}>{clock(s.startSec)}</span>
-            <span className={`t-title-m ${b.listTitle}`}>{s.title}</span>
+            <span className={`t-title-m ${b.listTitle}`}>{prose(s.title, hasScale)}</span>
             <span className="t-body-s ink-low">{state === "done" ? "Done" : amount}</span>
           </li>
         );
@@ -384,7 +385,7 @@ function NextLine({ recipe, index, hasScale, bedAt }: { recipe: Recipe; index: n
   if (!next) {
     return bedAt != null ? <p className={`micro ${b.nextLine}`}>BED EXPOSED · {clock(bedAt)}</p> : <p className={`micro ink-low ${b.nextLine}`}>LAST STEP</p>;
   }
-  const what = next.targetWaterG != null ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to about ${aboutMl(next.targetWaterG)} ml`) : next.title;
+  const what = next.targetWaterG != null ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to about ${aboutMl(next.targetWaterG)} ml`) : prose(next.title, hasScale);
   return (
     <p className={`micro ink-low ${b.nextLine}`}>
       NEXT · {clock(next.startSec)} · {toCaps(what)}
@@ -486,7 +487,7 @@ function PlayPause({ running, onClick, buttonRef }: { running: boolean; onClick:
   );
 }
 
-function BrewStatus({ st, step, engine, finishing }: { st: EngineState; step: RecipeStep | undefined; engine: BrewEngine; finishing: boolean }) {
+function BrewStatus({ st, step, engine, finishing, hasScale }: { st: EngineState; step: RecipeStep | undefined; engine: BrewEngine; finishing: boolean; hasScale: boolean }) {
   const pausedAt = clock(Math.floor(st.accumulatedMs / 1000));
   if (finishing) return <StatusLine status="neutral" lead="Saving" rest={`at ${pausedAt}`} />;
   if (st.done) return <StatusLine status="good" lead="Done" rest="rate this brew" />;
@@ -494,7 +495,7 @@ function BrewStatus({ st, step, engine, finishing }: { st: EngineState; step: Re
   if (!step) return <StatusLine status="live" lead="Brewing" />;
   return (
     <div className={b.statusRow}>
-      <StatusLine status="live" lead={stepLead(step)} />
+      <StatusLine status="live" lead={stepLead(step, hasScale)} />
       <CountdownLeaf engine={engine} endSec={step.endSec} />
     </div>
   );

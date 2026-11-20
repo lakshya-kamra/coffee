@@ -21,12 +21,14 @@ import { db } from "@/data/db";
 import type { BrewRow, GrinderRow } from "@/data/schema";
 import { useBrew, useStore } from "@/data/store";
 import { DetailTopBar, EyebrowLabel, HairLine, IconWell, MenuButton, NumberWithUnit, PerforatedDivider, PillButton, QuietPanel, SecondaryButton, SectionLabel, SoftCard, StatusChip, StatusLine, beanShortName, useContextMenu } from "@/design/components";
-import { methodLabels } from "@/domain/core/brewer";
+import { methodLabels, reviewSections, type ReviewSections } from "@/domain/core/brewer";
 import { bedShapeInfo, bedShapeLabel, channelingLabel, sludgeLabel } from "@/domain/core/evaluation";
 import { clock, grams, oneDp, ratio } from "@/domain/core/format";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
+import { BAND_WORDS, bandStatus, shotBand, type ShotBand } from "@/domain/core/shotTarget";
 import { bedStatus, channelingStatus, cupLabel, roastStatus, roastWord, scoreStatus, signedClock, sludgeStatus, statusColorVar, timeStatus, type Status } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf } from "@/domain/core/units";
+import { waterAmount } from "@/domain/core/noScale";
 import { checkBrew, distrustedFields, Fields, lastPourEndSec } from "@/domain/ai";
 import { reading, scaleFor, showsDialNumber, type GrindScale } from "@/domain/grind";
 import { brewMarkdown } from "@/domain/report";
@@ -55,6 +57,11 @@ export function passCells(
   scale: GrindScale | null = grinder ? scaleFor(grinder) : null,
   // "SHOT TIME" for espresso (methodLabels, §4.9).
   timeLabel = "TIME",
+  // The review's rule for which cells the method has (A3): a drip machine or a press has no
+  // drawdown to time, so an empty DRAWDOWN / IN CUP is left out rather than drawn as a dash.
+  sections: Pick<ReviewSections, "drawdown" | "retained"> = { drawdown: true, retained: true },
+  // Espresso: shot mode's target, the one the shot was pulled against (A4).
+  band: ShotBand | null = null,
 ): GridCell[] {
   const clicks = log.grindClicks;
   // The way the dial reads it: "dial 7.5" on a numbered ring, "6 turns + 6" on a plain one.
@@ -65,7 +72,8 @@ export function passCells(
   }
   const grindValue = clicks != null ? String(clicks) : log.grindValue != null ? String(Math.round(log.grindValue * 100) / 100) : log.grindSetting.trim() || null;
   const grind = ignoredIf({ label: "GRIND", value: grindValue, unit: clicks != null ? "clicks" : log.grindValue != null && scale?.unit ? scale.unit : null, sub: grindSub, textValue: clicks == null && log.grindValue == null }, distrusted.has(Fields.GRIND));
-  const time = ignoredIf({ label: timeLabel, value: log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null, sub: recipe ? `plan ${clock(totalSec(recipe))}` : null, status: ts[0] }, distrusted.has(Fields.TIME));
+  const plan = band ? `aim ${band.label}` : recipe ? `plan ${clock(totalSec(recipe))}` : null;
+  const time = ignoredIf({ label: timeLabel, value: log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null, sub: plan, status: ts[0] }, distrusted.has(Fields.TIME));
   const tempCell = ignoredIf({ label: "TEMP", value: log.tempC > 0 ? temp(units, log.tempC) : null, unit: tempUnit(units) }, distrusted.has(Fields.TEMP));
   const drawdown = ignoredIf({ label: "DRAWDOWN", value: log.drawdownSec != null ? clock(log.drawdownSec) : null }, distrusted.has(Fields.DRAWDOWN));
   const inCup = ignoredIf({ label: "IN CUP", value: log.beverageG != null ? grams(log.beverageG) : null, unit: "g" }, distrusted.has(Fields.BEVERAGE));
@@ -73,7 +81,15 @@ export function passCells(
     log.extractionYield != null
       ? ignoredIf({ label: "EXTRACTION", value: oneDp(log.extractionYield), unit: "%" }, distrusted.has(Fields.EY))
       : { label: "OFF ROAST", value: log.daysOffRoast != null ? String(log.daysOffRoast) : null, unit: "d", status: roastStatus(log.daysOffRoast) === "attention" ? ("attention" as const) : null };
-  return [grind, time, tempCell, drawdown, inCup, sixth];
+  // A value the log does have always shows (an imported brew may carry one).
+  const keepDrawdown = sections.drawdown || log.drawdownSec != null;
+  const keepInCup = (sections.drawdown && sections.retained) || log.beverageG != null;
+  return [grind, time, tempCell, ...(keepDrawdown ? [drawdown] : []), ...(keepInCup ? [inCup] : []), sixth];
+}
+
+/** Columns for the pass grid: four cells read as two rows of two, not three and a stray one. */
+export function passColumns(count: number): number {
+  return count === 4 ? 2 : Math.min(3, Math.max(1, count));
 }
 
 /**
@@ -154,7 +170,8 @@ function Detail({ log }: { log: BrewRow }) {
   const grinder = useStore((st) => (log.grinderId != null ? (st.grinders.find((g) => g.id === log.grinderId) ?? null) : null), undefined, log.grinderId ?? -1);
   const bean = useStore((st) => (log.beanId != null ? (st.beans.find((b) => b.id === log.beanId) ?? null) : null), undefined, log.beanId ?? -1);
   const history = useStore((st) => st.brews);
-  const units = unitsOf(useStore((st) => st.settings));
+  const settings = useStore((st) => st.settings);
+  const units = unitsOf(settings);
   const id = log.id ?? 0;
   const photoCount = useLiveQuery(() => db.photos.where("brewLogId").equals(id).count(), [id]) ?? 0;
   const [notice, setNotice] = useState<string | null>(null);
@@ -168,7 +185,10 @@ function Detail({ log }: { log: BrewRow }) {
   // derived from them (the bed-exposed node and row) is drawn as if it were true.
   const distrusted = useMemo(() => distrustedFields(checkBrew(log, recipe, grinder, bean), log.id), [log, recipe, grinder, bean]);
   const planned = recipe ? totalSec(recipe) : 0;
-  const ts = timeStatus(log.totalTimeSec, planned);
+  const sections = reviewSections(brewer);
+  const band = sections.style === "espresso" && recipe ? shotBand(recipe) : null;
+  const bandWords = band && log.totalTimeSec > 0 ? BAND_WORDS[bandStatus(log.totalTimeSec, band)] : null;
+  const ts: [Status, string] = bandWords ? [bandWords.status, bandWords.lead] : timeStatus(log.totalTimeSec, planned);
   const timeTrusted = !distrusted.has(Fields.TIME) && log.totalTimeSec > 0;
   const lastPour = lastPourEndSec(recipe);
   const bedExposedSec = distrusted.has(Fields.DRAWDOWN) || lastPour == null || log.drawdownSec == null ? null : lastPour + log.drawdownSec;
@@ -238,7 +258,7 @@ function Detail({ log }: { log: BrewRow }) {
       <div className={l.layout}>
         <div className={l.mainCol}>
           <div className={l.o1}>
-            <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} timeLabel={labels.time} waterLabel={labels.water} />
+            <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} timeLabel={labels.time} waterLabel={labels.water} sections={sections} band={band} hasScale={settings.hasScale} />
             <div className={l.statusLine}>{line}</div>
           </div>
 
@@ -316,12 +336,38 @@ function Detail({ log }: { log: BrewRow }) {
 }
 
 /** The boarding pass: when, what, how it scored, the dose-to-water route, then the numbers. */
-function BoardingPass({ log, recipe, grinder, ts, distrusted, units, timeLabel, waterLabel }: { log: BrewRow; recipe: Recipe | null; grinder: GrinderRow | null; ts: [Status, string]; distrusted: ReadonlySet<string>; units: ReturnType<typeof unitsOf>; timeLabel: string; waterLabel: string }) {
+function BoardingPass({
+  log,
+  recipe,
+  grinder,
+  ts,
+  distrusted,
+  units,
+  timeLabel,
+  waterLabel,
+  sections,
+  band,
+  hasScale,
+}: {
+  log: BrewRow;
+  recipe: Recipe | null;
+  grinder: GrinderRow | null;
+  ts: [Status, string];
+  distrusted: ReadonlySet<string>;
+  units: ReturnType<typeof unitsOf>;
+  timeLabel: string;
+  waterLabel: string;
+  sections: ReviewSections;
+  band: ShotBand | null;
+  hasScale: boolean;
+}) {
   const nodes = useMemo(() => (recipe ? pourNodes(recipe) : []), [recipe]);
   const scale = useGrindScale(grinder);
-  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel);
+  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel, sections, band);
   const rated = log.overall > 0;
   const r = ratio(log.doseG, log.waterG);
+  // Without a scale the water reads in ml, as the brew and the review said it (A1).
+  const water = waterAmount(log.waterG, hasScale);
   return (
     <SoftCard padding={0}>
       <div className={l.passTop}>
@@ -336,11 +382,11 @@ function BoardingPass({ log, recipe, grinder, ts, distrusted, units, timeLabel, 
           </div>
           <NumberWithUnit value={rated ? String(log.overall) : "—"} unit={rated ? "/10" : undefined} numeral="num-display" color={rated ? statusColorVar(scoreStatus(log.overall)) : "var(--ink-low)"} />
         </div>
-        <RouteRow mode="done" from={grams(log.doseG)} fromUnit="g" fromLabel="COFFEE" to={grams(log.waterG)} toUnit="g" toLabel={waterLabel} nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
+        <RouteRow mode="done" from={grams(log.doseG)} fromUnit="g" fromLabel="COFFEE" to={water.value} toUnit={water.unit} toLabel={waterLabel} nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
       </div>
       <PerforatedDivider />
       <div className={l.passGrid}>
-        <InfoGrid cells={cells} columns={3} />
+        <InfoGrid cells={cells} columns={passColumns(cells.length)} />
       </div>
     </SoftCard>
   );

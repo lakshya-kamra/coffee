@@ -85,6 +85,14 @@ export const effectsSlow = toTransition(SPRINGS.effectsSlow);
 export const tabSwitch = toTransition(SPRINGS.tabSwitch);
 export const bounds = toTransition(SPRINGS.bounds);
 
+/**
+ * Forge 2.0's nav icon (FloatingNavBar.kt): Spring.DampingRatioMediumBouncy (ζ 0.5) at
+ * Spring.StiffnessMedium (k 1500), to 1.1. Outside SPRINGS on purpose: it is Forge's, not a
+ * Motion.kt token, and the Motion.kt parity test checks that table only.
+ */
+export const NAV_ICON_SCALE = 1.1;
+export const navBounce = toTransition({ zeta: 0.5, k: 1500, kotlin: [], kind: "unit" });
+
 /** A spring token with a delay in seconds, for staggered choreography. */
 export function delayed(t: SpringTransition, delaySec: number): SpringTransition & { readonly delay: number } {
   return { ...t, delay: delaySec };

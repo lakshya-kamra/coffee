@@ -341,7 +341,7 @@ function PersonalBestsCard({ bests, units }: { bests: PersonalBests; units: Retu
   const coffee = bests.bestCoffee;
   const dm = (epochDay: number) => dayMonthCaps(epochDay * 86_400_000 + new Date().getTimezoneOffset() * 60_000);
   return (
-    <SoftCard>
+    <SoftCard className={i.bestsCard}>
       <EyebrowLabel text="PERSONAL BESTS" as="h2" />
       {bests.bestCup && <BestCupTile cup={bests.bestCup} units={units} />}
       {(streak || coffee) && (

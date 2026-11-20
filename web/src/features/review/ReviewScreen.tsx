@@ -43,12 +43,14 @@ import {
   toCaps,
 } from "@/design/components";
 import { brewerOf, checkBrew, distrustedFields, Fields } from "@/domain/ai";
-import { methodLabels, reviewSections } from "@/domain/core/brewer";
+import { methodLabels, reviewSections, type BrewMethod } from "@/domain/core/brewer";
 import { BED_SHAPES, BrewMath, CHANNELING, Descriptors, FLOW_FEEL, SLUDGE, TASTE_AXES, bedShapeInfo, withTaste, type BedShape } from "@/domain/core/evaluation";
-import { clock, daysOffRoastLabel, formatDuration, grams, oneDp, ratio } from "@/domain/core/format";
+import { clock, daysOffRoastLabel, formatDuration, grams, halves, oneDp, ratio } from "@/domain/core/format";
+import { noScaleAmounts, waterAmount } from "@/domain/core/noScale";
 import { quickRead } from "@/domain/core/quickRead";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
-import { bedStatus, channelingStatus, cupLabel, flowStatus, scoreStatus, signedClock, statusColorVar, statusContainerVar, sludgeStatus, timeStatus } from "@/domain/core/status";
+import { BAND_WORDS, bandStatus, shotBand, type ShotBand } from "@/domain/core/shotTarget";
+import { bedStatus, channelingStatus, cupLabel, flowStatus, scoreStatus, signedClock, statusColorVar, statusContainerVar, sludgeStatus, timeStatus, type Status } from "@/domain/core/status";
 import { unitsOf } from "@/domain/core/units";
 import { describe } from "@/domain/grind";
 import { startBrewAnalysis, useAiSettings } from "@/features/ai";
@@ -232,6 +234,9 @@ function ReviewForm({ initial }: { initial: BrewRow }) {
               edit={edit}
               grinder={grinder}
               target={recipe ? totalSec(recipe) : 0}
+              band={espresso && recipe ? shotBand(recipe) : null}
+              hasScale={settings.hasScale}
+              brewerMethod={brewer?.method ?? recipe?.brewer.method ?? "pourover"}
               grindFlag={grindFlag}
               labels={labels}
               espresso={espresso}
@@ -396,6 +401,9 @@ function NumbersHeader({
   edit,
   grinder,
   target,
+  band,
+  hasScale,
+  brewerMethod,
   grindFlag,
   labels,
   espresso,
@@ -407,6 +415,10 @@ function NumbersHeader({
   edit: Edit;
   grinder: GrinderRow | null;
   target: number;
+  /** Espresso: the shot mode target, the one the shot was pulled against (A4). */
+  band: ShotBand | null;
+  hasScale: boolean;
+  brewerMethod: BrewMethod;
   grindFlag: string | null;
   labels: ReturnType<typeof methodLabels>;
   espresso: boolean;
@@ -416,7 +428,8 @@ function NumbersHeader({
   // only place it can be corrected.
   const [editing, setEditing] = useState(grindFlag != null);
   const [dialTyping, setDialTyping] = useState(false);
-  const ts = timeStatus(log.totalTimeSec, target);
+  const bandWords = band && log.totalTimeSec > 0 ? BAND_WORDS[bandStatus(log.totalTimeSec, band)] : null;
+  const ts: [Status, string] = bandWords ? [bandWords.status, bandWords.lead] : timeStatus(log.totalTimeSec, target);
   const preground = log.grindKind === "preground";
   const blade = log.grindKind === "blade";
   const inClicks = !preground && !blade && (grinder ? grinder.settingStyle === "clicks" : log.grindClicks != null);
@@ -440,14 +453,15 @@ function NumbersHeader({
   };
   const timeCell = { label: labels.time, value: log.totalTimeSec > 0 ? timeText(log.totalTimeSec) : null, status: ts[0] };
   // Espresso reads DOSE, YIELD, RATIO, SHOT TIME (§4.9); the grind moves to the edit box.
+  // Without a scale the amounts read as they did through the brew (A1): water in ml, the coffee in
+  // level tablespoons (espresso's dose is the basket's, so it keeps its grams).
+  const water = waterAmount(espresso ? yieldG : log.waterG, hasScale);
+  const waterCell = { label: labels.water, value: water.value, unit: water.unit };
+  const tbsp = !hasScale && !espresso ? noScaleAmounts(log.doseG, log.waterG, brewerMethod).coffeeTbsp : null;
+  const doseCell = tbsp != null ? { label: "DOSE", value: halves(tbsp), unit: "tbsp" } : { label: "DOSE", value: grams(log.doseG), unit: "g" };
   const cells = espresso
-    ? [
-        { label: "DOSE", value: grams(log.doseG), unit: "g" },
-        { label: labels.water, value: grams(yieldG), unit: "g" },
-        { label: "RATIO", value: ratio(log.doseG, yieldG), textValue: true },
-        timeCell,
-      ]
-    : [{ label: "DOSE", value: grams(log.doseG), unit: "g" }, { label: labels.water, value: grams(log.waterG), unit: "g" }, grindCell, timeCell];
+    ? [doseCell, waterCell, { label: "RATIO", value: ratio(log.doseG, yieldG), textValue: true }, timeCell]
+    : [doseCell, waterCell, grindCell, timeCell];
 
   return (
     <>
@@ -563,7 +577,11 @@ function NumbersHeader({
       </div>
       <div className={v.timeRow}>
         <div className={v.grow}>
-          <StatusLine status={ts[0]} lead={ts[1]} rest={target > 0 && log.totalTimeSec > 0 ? `${timeText(log.totalTimeSec)} against ${timeText(target)}` : undefined} />
+          <StatusLine
+            status={ts[0]}
+            lead={ts[1]}
+            rest={band && log.totalTimeSec > 0 ? `${log.totalTimeSec} s against ${band.label}` : target > 0 && log.totalTimeSec > 0 ? `${timeText(log.totalTimeSec)} against ${timeText(target)}` : undefined}
+          />
         </div>
         <QuietButton text={editing ? "Done" : "Edit"} icon={editing ? undefined : "Edit"} onClick={() => setEditing((e) => !e)} />
       </div>

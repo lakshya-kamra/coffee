@@ -26,9 +26,12 @@
 }
 /* Layers start hidden until transitions.ts marks one active; not display:none (keeps scroll
    position and layout), not <Activity> (it would tear down live subscriptions). */
+/* Opacity 0 as well: a hidden tab is at rest exactly where the switch's fade leaves it, so an
+   interrupted switch never flashes one back in at full strength. */
 .layer[data-hidden], .layer:not([data-state]) {
   visibility: hidden;
   pointer-events: none;
+  opacity: 0;
 }
 /* The incoming layer sits over the leaving one, so taps reach only it during the fade. This is
    the only rule on data-state, and it is on the layer itself: a change of data-state alone
@@ -168,6 +171,10 @@
 }
 .barItem[aria-current="page"] { color: var(--ink-high); }
 .barIcon { display: flex; }
+/* Forge's press: the whole item sinks to 0.9 and springs back; no ripple, the pill and the icon
+   are the feedback. The icon's bounce is on its own span, so the two transforms never fight. */
+.barItem, .railItem { transition: transform var(--press-ms) var(--ease-emphasized), color 120ms var(--ease-emphasized); -webkit-tap-highlight-color: transparent; }
+.barItem:active, .railItem:active { transform: scale(0.9); }
 /* Labels may wrap to two lines at large text (A7): never collide with the neighbour. */
 .barItem .barLabel { letter-spacing: 0.2px; text-align: center; overflow-wrap: anywhere; max-width: 100%; }
 /* Above ~140% text a label no longer fits its 64-70 px item and broke mid-word ("Insig/hts"):

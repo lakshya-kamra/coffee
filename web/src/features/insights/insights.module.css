@@ -79,6 +79,10 @@
 .bestCup:active { transform: scale(0.98); }
 .bestCup > :first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); gap: 8px; margin-top: 8px; }
+/* Beside the passport the card is stretched to the row (A8: a band was left empty under the
+   record tiles at 1920): the tiles grow into it, so the card's bottom edge is the tiles'. */
+.bestsCard { display: flex; flex-direction: column; }
+.bestsCard > .records { flex: 1 1 auto; }
 .record { background: var(--surface2); border-radius: var(--r-well); padding: 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

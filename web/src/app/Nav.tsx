@@ -9,7 +9,7 @@ import { Icon } from "@/design/components/Icon";
 import { Kbd } from "@/design/components/Kbd";
 import { tooltipProps } from "@/design/components/Tooltip";
 import { useSlidingIndicator } from "@/design/useSlidingIndicator";
-import { BottomBar } from "./BottomBar";
+import { BottomBar, useIconBounce } from "./BottomBar";
 import { navCovered } from "./layerPlan";
 import { isPlainClick, prefetchTab, startBrew, TAB_ICON, useLiveBrew } from "./navShared";
 import { useDetailPlan } from "./paneHosts";
@@ -44,6 +44,7 @@ function onTabClick(e: MouseEvent<HTMLAnchorElement>, id: TabId, selected: boole
 // ---------------------------------------------------------------- rail
 
 const RailItem = memo(function RailItem({ id, selected }: { id: TabId; selected: boolean }) {
+  const icon = useIconBounce(selected);
   return (
     <a
       href={pathOf(tabRoute(id))}
@@ -53,7 +54,9 @@ const RailItem = memo(function RailItem({ id, selected }: { id: TabId; selected:
       onPointerDown={() => prefetchTab(id)}
       {...tooltipProps(TAB_LABELS[id], String(TABS.indexOf(id) + 1), "right")}
     >
-      <Icon name={TAB_ICON[id]} size={24} />
+      <span ref={icon} className={shell.barIcon}>
+        <Icon name={TAB_ICON[id]} size={24} />
+      </span>
       <span className={`t-label-s ${shell.railLabel}`}>{TAB_LABELS[id]}</span>
     </a>
   );
@@ -63,7 +66,7 @@ function Rail({ covered, short, canExpand }: { covered: boolean; short: boolean;
   const tab = useRouter((s) => s.tab);
   const track = useRef<HTMLDivElement>(null);
   const pill = useRef<HTMLDivElement>(null);
-  useSlidingIndicator(track, pill, TABS.indexOf(tab), TABS.length, "y");
+  useSlidingIndicator(track, pill, TABS.indexOf(tab), TABS.length, { axis: "y", liquid: true });
   const live = useLiveBrew();
   return (
     <nav className={shell.rail} aria-label="Sections" data-short={short || undefined} inert={covered}>

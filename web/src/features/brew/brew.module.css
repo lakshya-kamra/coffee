@@ -247,7 +247,10 @@ button.finishDone { background: var(--crema); color: var(--on-crema); transition
 /* A portrait tablet (820 x 1180) left ~320 px empty under the step card with the 360 cap: tall
    portrait windows let the ring grow into it. */
 @media (min-width: 600px) and (min-height: 900px) {
-  .portrait .ringBox { width: max(min(240px, 100%), min(100%, 100dvh - 560px, 500px)); }
+  /* v4.1 (A8): the 500 cap still left a ~180 px band between the step card and the controls at
+     820 x 1180. The ring takes most of it (up to 600), and what is left is shared above the ring
+     and above the dock instead of pooling in one band. */
+  .portrait .ringBox { width: max(min(240px, 100%), min(100%, 100dvh - 540px, 600px)); margin-top: auto; }
 }
 .portrait .stepCard { margin-top: 8px; max-height: max(220px, 52dvh); }
 /* The transport stays reachable when the pane has to scroll (200% text, short phones). */

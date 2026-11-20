@@ -3,6 +3,7 @@
  * Timeline.kt, and BrewScreen.kt's StepKind.mood()). No React, fully unit-tested.
  */
 import { clock } from "@/domain/core/format";
+import { noScaleText } from "@/domain/core/noScale";
 import { totalSec, type Recipe, type StepKind } from "@/domain/core/recipe";
 import type { Status } from "@/domain/core/status";
 
@@ -108,14 +109,16 @@ export interface TimelineRow {
 }
 
 /** The recipe as a planned timeline: every step, then a terminal "Done" at the total time. */
-export function plannedTimelineRows(r: Recipe): TimelineRow[] {
+export function plannedTimelineRows(r: Recipe, hasScale = true): TimelineRow[] {
+  // Without a scale the prose and the targets read in ml and spoons, as the brew screen does (A1).
+  const prose = (t: string) => (hasScale ? t : noScaleText(t));
   return [
     ...r.steps.map((s) => ({
       time: clock(s.startSec),
       kind: s.kind,
-      title: s.title,
-      detail: s.detail.trim() ? s.detail : null,
-      trailing: s.targetWaterG != null ? `${s.targetWaterG} g` : null,
+      title: prose(s.title),
+      detail: s.detail.trim() ? prose(s.detail) : null,
+      trailing: s.targetWaterG != null ? (hasScale ? `${s.targetWaterG} g` : `${s.targetWaterG} ml`) : null,
     })),
     { time: clock(totalSec(r)), kind: null, title: "Done", terminal: true },
   ];

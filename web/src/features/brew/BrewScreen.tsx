@@ -180,8 +180,11 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
   const unit: "c" | "f" = units.fahrenheit ? "f" : "c";
   const shownRecipe = useMemo(() => (unit === "c" ? recipe : { ...recipe, steps: stepsInUnit(recipe.steps, unit) }), [recipe, unit]);
   const unitRef = useRef(unit);
+  // Without a scale every cue says ml (A1): read live, so a toggle in Gear mid-brew follows.
+  const scaleRef = useRef(settings.hasScale);
   useLayoutEffect(() => {
     unitRef.current = unit;
+    scaleRef.current = settings.hasScale;
   });
   const [engine] = useState(() => {
     const e = new BrewEngine(setupRecipe(base, setup), { autoAdvance: settings.autoAdvanceSteps });
@@ -258,9 +261,9 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
       engine.onStep((i) => {
         if (hapticsOn) vibrateStep();
         const steps = stepsInUnit(engine.getRecipe().steps, unitRef.current);
-        announcer.say(stepAnnouncement(steps, i));
+        announcer.say(stepAnnouncement(steps, i, scaleRef.current));
         const s = steps[i];
-        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s)}` }));
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current)}` }));
       }),
     [engine, hapticsOn, announcer],
   );
@@ -277,7 +280,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
         if (hapticsOn) vibrateStep();
         announcer.say(TIME_FOR_NEXT);
         const s = engine.getRecipe().steps[next.stepIndex + 1];
-        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s)}` }));
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current)}` }));
       }
       if (next.done && !was.done) announcer.say(doneAnnouncement(engine.elapsedMs() / 1000));
     });
@@ -341,7 +344,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
     }
     if (soundOn) (cues.current ??= new CuePlayer()).unlock();
     engine.start();
-    announcer.say(stepAnnouncement(engine.getRecipe().steps, engine.state.stepIndex));
+    announcer.say(stepAnnouncement(engine.getRecipe().steps, engine.state.stepIndex, settings.hasScale));
   };
   const toggle = () => {
     if (!st.running && soundOn) (cues.current ??= new CuePlayer()).unlock();
@@ -449,6 +452,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
           ) : pane === "shot" ? (
             <ShotPane
               recipe={recipe}
+              hasScale={settings.hasScale}
               shot={shot}
               layout={runLayout}
               finishing={finishing}

@@ -6,22 +6,18 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { FieldWell, IconWell, PrimaryButton, QuietButton, StatusLine, tooltipProps } from "@/design/components";
-import type { Status } from "@/domain/core/status";
-import { clock, grams, ratio } from "@/domain/core/format";
+import { clock, ratio } from "@/domain/core/format";
+import { waterAmount } from "@/domain/core/noScale";
 import type { Recipe } from "@/domain/core/recipe";
+import { BAND_WORDS } from "@/domain/core/shotTarget";
 import { useFrame, writeText } from "@/viz";
 import type { RunLayout } from "./layout";
-import { bandStatus, preinfusion, shotBand, shotSeconds, shotYield, type BandStatus, type ShotState } from "./shot";
+import { bandStatus, preinfusion, shotBand, shotSeconds, shotYield, type ShotState } from "./shot";
 import b from "./brew.module.css";
-
-const BAND_WORDS: Record<BandStatus, { status: Status; lead: string }> = {
-  under: { status: "attention", lead: "Fast" },
-  in: { status: "good", lead: "In the band" },
-  over: { status: "attention", lead: "Slow" },
-};
 
 export function ShotPane({
   recipe,
+  hasScale,
   shot,
   layout,
   finishing,
@@ -32,6 +28,8 @@ export function ShotPane({
   onClose,
 }: {
   recipe: Recipe;
+  /** Without a scale the shot reads in ml, as set up does ("45 ml"), never "45 g out" (A1). */
+  hasScale: boolean;
   shot: ShotState;
   layout: RunLayout;
   finishing: boolean;
@@ -54,6 +52,10 @@ export function ShotPane({
   }, []);
 
   const verdict = stopped && shot.shotSec != null ? BAND_WORDS[bandStatus(shot.shotSec, band)] : null;
+  const dose = waterAmount(recipe.doseG, hasScale);
+  const out = waterAmount(recipe.waterG, hasScale);
+  // Without a scale the basket sets the dose (noScaleAmounts), so only the cup is measured.
+  const amounts = hasScale ? `${dose.value} g in, ${out.value} g out (${ratio(recipe.doseG, recipe.waterG)})` : `about ${out.value} ml in the cup`;
 
   return (
     <div className={b.run} data-layout={layout}>
@@ -71,7 +73,7 @@ export function ShotPane({
             <span className={b.shotUnit}>s</span>
           </span>
           <span className="t-body-m ink-mid">
-            Target {band.label} · {grams(recipe.doseG)} g in, {grams(recipe.waterG)} g out ({ratio(recipe.doseG, recipe.waterG)})
+            Target {band.label} · {amounts}
           </span>
           {pre && pulling && <PreinfusionLeaf shot={shot} endSec={pre.endSec} />}
           {verdict && <StatusLine status={verdict.status} lead={verdict.lead} rest={`${shot.shotSec} s against ${band.label}`} />}
@@ -91,7 +93,16 @@ export function ShotPane({
             </button>
           ) : (
             <>
-              <FieldWell label="HOW MUCH CAME OUT?" value={shot.yieldText} suffix="g" numeric helper={`The recipe aims for ${grams(recipe.waterG)} g in the cup.`} error={shot.yieldText.trim() && yieldG == null ? "Type the grams, like 36" : null} onChange={onYield} />
+              {/* The number is stored as grams either way: espresso's ml and g are close enough to log. */}
+              <FieldWell
+                label="HOW MUCH CAME OUT?"
+                value={shot.yieldText}
+                suffix={out.unit}
+                numeric
+                helper={`The recipe aims for ${out.value} ${out.unit} in the cup.`}
+                error={shot.yieldText.trim() && yieldG == null ? (hasScale ? "Type the grams, like 36" : "Type the ml, like 36") : null}
+                onChange={onYield}
+              />
               <PrimaryButton text="Rate it" icon="Check" onClick={onRate} enabled={!finishing} className={b.finishDone} />
               <QuietButton text="Pull it again" icon="Replay" onClick={onAgain} />
             </>

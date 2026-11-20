@@ -26,9 +26,10 @@ import { useActiveBrew, useBeans, useBrews, useGrinders, useRecipes, useSettings
 import { EyebrowLabel, Icon, IconWell, PrimaryButton, QuietButton, ScreenHeader, SectionLabel, SoftCard, StatusDot, StatusLine, toCaps, tooltipProps, useContextMenu } from "@/design/components";
 import { brewElapsedMs, isAbandoned } from "@/domain/core/activeBrew";
 import { brewerRowTag, ownedFamilies, type Brewer } from "@/domain/core/brewer";
-import { clipWords, formatDuration, grams, oneDp, screenDayLabel, screenTime, todayEyebrow } from "@/domain/core/format";
+import { clipWords, formatDuration, oneDp, screenDayLabel, screenTime, todayEyebrow } from "@/domain/core/format";
 import { noScaleAmounts } from "@/domain/core/noScale";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
+import { BAND_WORDS, bandStatus, shotBand, targetSec } from "@/domain/core/shotTarget";
 import { roastStatus, roastWord, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf, type Units } from "@/domain/core/units";
 import { StatGrid } from "@/features/recipes/StatGrid";
@@ -112,7 +113,7 @@ export function TodayScreen() {
   useBrewNext(brewNext, "today", front);
 
   const recent = logs.slice(0, layout.recentCount);
-  const targetById = useMemo(() => new Map(recipes.map((r) => [r.id, totalSec(r)])), [recipes]);
+  const targetById = useMemo(() => new Map(recipes.map((r) => [r.id, targetSec(r, totalSec(r))])), [recipes]);
   const startFrom = useMemo(() => startFromRecipes(recipes, families, next?.id ?? null, startCount), [recipes, families, next, startCount]);
   const firstOwned = useMemo(() => settings.ownedBrewerIds.map((id) => Brewers.byId(id)).find((b) => b != null) ?? null, [settings.ownedBrewerIds]);
   const bean = useMemo(() => (yourCoffee ? beanOnDeck(beans, settings.defaultBeanId, logs) : null), [yourCoffee, beans, settings.defaultBeanId, logs]);
@@ -123,7 +124,7 @@ export function TodayScreen() {
       <div className={t.head}>
         <ScreenHeader
           eyebrow={todayEyebrow(now)}
-          title={playfulTitle(today)}
+          title={playfulTitle(today, allBrews.length > 0)}
           trailing={
             <span className={t.headTrailing}>
               {layout.mode === "column" && <IconWell icon="Search" label="Search or jump" keys="mod+k" onClick={() => openPalette()} />}
@@ -286,20 +287,18 @@ function PersonaliseCard() {
 }
 
 /** "6 level tablespoons → 500 ml (2 mugs)" for someone without a scale (v4 §4.3). */
+/** Without a scale this replaces the grams route entirely (A1): grams mean nothing on a spoon. */
 function NoScaleLine({ recipe }: { recipe: Recipe }) {
   const a = noScaleAmounts(recipe.doseG, recipe.waterG, recipe.brewer.method);
-  return (
-    <span className="t-body-m">
-      {a.coffeeTbsp != null ? a.coffeeLine : a.basket} · {recipe.brewer.method === "espresso" ? "" : `${a.water} water `}
-      <span className="ink-low">
-        ({grams(recipe.doseG)} g → {grams(recipe.waterG)} g)
-      </span>
-    </span>
-  );
+  const espresso = recipe.brewer.method === "espresso";
+  return <span className="t-title-m">{[a.coffeeTbsp != null ? a.coffee : a.basket, espresso ? `${a.waterMl} ml in the cup` : `${a.water} water`].filter(Boolean).join(" · ")}</span>;
 }
 
 function NextBrewPass({ recipe, lastGrind, lastLog, units, hasScale }: { recipe: Recipe; lastGrind: number | null; lastLog: BrewRow | null; units: Units; hasScale: boolean }) {
   const target = totalSec(recipe);
+  // Espresso shows and judges shot mode's target, not the total with "Serve" in it (A4).
+  const band = recipe.brewer.method === "espresso" ? shotBand(recipe) : null;
+  const bandWords = band && lastLog && lastLog.totalTimeSec > 0 ? BAND_WORDS[bandStatus(lastLog.totalTimeSec, band)].lead : null;
   const eyebrow = (
     <span className={t.passEyebrow}>
       <EyebrowLabel text="NEXT BREW" />
@@ -310,8 +309,7 @@ function NextBrewPass({ recipe, lastGrind, lastLog, units, hasScale }: { recipe:
       <button type="button" className={t.passOpen} onClick={() => openRecipe(recipe.id, "next")} onPointerDown={warmRecipe}>
         <RecipeHeader recipe={recipe} size="card" sharedPrefix="next" eyebrow={eyebrow} />
         <span className={t.passBody}>
-          <RecipeRoute recipe={recipe} numeral="num-large" />
-          {!hasScale && <NoScaleLine recipe={recipe} />}
+          {hasScale ? <RecipeRoute recipe={recipe} numeral="num-large" /> : <NoScaleLine recipe={recipe} />}
           <StatGrid
             cells={[
               // Says where the number came from: your last brew of this recipe, not the recipe.
@@ -319,14 +317,16 @@ function NextBrewPass({ recipe, lastGrind, lastLog, units, hasScale }: { recipe:
                 ? { key: "grind", label: "GRIND", value: String(lastGrind), unit: "clicks", sub: "last used" }
                 : { key: "grind", label: "GRIND", value: recipe.grind || null, text: true },
               { key: "temp", label: "TEMP", value: temp(units, recipe.tempC), unit: tempUnit(units) },
-              { key: "time", label: recipe.brewer.method === "espresso" ? "SHOT TIME" : "TARGET", value: formatDuration(target) },
+              band
+                ? { key: "time", label: "SHOT TIME", value: band.from === band.to ? String(band.to) : `${band.from}–${band.to}`, unit: "s" }
+                : { key: "time", label: "TARGET", value: formatDuration(target) },
             ]}
           />
           {lastLog && (
             <StatusLine
               status={scoreStatus(lastLog.overall)}
               lead={lastLog.overall > 0 ? `Last time ${lastLog.overall}/10` : "Last time unrated"}
-              rest={timeStatus(lastLog.totalTimeSec, target)[1].toLowerCase()}
+              rest={(band ? (bandWords ?? "no time") : timeStatus(lastLog.totalTimeSec, target)[1]).toLowerCase()}
             />
           )}
         </span>

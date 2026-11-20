@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { argbToCss, generateTokensCss, kebab } from "../../scripts/gen-tokens.mjs";
 import { ICONS } from "./icons";
 import { dampingFor, SPRINGS, spatialDefault } from "./motion";
+import { liquidTransform, solveSpring, springAt } from "./useSlidingIndicator";
 
 const colorKt = fileURLToPath(new URL("../../../app/src/main/java/com/laksh/coffee/ui/theme/Color.kt", import.meta.url));
 const motionKt = fileURLToPath(new URL("../../../app/src/main/java/com/laksh/coffee/ui/theme/Motion.kt", import.meta.url));
@@ -79,6 +80,33 @@ describe("motion tokens", () => {
     for (const [name, s] of Object.entries(SPRINGS)) {
       if (name.startsWith("spatial") || name === "bounds") expect(s.zeta, name).toBeGreaterThanOrEqual(0.9);
     }
+  });
+
+  it("the liquid pill stretches with speed like Forge's (|v| x 7, capped at 30, 12% squash)", () => {
+    expect(liquidTransform("x", 2, 0, 78, 78, 56)).toBe("translateX(156px) scale(1, 1)");
+    // 2 slots a second: 14 px longer, 1.68 px thinner.
+    expect(liquidTransform("x", 1.5, 2, 78, 78, 56)).toBe("translateX(117px) scale(1.179, 0.97)");
+    // Fast: capped at 30 px whatever the speed, in both directions.
+    expect(liquidTransform("x", 1, -40, 78, 78, 56)).toBe(liquidTransform("x", 1, 40, 78, 78, 56));
+    expect(liquidTransform("x", 1, 40, 78, 78, 56)).toBe("translateX(78px) scale(1.385, 0.936)");
+    // The rail stretches down its column.
+    expect(liquidTransform("y", 1, 40, 64, 64, 64)).toBe("translateY(64px) scale(0.944, 1.469)");
+  });
+
+  it("solves the pill's spring up front: rests on the target, overshoot under a hundredth of a slot, retargets from its own state", () => {
+    const p = solveSpring(0, 0, 3);
+    expect(p.x.at(-1)).toBe(3);
+    expect(p.v.at(-1)).toBe(0);
+    expect(Math.max(...p.x)).toBeLessThan(3.01);
+    expect((p.x.length - 1) * p.dt).toBeLessThan(0.8);
+    const mid = springAt(p, 0.08);
+    expect(mid.x).toBeGreaterThan(0.5);
+    expect(mid.v).toBeGreaterThan(5); // fast mid-slide: the pill is at full stretch
+    // Tapped back mid-slide: the new spring starts where and as fast as the old one was.
+    const back = solveSpring(mid.x, mid.v, 0);
+    expect(back.x[0]).toBe(mid.x);
+    expect(back.v[0]).toBe(mid.v);
+    expect(back.x.at(-1)).toBe(0);
   });
 
   it.skipIf(!existsSync(motionKt))("matches every spring Motion.kt defines under the same name", () => {

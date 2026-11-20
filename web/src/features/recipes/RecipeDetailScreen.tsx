@@ -183,7 +183,7 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
   // Highest rated; on a tie the newest wins, since its grind is the one to trust today.
   const best = useMemo(() => logs.reduce<(typeof logs)[number] | null>((acc, l) => (l.overall > 0 && (acc == null || l.overall > acc.overall) ? l : acc), null), [logs]);
   const nodes = useMemo(() => journeyNodes(shown), [shown]);
-  const timeline = useMemo(() => plannedTimelineRows(forUnits), [forUnits]);
+  const timeline = useMemo(() => plannedTimelineRows(forUnits, settings.hasScale), [forUnits, settings.hasScale]);
   const grinder = grinders.find((g) => g.id === settings.defaultGrinderId) ?? grinders.find((g) => g.isDefault) ?? null;
   const grindScale = useGrindScale(grinder);
   const needs = useMemo(() => needItems(shown, settings, grinders.length), [shown, settings, grinders.length]);

@@ -5,7 +5,8 @@
  *
  *   ready --start--> pulling --stop--> stopped --again--> ready
  */
-import type { Recipe, RecipeStep } from "@/domain/core/recipe";
+import type { Recipe } from "@/domain/core/recipe";
+import { isPreinfusion } from "@/domain/core/shotTarget";
 
 export type ShotPhase = "ready" | "pulling" | "stopped";
 
@@ -62,50 +63,11 @@ export function shotYield(s: ShotState): number | null {
   return n > 0 ? n : null;
 }
 
-export interface ShotBand {
-  readonly from: number;
-  readonly to: number;
-  /** "25–30 s", or "about 35 s" when the recipe only gives an end time. */
-  readonly label: string;
-}
-
-const BAND = /(\d{1,3})\s*(?:-|–|to)\s*(\d{1,3})\s*(?:s\b|sec|seconds)/i;
-
-/**
- * The target band: the "25 to 30 seconds" a recipe states in its steps (or blurb), else the end
- * of its last step that is not "Serve" (stopping and tasting is not part of the shot).
- */
-export function shotBand(r: Pick<Recipe, "steps" | "blurb">): ShotBand {
-  // A pre-infusion step's "first drops at 8 to 12 seconds" is not the shot's target.
-  const pull = r.steps.filter((s) => !isPreinfusion(s));
-  for (const text of [...pull.map((s) => s.detail), ...pull.map((s) => s.title), r.blurb]) {
-    const m = BAND.exec(text);
-    if (!m) continue;
-    const a = Number(m[1]);
-    const b = Number(m[2]);
-    if (a > 0 && b >= a && b <= 120) return { from: a, to: b, label: `${a}–${b} s` };
-  }
-  const pulling = r.steps.filter((s) => s.kind !== "Serve");
-  const end = Math.max(0, ...(pulling.length ? pulling : r.steps).map((s) => s.endSec));
-  return { from: end, to: end, label: `about ${end} s` };
-}
-
-export type BandStatus = "under" | "in" | "over";
-
-/** Where a shot time sits against the band; a single-number band allows 2 s either side. */
-export function bandStatus(sec: number, band: ShotBand): BandStatus {
-  const slack = band.from === band.to ? 2 : 0;
-  if (sec < band.from - slack) return "under";
-  if (sec > band.to + slack) return "over";
-  return "in";
-}
+// The target lives in the domain: the review, Today and the first read judge against the same one.
+export { bandStatus, shotBand, type BandStatus, type ShotBand } from "@/domain/core/shotTarget";
 
 /** The pre-infusion window when the recipe has one (a step titled or described as pre-infusion). */
 export function preinfusion(r: Pick<Recipe, "steps">): { readonly endSec: number } | null {
   const s = r.steps.find(isPreinfusion);
   return s && s.endSec > 0 ? { endSec: s.endSec } : null;
-}
-
-function isPreinfusion(s: Pick<RecipeStep, "title" | "detail" | "startSec">): boolean {
-  return /pre-?infusion/i.test(s.title) || (s.startSec === 0 && /pre-?infus/i.test(s.detail));
 }

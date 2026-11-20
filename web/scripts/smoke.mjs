@@ -1767,6 +1767,84 @@ function V4_FLOWS() {
         }
       },
     },
+    {
+      // v4.1: Forge 2.0's tab motion. Both directions on the bar slide by tab order, rapid taps
+      // retarget, and every switch, slow or interrupted, ends with the other tabs at rest: no
+      // transform, opacity 0, inert. At 1x no animation frame may run past 50 ms.
+      name: "v4.1 tab motion: directional slide, rapid taps, nothing left half-way",
+      async run({ page }) {
+        await seed(page, {}, 6);
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto(BASE + "/");
+        await settle(page, 3000);
+        const bar = page.getByRole("navigation", { name: "Sections" });
+        // Warm-up: a first visit is a first paint, not a switch.
+        for (const label of ["Recipes", "Log", "Insights", "Gear", "Today"]) {
+          await bar.getByRole("link", { name: label }).click();
+          await settle(page, 500);
+        }
+        const at = {};
+        for (const label of ["Today", "Recipes", "Log", "Insights", "Gear"]) {
+          const b = await bar.getByRole("link", { name: label }).boundingBox();
+          at[label] = [b.x + b.width / 2, b.y + b.height / 2];
+        }
+        await page.evaluate(() => {
+          window.__loafs = [];
+          try {
+            new PerformanceObserver((l) => window.__loafs.push(...l.getEntries().map((e) => Math.round(e.duration)))).observe({ type: "long-animation-frame" });
+          } catch {
+            /* no LoAF in this browser: the rest checks still run */
+          }
+        });
+        /** The incoming layer's x shortly after a tap: the side it comes from. */
+        const enterSide = async (label) => {
+          await page.mouse.click(...at[label]);
+          await page.waitForTimeout(40);
+          return page.evaluate((tab) => {
+            const el = document.querySelector(`section[data-tab="${tab}"]`);
+            return el ? new DOMMatrixReadOnly(getComputedStyle(el).transform === "none" ? undefined : getComputedStyle(el).transform).m41 : 0;
+          }, label.toLowerCase());
+        };
+        const right = await enterSide("Log");
+        await settle(page, 600);
+        const left = await enterSide("Recipes");
+        await settle(page, 600);
+        if (right > 1 && left < -1) ok(`slides by tab order: Log came in from the right (${Math.round(right)} px), Recipes from the left (${Math.round(left)} px)`);
+        else fail(`tab slide direction: Log entered at ${right} px (want > 0), Recipes at ${left} px (want < 0)`);
+        // Rapid taps, both ways, ~30 ms apart: each retargets from where the pages are.
+        for (const label of ["Gear", "Today", "Insights", "Recipes", "Log"]) {
+          await page.mouse.click(...at[label]);
+          await page.waitForTimeout(30);
+        }
+        await settle(page, 900);
+        const rest = await page.evaluate(() =>
+          [...document.querySelectorAll("section[data-tab]")].map((el) => {
+            const cs = getComputedStyle(el);
+            return { tab: el.dataset.tab, state: el.dataset.state, transform: cs.transform, opacity: cs.opacity, inert: el.inert };
+          }),
+        );
+        const active = rest.filter((r) => r.state === "active");
+        const bad = rest.filter((r) => r.state !== "active" && (r.transform !== "none" || r.opacity !== "0" || !r.inert));
+        if (active.length !== 1 || active[0].tab !== "log" || active[0].transform !== "none" || active[0].opacity !== "1") fail(`after rapid taps the active tab is ${JSON.stringify(active)}`);
+        else if (bad.length) fail(`tabs left mid-switch: ${JSON.stringify(bad)}`);
+        else ok("after rapid taps: Log active at rest; every other tab transform none, opacity 0, inert");
+        const pill = await page.evaluate(() => getComputedStyle(document.querySelector('[class*="barPill"]')).transform);
+        if (!/^matrix\(1, 0, 0, 1, [\d.]+, 0\)$/.test(pill)) fail(`bar pill not at rest: ${pill}`);
+        else ok(`liquid pill settled unstretched (${pill})`);
+        const loafs = await page.evaluate(() => window.__loafs);
+        if (loafs.length) fail(`long animation frames during tab switches at 1x: ${loafs.join(", ")} ms`);
+        else ok("no long animation frame (> 50 ms) during the switches at 1x");
+        // Reduced motion: a cross-fade, no travel.
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.mouse.click(...at["Insights"]);
+        await page.waitForTimeout(40);
+        const travel = await page.evaluate(() => getComputedStyle(document.querySelector('section[data-tab="insights"]')).transform);
+        await settle(page, 400);
+        if (travel === "none" || /^matrix\(1, 0, 0, 1, 0, 0\)$/.test(travel)) ok("reduced motion: a cross-fade, the page does not travel");
+        else fail(`reduced motion: the incoming page travels (${travel})`);
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+      },
+    },
   ];
 }
 

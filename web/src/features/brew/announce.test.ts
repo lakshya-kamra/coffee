@@ -22,6 +22,15 @@ describe("A4 announcement strings", () => {
     expect(stepAnnouncement(steps, 9)).toBe("");
   });
 
+  it("without a scale: jug readings in ml, the detail's grams as ml (A1)", () => {
+    expect(stepLead(steps[1]!, false)).toBe("Pour to about 300 ml");
+    expect(stepLead(steps[0]!, false)).toBe("Bloom to about 60 ml");
+    expect(stepLead({ kind: "Pour", title: "Pour all 500 g", targetWaterG: null }, false)).toBe("Pour all 500 ml");
+    const press: RecipeStep[] = [{ kind: "Pour", title: "Pour", detail: "Pour all 500 g straight onto the grounds in one go.", startSec: 0, endSec: 10, targetWaterG: 500 }];
+    expect(stepAnnouncement(press, 0, false)).toBe("Step 1 of 1, Pour to about 500 ml. Pour all 500 ml straight onto the grounds in one go.");
+    expect(stepAnnouncement(press, 0)).toBe("Step 1 of 1, Pour to 500 g. Pour all 500 g straight onto the grounds in one go.");
+  });
+
   it("done, the boundary with auto-advance off, and ten seconds left", () => {
     expect(doneAnnouncement(212.7)).toBe("Brew done, 3:32. Rate this brew.");
     expect(TIME_FOR_NEXT).toBe("Time for the next step.");

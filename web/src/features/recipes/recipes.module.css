@@ -160,7 +160,8 @@
 /* Wraps in full, never clamped (A7: 200% text). */
 .rowNameText { overflow-wrap: break-word; min-width: 0; }
 .rowDot { flex: none; width: 8px; height: 8px; border-radius: 50%; transform: translateY(-1px); }
-.rowMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Wraps, never clipped (A9: at 200% text a one-line "JAMES HOFFMANN · V60" lost the brewer). */
+.rowMeta { overflow-wrap: break-word; min-width: 0; }
 /* Numbers never ellipsize: they keep their width and the words give way. */
 .rowNums { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; white-space: nowrap; }
 .rowMore {

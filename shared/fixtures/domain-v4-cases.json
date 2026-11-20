@@ -217,6 +217,25 @@
     {"name": "drip machine has a bed", "brewer": "drip-machine", "recipe": {"totalSec": 330, "doseG": 70}, "log": {"bedShape": "flat"}, "out": ["Flat bed. Whatever you did not like about this cup, distribution was not it."]},
     {"name": "espresso extraction yield", "brewer": "espresso-machine", "recipe": {"totalSec": 30, "doseG": 18}, "log": {"extractionYield": 20.04}, "out": ["Measured extraction yield 20.0%. Taste beats the number."]}
   ],
+  "noScaleText": [
+    {"in": "Pour all 500 g straight onto the grounds in one go.", "out": "Pour all 500 ml straight onto the grounds in one go."},
+    {"in": "Pour to 300 g", "out": "Pour to 300 ml"},
+    {"in": "Pour 100 g over the coffee in 10 seconds.", "out": "Pour 100 ml over the coffee in 10 seconds."},
+    {"in": "16 g coffee, 100 g water", "out": "3 level tablespoons coffee, 100 ml water"},
+    {"in": "Add 16 g of coffee and pour to 100 g.", "out": "Add 3 level tablespoons of coffee and pour to 100 ml."},
+    {"in": "Add the extra 2 g of coffee.", "out": "Add the extra ½ level tablespoon of coffee."},
+    {"in": "Pour about 30 g of hot water over the coffee and wait a minute.", "out": "Pour about 30 ml of hot water over the coffee and wait a minute."},
+    {"in": "160 g at 70 °C", "out": "160 ml at 70 °C"},
+    {"in": "Stop at 16.7 g in the cup, 25 to 30 seconds in.", "out": "Stop at 17 ml in the cup, 25 to 30 seconds in."},
+    {"in": "Bloom for 45 seconds.", "out": "Bloom for 45 seconds."}
+  ],
+  "stepLeadNoScale": [
+    {"in": {"kind": "Bloom", "title": "Bloom", "targetWaterG": 60}, "out": "Bloom to about 60 ml"},
+    {"in": {"kind": "Pour", "title": "Pour to 300 g", "targetWaterG": 304}, "out": "Pour to about 300 ml"},
+    {"in": {"kind": "Pour", "title": "Pour all 500 g", "targetWaterG": null}, "out": "Pour all 500 ml"},
+    {"in": {"kind": "Drawdown", "title": "Let it drain", "targetWaterG": null}, "out": "Drawdown"},
+    {"in": {"kind": "Steep", "title": "Steep", "targetWaterG": null}, "out": "Steep"}
+  ],
   "grindMissing": [
     {"name": "pre-ground with no setting is not missing", "log": {"grindKind": "preground", "grindSetting": "", "grindClicks": null, "grindValue": null}, "missing": false},
     {"name": "a dial brew with nothing recorded is", "log": {"grindKind": "", "grindSetting": "", "grindClicks": null, "grindValue": null}, "missing": true},

@@ -25,7 +25,10 @@ describe("Today counts (HomeViewModel)", () => {
   });
 
   it("titles and the mug", () => {
-    expect([0, 1, 2, 3, 7].map(playfulTitle)).toEqual(["No coffee yet.", "One down.", "Two down.", "3 today. Steady on.", "7 today. Steady on."]);
+    expect([0, 1, 2, 3, 7].map((n) => playfulTitle(n))).toEqual(["No coffee yet.", "One down.", "Two down.", "3 today. Steady on.", "7 today. Steady on."]);
+    // Brewed on earlier days but not today: not the brand-new line (A7).
+    expect(playfulTitle(0, true)).toBe("None yet today.");
+    expect(playfulTitle(2, true)).toBe("Two down.");
     expect(mugFill(0)).toBe(0.12);
     expect(mugFill(2)).toBeCloseTo(2 / 3);
     expect(mugFill(9)).toBe(1);

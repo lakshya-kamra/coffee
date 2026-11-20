@@ -4,9 +4,10 @@
  */
 import { useEffect, useState, type MouseEvent } from "react";
 import type { IconName } from "@/design/icons";
-import { useActiveBrew, useRecipe } from "@/data/store";
+import { useActiveBrew, useRecipe, useSettings } from "@/data/store";
 import { brewElapsedMs } from "@/domain/core/activeBrew";
 import { clock } from "@/domain/core/format";
+import { noScaleText } from "@/domain/core/noScale";
 import { runCommand } from "./palette/commands";
 import { prefetchers } from "./registry";
 import { nav, useRouter } from "./router";
@@ -44,6 +45,7 @@ export function useLiveBrew(): LiveBrew | null {
   const active = useActiveBrew();
   const recipe = useRecipe(active?.recipeId ?? "");
   const brewShown = useRouter((s) => s.stack.some((r) => r.kind === "brew"));
+  const hasScale = useSettings().hasScale;
   const visible = active != null && !brewShown;
   const running = visible && active.running;
   const [now, setNow] = useState(() => Date.now());
@@ -64,7 +66,8 @@ export function useLiveBrew(): LiveBrew | null {
     recipeId: active.recipeId,
     clock: clock(sec),
     running: active.running,
-    stepTitle: step?.title ?? recipe?.name ?? "",
+    // Without a scale the step reads in ml here too, as on the timer (A1).
+    stepTitle: step ? (hasScale ? step.title : noScaleText(step.title)) : (recipe?.name ?? ""),
     resume: () => nav.push(`/brew/${encodeURIComponent(active.recipeId)}`),
   };
 }

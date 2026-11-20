@@ -4,6 +4,7 @@
  * still read twice. The strings are pure; the writer touches one element.
  */
 import { clock } from "@/domain/core/format";
+import { noScaleText } from "@/domain/core/noScale";
 import type { RecipeStep } from "@/domain/core/recipe";
 
 /** Steps longer than this get "10 seconds left" once. */
@@ -11,12 +12,20 @@ export const TEN_LEFT_MIN_STEP_SEC = 30;
 export const TEN_LEFT = "10 seconds left";
 export const TIME_FOR_NEXT = "Time for the next step.";
 
-/** "Bloom to 50 g", "Pour to 300 g", "Drawdown", else the step's title. */
-export function stepLead(s: Pick<RecipeStep, "kind" | "title" | "targetWaterG">): string {
-  if (s.kind === "Bloom" && s.targetWaterG != null) return `Bloom to ${s.targetWaterG} g`;
-  if (s.kind === "Pour" && s.targetWaterG != null) return `Pour to ${s.targetWaterG} g`;
+/** "about 60 ml": a jug is read to the nearest 10 ml. */
+export const aboutMl = (g: number): number => Math.max(0, Math.round(g / 10) * 10);
+
+/**
+ * "Bloom to 50 g", "Pour to 300 g", "Drawdown", else the step's title. Without a scale the target
+ * is a jug reading, "Pour to about 300 ml", and a title's grams read as ml (noScaleText), so the
+ * banner, the status line and the screen reader never say a weight nobody can measure.
+ */
+export function stepLead(s: Pick<RecipeStep, "kind" | "title" | "targetWaterG">, hasScale = true): string {
+  const amount = (t: number) => (hasScale ? `${t} g` : `about ${aboutMl(t)} ml`);
+  if (s.kind === "Bloom" && s.targetWaterG != null) return `Bloom to ${amount(s.targetWaterG)}`;
+  if (s.kind === "Pour" && s.targetWaterG != null) return `Pour to ${amount(s.targetWaterG)}`;
   if (s.kind === "Drawdown") return "Drawdown";
-  return s.title;
+  return hasScale ? s.title : noScaleText(s.title);
 }
 
 const sentence = (t: string): string => {
@@ -25,12 +34,12 @@ const sentence = (t: string): string => {
 };
 
 /** "Step 2 of 6, Pour to 300 g. Steady spiral from the centre outward. Next at 1:15." */
-export function stepAnnouncement(steps: readonly RecipeStep[], index: number): string {
+export function stepAnnouncement(steps: readonly RecipeStep[], index: number, hasScale = true): string {
   const s = steps[index];
   if (!s) return "";
   const next = steps[index + 1];
-  const parts = [`Step ${index + 1} of ${steps.length}, ${sentence(stepLead(s))}`];
-  const detail = sentence(s.detail);
+  const parts = [`Step ${index + 1} of ${steps.length}, ${sentence(stepLead(s, hasScale))}`];
+  const detail = sentence(hasScale ? s.detail : noScaleText(s.detail));
   if (detail) parts.push(detail);
   if (next) parts.push(`Next at ${clock(next.startSec)}.`);
   return parts.join(" ");

@@ -2,8 +2,8 @@
  * Keep-alive tabs with zero render on switch (web-spec §6.3). One fixed scroll layer per tab;
  * the active tab mounts at boot, the other four mount hidden in idle time, and then all five
  * stay mounted for the life of the page (state, scroll position and live subscriptions persist).
- * A switch re-renders no tab content: TabLayer is memo'd on its id, and the active state is
- * written imperatively by transitions.ts.
+ * A switch re-renders no tab content: TabLayer is memo'd on its id, and the active state and the
+ * Forge-style directional slide are written imperatively by transitions.ts.
  */
 import { memo, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TabScreens, tabChunks } from "./registry";
@@ -11,6 +11,7 @@ import { useRouter } from "./router";
 import { TAB_LABELS, TABS, type TabId } from "./routes";
 import { shellElements } from "./transitionState";
 import { showLayerNow, switchTabLayers } from "./transitions";
+import { windowClass } from "./windowClass";
 import shell from "./shell.module.css";
 
 /** Gear's only prop is its sub-tab; this wrapper subscribes to just that slice. */
@@ -107,7 +108,9 @@ export function TabsHost() {
     }
     if (prev === tab) return;
     const d = TABS.indexOf(tab) > TABS.indexOf(prev) ? 1 : -1;
-    void switchTabLayers(layers.get(prev) ?? null, inc, d);
+    // The slide follows the nav: across with the bottom bar, down a rail or the sidebar. Read
+    // from the window class store, so TabsHost never re-renders on a resize.
+    void switchTabLayers(layers.get(prev) ?? null, inc, d, windowClass.get().width === "compact" ? "x" : "y");
   }, [tab]);
 
   return (

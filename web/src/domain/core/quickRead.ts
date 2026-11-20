@@ -8,6 +8,7 @@ import { brewStyle, reviewSections, type Brewer } from "./brewer";
 import { formatDuration, kotlinDouble, plural, roundToInt } from "./format";
 import { BrewMath, type BedShape, type Channeling, type TasteProfile } from "./evaluation";
 import { totalSec, type Recipe } from "./recipe";
+import { shotBand } from "./shotTarget";
 import { tempLabel } from "./units";
 
 /** The slice of a brew row quickRead looks at. The v4 fields are optional so older callers still fit. */
@@ -111,16 +112,19 @@ export function quickRead(log: QuickReadInput, recipe: Recipe | null, opts: Quic
   }
 
   // Time against the recipe: drawdown, steep or shot time.
-  const target = recipe ? totalSec(recipe) : 0;
+  // Espresso is judged against shot mode's target, never the total with "Serve" in it (A4).
+  const band = espresso && recipe ? shotBand(recipe) : null;
+  const target = band ? band.to : recipe ? totalSec(recipe) : 0;
   const actual = log.totalTimeSec;
   if (!opts.timeIgnored && timeUsable(actual, target)) {
     const delta = actual - target;
-    if (espresso) {
+    if (band) {
+      const aim = band.from === band.to ? formatDuration(band.to) : band.label;
       if (delta > 5) {
-        out.push(`Your shot ran ${formatDuration(actual)}, longer than the recipe's ${formatDuration(target)}. ` +
+        out.push(`Your shot ran ${formatDuration(actual)}, longer than the recipe's ${aim}. ` +
           (adjustable ? "If it tasted bitter, grind a little coarser." : "If it tasted bitter, stop it sooner."));
-      } else if (delta < -5) {
-        out.push(`Your shot ran ${formatDuration(actual)}, quicker than the recipe's ${formatDuration(target)}. ` +
+      } else if (actual - band.from < -5) {
+        out.push(`Your shot ran ${formatDuration(actual)}, quicker than the recipe's ${aim}. ` +
           (adjustable ? "If it tasted sour, grind a little finer." : "If it tasted sour, let a little more out."));
       }
     } else if (style === "immersion") {

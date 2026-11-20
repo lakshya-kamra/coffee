@@ -4,7 +4,7 @@
  * cases are in shared/fixtures/domain-v4-cases.json).
  */
 import type { BrewMethod } from "./brewer";
-import { halves, roundToInt } from "./format";
+import { grams, halves, roundToInt } from "./format";
 import { scaledToWater, type Recipe } from "./recipe";
 import { renderTemps, type Units } from "./units";
 
@@ -86,6 +86,31 @@ export function noScalePrep(
   }
   const unit = units.fahrenheit ? "f" : "c";
   return out.map((l) => renderTemps(l, unit));
+}
+
+// "16 g of coffee", "2 g more coffee": coffee, not water. "Pour 100 g over the coffee" is water.
+const PROSE_GRAMS = /(\d+(?:\.\d+)?)\s*(?:g|grams?)\b(\s+(?:of\s+|more\s+)?(?:ground\s+)?coffee\b)?/gi;
+
+/**
+ * Recipe prose for someone without a scale (v4 §4.3): every gram amount in a step title or detail
+ * is said the way the rest of the brew says it. Water is read as ml (1 g of water is 1 ml, no
+ * rounding, so "Pour all 500 g" says the same 500 as the "Pour all 500 ml" dial); coffee is read
+ * in level tablespoons, in halves. Kotlin twin: NoScale.text (parity cases "noScaleText").
+ */
+export function noScaleText(text: string): string {
+  return text.replace(PROSE_GRAMS, (_all, n: string, coffee: string | undefined) => {
+    const g = Number(n);
+    if (coffee) {
+      const tbsp = Math.max(0.5, toHalves(g / GROUND_COFFEE_G_PER_LEVEL_TBSP));
+      return `${halves(tbsp)} level ${tbsp <= 1 ? "tablespoon" : "tablespoons"}${coffee}`;
+    }
+    return `${roundToInt(g)} ml`;
+  });
+}
+
+/** A water amount as the person reads it: "500 g" with a scale, "500 ml" without. */
+export function waterAmount(g: number, hasScale: boolean): { value: string; unit: "g" | "ml" } {
+  return hasScale ? { value: grams(g), unit: "g" } : { value: String(Math.max(0, roundToInt(g))), unit: "ml" };
 }
 
 /** "1 mug", "2 mugs", "3 mugs": 250 ml of water each, the dose from the recipe's ratio. */

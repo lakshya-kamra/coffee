@@ -28,6 +28,7 @@ import { firstBrew } from "@/domain/core/firstBrew";
 import { clipWords, clock, epochDayOf, oneDp, screenTime } from "@/domain/core/format";
 import { filterLog, isFilterActive, EMPTY_LOG_FILTER } from "@/domain/core/logQuery";
 import { totalSec } from "@/domain/core/recipe";
+import { targetSec } from "@/domain/core/shotTarget";
 import { cupLabel, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
 import { useAnalysedBrewIds } from "@/features/ai";
 import { Glyph } from "@/features/ai/glyphs";
@@ -187,7 +188,8 @@ function LogList({ table, view, onView }: { table: boolean; view: LogView; onVie
   const del = useDeleteBrew();
   const picker = useComparePicker();
 
-  const targetByRecipe = useMemo(() => new Map(recipes.map((r) => [r.id, totalSec(r)])), [recipes]);
+  // Espresso deltas are against the shot target, as on the brew itself (A4).
+  const targetByRecipe = useMemo(() => new Map(recipes.map((r) => [r.id, targetSec(r, totalSec(r))])), [recipes]);
   const summary = useMemo(() => logSummary(logs), [logs]);
   const active = isFilterActive(filter);
   const shown = useMemo(() => filterLog(logs, { ...filter, query }, photoIds), [logs, filter, query, photoIds]);

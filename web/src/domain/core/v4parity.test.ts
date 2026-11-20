@@ -12,9 +12,10 @@ import { firstBrew, type FirstBrewSettings } from "./firstBrew";
 import { formatDuration, ratioPhrase } from "./format";
 import { grindReference } from "./glossary";
 import { matchesLogQuery, type LogSearchable } from "./logQuery";
-import { noScaleAmounts, noScalePrep, servingsPreset, type BeanForm } from "./noScale";
+import { stepLead } from "@/features/brew/announce";
+import { noScaleAmounts, noScalePrep, noScaleText, servingsPreset, type BeanForm } from "./noScale";
 import { quickRead, type QuickReadInput, type QuickReadOptions } from "./quickRead";
-import type { Recipe, RecipeLevel, RecipeNeed } from "./recipe";
+import type { Recipe, RecipeLevel, RecipeNeed, RecipeStep } from "./recipe";
 import { defaultTempUnit, PROSE_TEMP, renderTemps, stepsInUnit } from "./units";
 
 type StubInput = { brewer?: string; totalSec?: number; doseG?: number; waterG?: number; id?: string; level?: RecipeLevel; needs?: RecipeNeed[]; prep?: string[]; prepNoScale?: string[]; method?: BrewMethod };
@@ -42,6 +43,8 @@ interface Cases {
   };
   quickRead: { name: string; brewer: string | null; recipe: { totalSec: number; doseG: number } | null; log: Partial<QuickReadInput>; opts?: QuickReadOptions; out: string[] }[];
   grindMissing: { name: string; log: Partial<BrewRow>; missing: boolean }[];
+  noScaleText: Pair<string, string>[];
+  stepLeadNoScale: Pair<Pick<RecipeStep, "kind" | "title" | "targetWaterG">, string>[];
 }
 
 const cases = JSON.parse(readFileSync(fileURLToPath(new URL("../../../../shared/fixtures/domain-v4-cases.json", import.meta.url)), "utf8")) as Cases;
@@ -82,6 +85,14 @@ describe("shared/fixtures/domain-v4-cases.json", () => {
       const r = stub(c.recipe);
       expect(noScalePrep(r, { fahrenheit: c.fahrenheit, ounces: false }, c.form), c.recipe.prep[0]).toEqual(c.out);
     }
+  });
+
+  it("noScaleText (step prose without a scale, A1)", () => {
+    for (const c of cases.noScaleText) expect(noScaleText(c.in), c.in).toBe(c.out);
+  });
+
+  it("stepLeadNoScale (banner, status line and announcements without a scale, A1)", () => {
+    for (const c of cases.stepLeadNoScale) expect(stepLead(c.in, false), JSON.stringify(c.in)).toBe(c.out);
   });
 
   it("servingsPreset", () => {

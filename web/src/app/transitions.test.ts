@@ -27,7 +27,7 @@ vi.mock("motion", () => ({
 }));
 
 import { afterTransition, beginTransition, isTransitioning, MAX_TRANSITION_WAIT_MS, resetTransitionsForTests } from "./transitionState";
-import { showLayerNow, switchTabLayers } from "./transitions";
+import { showLayerNow, slideDistance, switchPlan, switchTabLayers } from "./transitions";
 
 const layer = () => document.createElement("div");
 
@@ -92,6 +92,44 @@ describe("switchTabLayers", () => {
     showLayerNow(today, [log]);
     await done;
     expect(isTransitioning()).toBe(false);
+  });
+});
+
+describe("switchPlan (Forge 2.0's tab slide)", () => {
+  it("slides by tab order: in from the tapped side, out the other way, 380 ms Emphasized with a 190 ms fade", () => {
+    const right = switchPlan(1, "x", slideDistance("x", 390, 844), false, false);
+    expect(right.incoming).toEqual({ from: "translateX(195px)", to: "translateX(0px)", opacityFrom: 0 });
+    expect(right.outgoing.to).toBe("translateX(-195px)");
+    expect(right.slide).toEqual({ duration: 0.38, ease: [0.2, 0, 0, 1] });
+    expect(right.fade.duration).toBe(0.19);
+    const left = switchPlan(-1, "x", 195, false, false);
+    expect(left.incoming.from).toBe("translateX(-195px)");
+    expect(left.outgoing.to).toBe("translateX(195px)");
+  });
+
+  it("beside a rail the slide is vertical and an eighth of the window", () => {
+    expect(slideDistance("y", 1280, 800)).toBe(100);
+    const down = switchPlan(1, "y", 100, false, false);
+    expect(down.incoming.from).toBe("translateY(100px)");
+    expect(down.outgoing.to).toBe("translateY(-100px)");
+  });
+
+  it("a page caught mid-switch retargets from where it is; a settled one from its rest place", () => {
+    const back = switchPlan(-1, "x", 195, false, true, true);
+    expect(back.incoming.from).toBeNull();
+    expect(back.incoming.opacityFrom).toBeNull();
+    expect(back.outgoing.from).toBeNull();
+    // Never null when settled: Motion would resume from the value it last animated to.
+    const settled = switchPlan(1, "x", 195, false, false, false);
+    expect(settled.outgoing).toEqual({ from: "translateX(0px)", to: "translateX(-195px)", opacityFrom: 1 });
+  });
+
+  it("reduced motion is a 150 ms cross-fade with no travel", () => {
+    const r = switchPlan(1, "x", 195, true, false);
+    expect(r.slide).toBeNull();
+    expect(r.fade.duration).toBe(0.15);
+    expect(r.outgoing.to).toBe("translateX(0px)");
+    expect(r.incoming).toEqual({ from: "translateX(0px)", to: "translateX(0px)", opacityFrom: 0 });
   });
 });
 

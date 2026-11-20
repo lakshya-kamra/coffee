@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { makeBrewer } from "@/domain/core/brewer";
 import type { Recipe, RecipeStep } from "@/domain/core/recipe";
+import { DEFAULT_SHOT_BAND, targetSec } from "@/domain/core/shotTarget";
 import { bandStatus, initialShot, preinfusion, shotBand, shotReducer, shotSeconds, shotYield, type ShotAction, type ShotState } from "./shot";
 
 const ESPRESSO = makeBrewer({ id: "espresso-machine", label: "Espresso machine", method: "espresso" });
@@ -75,5 +76,15 @@ describe("shot band and pre-infusion", () => {
     const single = shotBand(hedrick);
     expect(bandStatus(33, single)).toBe("in");
     expect(bandStatus(38, single)).toBe("over");
+  });
+
+  it("one target everywhere (A4): the review's number is shot mode's, never the total with Serve", () => {
+    // Hedrick's last step is "Stop and taste" to 0:45; the shot itself ends at 0:35.
+    expect(shotBand(hedrick).to).toBe(35);
+    expect(targetSec(hedrick, 45)).toBe(35);
+    expect(targetSec(classic, 99)).toBe(28); // the middle of 25–30, rounded
+    expect(targetSec({ ...classic, brewer: makeBrewer({ id: "v", label: "V", method: "pourover" }) }, 99)).toBe(99);
+    // A recipe that gives no time at all gets shot mode's default.
+    expect(shotBand({ steps: [], blurb: "" })).toEqual(DEFAULT_SHOT_BAND);
   });
 });
