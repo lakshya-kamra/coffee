@@ -75,6 +75,8 @@ export interface Cell {
 }
 
 export function DataGrid({ cells, columns = 3 }: { cells: readonly Cell[]; columns?: number }) {
+  // Blank cells close a short last row: the hairline background otherwise shows as a grey block.
+  const fill = (columns - (cells.length % columns)) % columns;
   return (
     <div className={s.grid} style={{ "--cols": columns } as CSSProperties}>
       {cells.map((c) => (
@@ -83,6 +85,9 @@ export function DataGrid({ cells, columns = 3 }: { cells: readonly Cell[]; colum
           {c.value != null ? <NumberWithUnit value={c.value} unit={c.unit} numeral="num-small" /> : <span className="num-small ink-low">—</span>}
           {c.sub && <span className={`t-body-s ${s.cellSub}`}>{c.sub}</span>}
         </div>
+      ))}
+      {Array.from({ length: fill }, (_, i) => (
+        <div key={`fill-${i}`} className={s.cell} aria-hidden="true" />
       ))}
     </div>
   );

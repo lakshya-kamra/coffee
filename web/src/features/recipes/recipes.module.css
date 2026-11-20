@@ -128,6 +128,12 @@
   padding: 0;
   list-style: none;
 }
+/* Medium is two columns: at 600-699 the 280 minimum left a single column (§3.2). Half the width,
+   never more than two; the 14rem floor drops to one column at 200% text so words are not cut.
+   The grid only renders below expanded, so the class query needs no upper bound. */
+@media (min-width: 600px) {
+  .cards { grid-template-columns: repeat(auto-fill, minmax(max(14rem, calc((100% - var(--card-gap)) / 2)), 1fr)); }
+}
 .cards > li { display: flex; min-width: 0; }
 @media (hover: hover) and (pointer: fine) {
   .cards > li > button { cursor: pointer; transition: background-color 120ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }

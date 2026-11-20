@@ -315,7 +315,7 @@ export const RouteRow = memo(function RouteRow(p: RouteRowProps) {
         {p.midLabel != null && (
           <span className={v.routeMidLabel}>
             {caption != null && <span className="micro ink-low">{caption}</span>}
-            <span className={`t-title-s ink-mid ${v.ellipsis}`}>{p.midLabel}</span>
+            <span className={`t-title-s ink-mid ${v.routeMidValue}`}>{p.midLabel}</span>
           </span>
         )}
       </div>

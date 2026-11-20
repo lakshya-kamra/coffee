@@ -170,6 +170,13 @@
 .barIcon { display: flex; }
 /* Labels may wrap to two lines at large text (A7): never collide with the neighbour. */
 .barItem .barLabel { letter-spacing: 0.2px; text-align: center; overflow-wrap: anywhere; max-width: 100%; }
+/* Above ~140% text a label no longer fits its 64-70 px item and broke mid-word ("Insig/hts"):
+   icons only, as on Android. rem in a container query is the root's computed size, so this
+   tracks the reader's text size; the label stays the link's accessible name. */
+.barItem, .railItem { container: navitem / inline-size; }
+@container navitem (max-width: 2.9rem) {
+  .barLabel, .railLabel { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+}
 
 /* ---------------------------------------------------------------- rail (medium, expanded, collapsed large) */
 .rail {

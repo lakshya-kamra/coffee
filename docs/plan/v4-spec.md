@@ -1046,3 +1046,14 @@ and are not in the repo.
 - AI analysis hashes: both prompt builders must write step temperatures as "70 C" (2.0 form) so
   v4's "70 °C" step titles do not mark stored analyses stale. Android does this in
   `AnalysisPrompt.promptTitle`.
+
+### V4-VERIFY-WEB (web, final verification)
+- Medium Recipes cards are two columns from 600 (the 280 px minimum gave one column at 600-699)
+  and one column at 200% text (a 14rem floor). At 600-759 a card's TIME/TEMP/GRIND cells size
+  to their content so the grind word is not cut ("Mediun").
+- The route row's ratio wraps under RATIO instead of ellipsizing ("1:1…") at 200% text.
+- Web nav labels go icon-only above ~140% text, matching Android, instead of breaking mid-word
+  ("Insig/hts"): a container query in rem on each bar and rail item.
+- `DataGrid` closes a short last row with blank cells (the grid's hairline background showed as
+  a grey block on grinder and bean cards).
+- First load is 189,072 B gzip (+12.6% over 1085e3a's 167,873 B).

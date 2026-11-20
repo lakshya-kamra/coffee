@@ -1213,6 +1213,18 @@ function V4_FLOWS() {
         }
         if (wide.length) fail(`sideways scroll: ${wide.join("; ")}`);
         else ok("Today never scrolls sideways at the 14 other §8.1 sizes");
+        // Medium's Recipes grid is two columns from 600 (it was one at 600-699), one at 200% text.
+        await page.setViewportSize({ width: 600, height: 960 });
+        await page.goto(BASE + "/recipes");
+        await settle(page, 900);
+        const cols = () => page.evaluate(() => new Set([...document.querySelectorAll('section[data-tab="recipes"] ul[aria-label="Recipes"] > li')].slice(0, 4).map((l) => Math.round(l.getBoundingClientRect().left))).size);
+        const two = await cols();
+        await page.evaluate(() => (document.documentElement.style.fontSize = "32px"));
+        await settle(page, 300);
+        const big = await cols();
+        await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+        if (two !== 2 || big !== 1) fail(`Recipes at 600x960: ${two} columns, ${big} at 200% text`);
+        else ok("Recipes at 600x960: two columns, one at 200% text");
       },
     },
     {
@@ -1589,6 +1601,14 @@ function V4_FLOWS() {
           await settle(page, 500);
           const cards = await clipped('section[data-tab="recipes"] ul[aria-label="Recipes"] > li');
           if (cards.length) fail(`200% text at ${w}: clipped in recipe cards: ${cards.join(", ")}`);
+          // Nav labels go icon-only rather than breaking mid-word; the links keep their names.
+          const nav = await page.evaluate(() => {
+            const n = [...document.querySelectorAll('nav[aria-label="Sections"]')].find((x) => x.getClientRects().length && getComputedStyle(x).visibility !== "hidden" && !/_sidebar_/.test(x.className));
+            if (!n) return null;
+            const links = [...n.querySelectorAll("a")].filter((a) => a.getClientRects().length);
+            return { shown: links.filter((a) => [...a.querySelectorAll("span")].some((s) => s.textContent.trim() && s.getBoundingClientRect().width > 2)).length, named: links.filter((a) => a.textContent.trim()).length };
+          });
+          if (nav && (nav.shown > 0 || nav.named < 5)) fail(`200% text at ${w}: nav labels ${JSON.stringify(nav)}`);
           await page.evaluate(() => (document.documentElement.style.fontSize = ""));
           await startBrew(page, "hoffmann-v60");
           await page.evaluate(() => (document.documentElement.style.fontSize = "32px"));

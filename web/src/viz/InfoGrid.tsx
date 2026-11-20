@@ -3,7 +3,7 @@
  * label over each value, values in their status colour, text values (a grind word) as titles, and
  * an optional sub line (plain, tinted, or a status chip).
  */
-import { memo } from "react";
+import { memo, type CSSProperties } from "react";
 import { EyebrowLabel, NumberWithUnit, StatusChip } from "@/design/components";
 import { statusColorVar, type Status } from "@/domain/core/status";
 import v from "./viz.module.css";
@@ -32,7 +32,8 @@ export const InfoGrid = memo(function InfoGrid({ cells, columns = 3, compact = f
   return (
     <div className={v.grid} data-compact={compact || undefined}>
       {rows.map((row, r) => (
-        <div key={r} className={v.gridRow} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+        // A custom property, not an inline template, so a narrow recipe card can re-share the columns.
+        <div key={r} className={v.gridRow} style={{ "--grid-cols": cols } as CSSProperties}>
           {row.map((c) => (
             <div key={c.label} className={v.gridCell}>
               <EyebrowLabel text={c.label} />

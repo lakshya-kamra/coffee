@@ -31,7 +31,9 @@
 .routeEndRight { align-items: flex-end; }
 .routeMid { flex: 1; min-width: 0; padding: 0 12px; display: flex; flex-direction: column; align-items: center; }
 .routeMid[data-centered="true"] { align-self: center; }
-.routeMidLabel { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; max-width: 100%; }
+/* Wraps (RATIO over the number) rather than cutting the ratio to "1:1…" at 200% text (A7). */
+.routeMidLabel { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; column-gap: 5px; margin-top: 4px; max-width: 100%; }
+.routeMidValue { min-width: 0; text-align: center; }
 
 /* ---------------------------------------------------------------- recipe card + header */
 .card {
@@ -75,7 +77,12 @@
 
 /* ---------------------------------------------------------------- info grid */
 .grid { display: flex; flex-direction: column; width: 100%; }
-.gridRow { display: grid; }
+.gridRow { display: grid; grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr)); }
+/* Medium's two-column card grid makes cards ~230 px at 600-759: three equal thirds clipped the
+   grind word ("Mediun"). The short numbers take their width and the word gets the rest. */
+@media (min-width: 600px) and (max-width: 759.98px) {
+  .cardGrid .gridRow { grid-template-columns: auto auto minmax(0, 1fr); }
+}
 .gridRow + .gridRow { border-top: 1px solid var(--hairline); }
 .gridCell {
   display: flex;
