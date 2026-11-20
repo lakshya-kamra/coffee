@@ -16,6 +16,7 @@ import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.screenDate
 import com.laksh.coffee.core.screenTime
 import com.laksh.coffee.domain.BrewMethod
+import com.laksh.coffee.domain.BrewStyle
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.MethodLabels
 import com.laksh.coffee.domain.NoScale
@@ -618,11 +619,14 @@ private fun BoardingPass(
                 )
             }
             Spacer(Modifier.height(16.dp))
-            val ratioLabel = ratio(log.doseG, log.waterG)
+            // A shot's YIELD is what came out (shot mode's "How much came out?"), as Review reads
+            // it; the recipe's target is only the fallback. IN CUP is then left out of the grid.
+            val outG = if (method == BrewMethod.Espresso) log.beverageG ?: log.waterG else log.waterG
+            val ratioLabel = ratio(log.doseG, outG)
             // Without a scale the amounts read as the brew and Review said them: water in ml, the
             // coffee in level tablespoons (an espresso or moka dose is the basket's, so it keeps
             // grams). The web's pass does the same.
-            val water = NoScale.water(log.waterG, hasScale)
+            val water = NoScale.water(outG, hasScale)
             val coffee = NoScale.coffee(log.doseG, method, hasScale)
             RouteRow(
                 from = coffee.first,
@@ -833,7 +837,8 @@ private fun passCells(
 
     val inCup = Cell(label = "IN CUP", value = log.beverageG?.let(::grams), unit = "g")
         .ignoredIf(Fields.BEVERAGE in distrusted)
-        .takeIf { sections.drawdown || log.beverageG != null }
+        // A shot's cup is already the YIELD above; a second "45 g" beside "45 ml" reads as two numbers.
+        .takeIf { (sections.drawdown || log.beverageG != null) && sections.style != BrewStyle.Espresso }
 
     val sixth = log.extractionYield
         ?.let { Cell(label = "EXTRACTION", value = oneDp(it), unit = "%").ignoredIf(Fields.EY in distrusted) }
