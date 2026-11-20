@@ -38,6 +38,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-animation-graphics = { group = "androidx.compose.animation", name = "animation-graphics" }
+# Window size classes only (v4 adaptive shell). The BOM pins 1.2.0; panes and nav are hand-rolled.
+androidx-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 

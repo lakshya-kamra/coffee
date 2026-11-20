@@ -4,6 +4,7 @@ package com.laksh.coffee.ui.nav
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
@@ -27,13 +28,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -47,34 +54,51 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -96,10 +120,20 @@ import com.laksh.coffee.ui.screens.insights.InsightsScreen
 import com.laksh.coffee.ui.screens.recipes.RecipeDetailScreen
 import com.laksh.coffee.ui.screens.recipes.RecipeListScreen
 import com.laksh.coffee.ui.screens.review.ReviewScreen
+import com.laksh.coffee.ui.screens.history.HistoryViewModel
+import com.laksh.coffee.ui.screens.home.HomeViewModel
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Dimens
+import com.laksh.coffee.ui.theme.LocalSidebarCollapsed
+import com.laksh.coffee.ui.theme.LocalWindowClass
 import com.laksh.coffee.ui.theme.Motion
+import com.laksh.coffee.ui.theme.NavKind
+import com.laksh.coffee.ui.theme.WidthClass
+import com.laksh.coffee.ui.theme.WindowClass
+import com.laksh.coffee.ui.theme.rememberWindowClass
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Route identities. The five tab routes are not NavHost destinations any more (the tabs live in
@@ -178,16 +212,28 @@ enum class AppTab(val route: String, val label: String, val icon: ImageVector) {
 
 private val TABS = AppTab.entries
 
+/** Routes that take the whole window, over the rail or sidebar too (v4 D4). */
+private val FOCUS_ROUTES = setOf(Routes.BREW, Routes.REVIEW, Routes.ONBOARDING, Routes.RECIPE_EDIT)
+
+/**
+ * How far a page that lives beside the navigation starts from the window's start edge: the rail
+ * or sidebar plus the inset it covers (a landscape cutout or side navigation bar). 0 with the bar.
+ */
+internal val LocalNavInset = staticCompositionLocalOf { 0.dp }
+
 /**
  * App shell:
  *
  * ```
  * SharedTransitionLayout
- * ├─ TabsHost        five tab roots, kept composed; switched by layer properties only
- * ├─ NavHost         details only (recipe, recipe builder, brew, review, brewDetail, setup)
- * │                  over an empty "tabs" start
+ * ├─ rail or sidebar (medium and up)  under everything that follows
+ * ├─ TabsHost        five tab roots, kept composed; switched by layer properties only. Beside the
+ * │                  rail; Recipes and Log become list-detail at expanded and up
+ * ├─ NavHost         details only (recipe, recipe builder, brew, review, brewDetail, setup) over
+ * │                  an empty "tabs" start. Recipe and brew pages sit beside the rail; brew,
+ * │                  review, setup and the builder cover the whole window (focus modes)
  * ├─ status-bar scrim
- * ├─ bottom bar + its one scrim
+ * ├─ bottom bar + its one scrim (phones)
  * └─ first-launch cover (a fresh install only, for the few frames the gate takes)
  * ```
  *
@@ -197,31 +243,86 @@ private val TABS = AppTab.entries
  * [shouldOnboard] is the first-launch gate: null when setup is already done (or adb is driving
  * the app), else a check that is true only for an install with nothing in it. While it runs the
  * canvas is covered, so a new user sees setup first and never a flash of an empty Today.
+ *
+ * [sidebarCollapsed] is the device's saved fold state for the large-window sidebar; `[` and the
+ * sidebar's own button ask [onSidebarCollapsedChange] to flip it.
  */
 @Composable
-fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Boolean)? = null) {
+fun CoffeeAppRoot(
+    startRoute: String? = null,
+    shouldOnboard: (suspend () -> Boolean)? = null,
+    sidebarCollapsed: Boolean = false,
+    onSidebarCollapsedChange: (Boolean) -> Unit = {},
+) {
+    // Read once here: only the shell and the few screens that read the local recompose on a resize.
+    val windowClass = rememberWindowClass()
+    CompositionLocalProvider(
+        LocalWindowClass provides windowClass,
+        LocalSidebarCollapsed provides sidebarCollapsed,
+    ) {
+        AppShell(startRoute, shouldOnboard, windowClass, sidebarCollapsed, onSidebarCollapsedChange)
+    }
+}
+
+@Composable
+private fun AppShell(
+    startRoute: String?,
+    shouldOnboard: (suspend () -> Boolean)?,
+    windowClass: WindowClass,
+    sidebarCollapsed: Boolean,
+    onSidebarCollapsedChange: (Boolean) -> Unit,
+) {
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val colors = CoffeeTheme.colors
+    val scope = rememberCoroutineScope()
 
     var selected by rememberSaveable { mutableStateOf(AppTab.Today) }
     // The "tabs" destination's own visibility scope while it is composed: it is what tab cards
     // fly from (shared header), and null means a settled detail fully covers the tabs.
     var baseScope by remember { mutableStateOf<AnimatedVisibilityScope?>(null) }
     val atBase = currentRoute == null || currentRoute == Routes.TABS
+    val focusOnTop = currentRoute in FOCUS_ROUTES
+
+    // Pane selections and Gear's section live here, saved, so a resize or rotation keeps them.
+    val panes = rememberSaveable(saver = PaneController.Saver) { PaneController() }
+    val gearPane = rememberSaveable(saver = GearPaneState.Saver) { GearPaneState() }
+    val searchFocus = remember { ListSearchFocus() }
+    var showShortcuts by rememberSaveable { mutableStateOf(false) }
+
+    val navKind = windowClass.nav(sidebarCollapsed)
+    val usesPanes = windowClass.usesPanes
+    val usesPanesNow by rememberUpdatedState(usesPanes)
 
     // Remembered, so the tab pages' callbacks never change identity and a switch can skip them.
-    val go: (String) -> Unit = remember(nav) {
+    val go: (String) -> Unit = remember(nav, panes) {
         { route ->
             val tab = AppTab.forRoute(route)
-            if (tab != null) {
-                if (nav.currentDestination?.route != Routes.TABS) nav.popBackStack(Routes.TABS, inclusive = false)
-                selected = tab
-            } else {
-                nav.navigate(route)
+            val detail = if (tab == null) PaneDetail.fromRoute(route) else null
+            when {
+                tab != null -> {
+                    if (nav.currentDestination?.route != Routes.TABS) nav.popBackStack(Routes.TABS, inclusive = false)
+                    selected = tab
+                }
+                // Wide windows: a recipe or brew opened from its own tab's list shows in the pane.
+                detail != null && PaneRules.selectsInPane(usesPanesNow, selected, detail) -> panes.select(detail)
+                else -> nav.navigate(route)
             }
         }
+    }
+
+    // Start brew (rail, sidebar, B): the recipe Today offers next, read at the moment of the tap.
+    val home: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
+    val startBrew: () -> Unit = remember(nav, home) {
+        {
+            val id = home.state.value.nextRecipe?.id
+            if (id != null) nav.navigate(Routes.brew(id)) { launchSingleTop = true } else go(Routes.RECIPES)
+        }
+    }
+    val liveBrew by LiveBrewBus.state.collectAsState()
+    val resumeBrew: () -> Unit = remember(nav) {
+        { LiveBrewBus.state.value?.let { nav.navigate(Routes.brew(it.recipeId)) { launchSingleTop = true } } }
     }
 
     // Only ever set by the debug adb hook; lets the emulator open any screen directly.
@@ -243,8 +344,44 @@ fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Bool
         deciding = false
     }
 
+    // Narrowing (rotation to portrait, split screen) with a recipe or brew chosen in the pane:
+    // push it as a page so it stays on screen. Waits for the base, so a brew opened from the
+    // pane returns to the same recipe.
+    LaunchedEffect(usesPanes, atBase, selected, panes.selections) {
+        val (detail, next) = PaneRules.narrow(usesPanes, atBase, selected, panes.selections) ?: return@LaunchedEffect
+        panes.selections = next
+        nav.navigate(detail.route)
+    }
+    // Widening, or a page of this tab pushed while wide (a just-saved recipe, Review's "open the
+    // brew"): it moves into the pane.
+    LaunchedEffect(usesPanes, backStack, selected) {
+        val entry = backStack ?: return@LaunchedEffect
+        val top = PaneDetail.of(
+            entry.destination.route,
+            entry.arguments?.getString("id"),
+            entry.arguments?.getLong("logId"),
+        )
+        val depth = if (nav.previousBackStackEntry?.destination?.route == Routes.TABS) 1 else 2
+        val next = PaneRules.widen(usesPanes, depth, top, selected, panes.selections) ?: return@LaunchedEffect
+        panes.selections = next
+        nav.popBackStack()
+    }
+
     // Back from another section returns to Today first, as it did when the tabs were a stack.
     BackHandler(enabled = atBase && selected != AppTab.Today) { selected = AppTab.Today }
+    // Registered after it, so it wins: with a recipe or brew chosen in the pane, back (and its
+    // predictive gesture) first returns the pane to its default. The detail shrinks and fades
+    // with the gesture in its layer; letting go early springs it back.
+    PredictiveBackHandler(enabled = usesPanes && atBase && panes.selections.forTab(selected) != null) { events ->
+        try {
+            events.collect { e -> panes.backProgress.snapTo(e.progress) }
+            panes.clear(selected)
+            scope.launch { panes.backProgress.animateTo(0f, Motion.EffectsDefault) }
+        } catch (e: CancellationException) {
+            scope.launch { panes.backProgress.animateTo(0f, Motion.SpatialDefault) }
+            throw e
+        }
+    }
 
     // Every screen scrolls under the status bar except the running brew and setup, whose mesh
     // owns the top.
@@ -257,6 +394,28 @@ fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Bool
     val barHidden = animateFloatAsState(if (atBase) 0f else 1f, Motion.EffectsDefault, label = "barHidden")
     val cover = animateFloatAsState(if (deciding) 1f else 0f, Motion.EffectsFast, label = "launchCover")
 
+    val wide = windowClass.width.atLeast(WidthClass.Large)
+    val toggleSidebar: () -> Unit = { if (wide) onSidebarCollapsedChange(!sidebarCollapsed) }
+    val onShortcut: (ShortcutAction) -> Boolean = { action ->
+        when (action) {
+            is ShortcutAction.SwitchTab -> atBase.also { if (it) selected = action.tab }
+            ShortcutAction.FocusSearch -> atBase && searchFocus.focus(selected)
+            ShortcutAction.ShowShortcuts -> true.also { showShortcuts = true }
+            ShortcutAction.ToggleSidebar -> wide.also { if (it) toggleSidebar() }
+            ShortcutAction.StartBrew -> atBase.also { if (it) startBrew() }
+        }
+    }
+
+    // The nav and the pages beside it start after the rail/sidebar and the inset it covers.
+    val startInset = WindowInsets.safeDrawing.only(WindowInsetsSides.Start).asPaddingValues()
+        .calculateStartPadding(LocalLayoutDirection.current)
+    val navInset = if (navKind == NavKind.Bar) 0.dp else Dimens.navWidth + startInset
+
+    // Key events reach the root only through a focused node; this one holds focus whenever
+    // nothing else does, so 1-5, /, ? and [ work from the first frame.
+    val rootFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { rootFocus.requestFocus() } }
+
     // CoffeeTheme already provides inkHigh as the content colour. Providing it again at the
     // app root means text on the bare canvas can never fall back to black, whatever wraps it.
     CompositionLocalProvider(LocalContentColor provides colors.inkHigh) {
@@ -267,24 +426,76 @@ fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Bool
                 // Lets UiAutomator find testTag()s by resource id (baseline profile, benchmarks).
                 .semantics { testTagsAsResourceId = true },
         ) {
-            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                Box(Modifier.fillMaxSize()) {
-                    CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides baseScope) {
-                        TabsHost(
-                            tabs = TABS,
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this,
+                LocalGearPane provides gearPane,
+                LocalListSearchFocus provides searchFocus,
+                LocalNavInset provides navInset,
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        // Ctrl chords before the focused field sees them; plain keys after it, so
+                        // a field that takes the character keeps it.
+                        .onPreviewKeyEvent { e -> ShortcutKeys.chord(e)?.let(onShortcut) ?: false }
+                        .onKeyEvent { e -> ShortcutKeys.plain(e)?.let(onShortcut) ?: false }
+                        .onFocusChanged { if (!it.hasFocus) scope.launch { runCatching { rootFocus.requestFocus() } } }
+                        .focusRequester(rootFocus)
+                        .focusTarget(),
+                ) {
+                    // Under the NavHost: focus pages cover it; recipe and brew pages sit beside it.
+                    // Hidden from TalkBack while a focus page covers it.
+                    val navCovered = Modifier.then(if (focusOnTop) Modifier.clearAndSetSemantics { } else Modifier)
+                    when (navKind) {
+                        NavKind.Bar -> Unit
+                        NavKind.Rail -> NavRail(
                             selected = selected,
-                            // atBase covers the first frame (before the base entry's effect runs) and
-                            // the first frame of a pop; baseScope covers a push until it settles and
-                            // a predictive-back gesture that has not committed yet.
-                            visible = baseScope != null || atBase,
-                        ) { tab ->
-                            TabContent(tab, nav, go)
+                            short = windowClass.isShort,
+                            tooltips = windowClass.showsTooltips,
+                            onSelect = { tab -> go(tab.route) },
+                            onStartBrew = startBrew,
+                            liveBrew = liveBrew,
+                            onResumeBrew = resumeBrew,
+                            modifier = navCovered,
+                        )
+                        NavKind.Sidebar -> NavSidebar(
+                            selected = selected,
+                            gearSection = gearPane.section,
+                            onSelect = { tab -> go(tab.route) },
+                            onGearSection = { section ->
+                                gearPane.section = section.ordinal
+                                go(Routes.GEAR)
+                            },
+                            onStartBrew = startBrew,
+                            onCollapse = toggleSidebar,
+                            onShortcuts = { showShortcuts = true },
+                            liveBrew = liveBrew,
+                            onResumeBrew = resumeBrew,
+                            modifier = navCovered,
+                        )
+                    }
+
+                    Box(Modifier.fillMaxSize().padding(start = navInset)) {
+                        CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides baseScope) {
+                            TabsHost(
+                                tabs = TABS,
+                                selected = selected,
+                                // atBase covers the first frame (before the base entry's effect runs) and
+                                // the first frame of a pop; baseScope covers a push until it settles and
+                                // a predictive-back gesture that has not committed yet.
+                                visible = baseScope != null || atBase,
+                            ) { tab ->
+                                CompositionLocalProvider(LocalCurrentTab provides tab) {
+                                    TabContent(tab, nav, go, panes, windowClass)
+                                }
+                            }
                         }
                     }
 
                     DetailNavHost(
                         nav = nav,
                         go = go,
+                        panes = panes,
                         onBaseScope = { scope -> baseScope = scope },
                         onBaseGone = { scope -> if (baseScope === scope) baseScope = null },
                         onFinishedToToday = { selected = AppTab.Today },
@@ -300,27 +511,31 @@ fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Bool
                             .graphicsLayer { alpha = topScrim },
                     )
 
-                    Box(
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .graphicsLayer {
-                                val h = barHidden.value
-                                // Moved fully off screen, so a hidden bar takes no taps.
-                                translationY = h * size.height
-                                alpha = 1f - h
-                            },
-                    ) {
-                        // The one bar scrim. Content fades out before it reaches the bar and never
-                        // shows in the strip below it; lists add listBottomPadding() so their last
-                        // row still scrolls fully clear.
-                        BarScrim(Modifier.matchParentSize())
-                        Column {
-                            Spacer(Modifier.height(ScrimFade))
-                            BottomBar(
-                                selected = selected,
-                                onSelect = { tab -> if (atBase) selected = tab },
-                            )
+                    if (navKind == NavKind.Bar) {
+                        Box(
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    val h = barHidden.value
+                                    // Moved fully off screen, so a hidden bar takes no taps.
+                                    translationY = h * size.height
+                                    alpha = 1f - h
+                                }
+                                // Hidden from TalkBack while a page covers it.
+                                .then(if (atBase) Modifier else Modifier.clearAndSetSemantics { }),
+                        ) {
+                            // The one bar scrim. Content fades out before it reaches the bar and never
+                            // shows in the strip below it; lists add listBottomPadding() so their last
+                            // row still scrolls fully clear.
+                            BarScrim(Modifier.matchParentSize())
+                            Column {
+                                Spacer(Modifier.height(ScrimFade))
+                                BottomBar(
+                                    selected = selected,
+                                    onSelect = { tab -> if (atBase) selected = tab },
+                                )
+                            }
                         }
                     }
 
@@ -336,37 +551,138 @@ fun CoffeeAppRoot(startRoute: String? = null, shouldOnboard: (suspend () -> Bool
                         )
                     }
                 }
+
+                if (showShortcuts) ShortcutsDialog(onDismiss = { showShortcuts = false })
             }
         }
     }
 }
 
 @Composable
-private fun TabContent(tab: AppTab, nav: NavHostController, go: (String) -> Unit) {
+private fun TabContent(
+    tab: AppTab,
+    nav: NavHostController,
+    go: (String) -> Unit,
+    panes: PaneController,
+    windowClass: WindowClass,
+) {
     when (tab) {
         // Home passes its own shared-key prefix: the carousel and the next-brew pass can show the
         // same recipe, so they must not share a key.
         AppTab.Today -> HomeScreen(
-            onOpenRecipe = { id, from -> nav.navigate(Routes.recipe(id, from)) },
+            onOpenRecipe = { id, from -> go(Routes.recipe(id, from)) },
             onBrew = { nav.navigate(Routes.brew(it)) },
-            onOpenLog = { nav.navigate(Routes.brewDetail(it)) },
+            onOpenLog = { go(Routes.brewDetail(it)) },
             onSeeAllRecipes = { go(Routes.RECIPES) },
             onSeeHistory = { go(Routes.HISTORY) },
             onPersonalise = { nav.navigate(Routes.ONBOARDING) { launchSingleTop = true } },
         )
-        AppTab.Recipes -> RecipeListScreen(
-            onOpenRecipe = { nav.navigate(Routes.recipe(it, SharedKeys.FROM_RECIPES)) },
-            onNewRecipe = {
-                nav.navigate(Routes.recipeEdit(null, EditorMode.New)) { launchSingleTop = true }
-            },
-        )
-        AppTab.Log -> HistoryScreen(onOpenLog = { nav.navigate(Routes.brewDetail(it)) })
-        AppTab.Insights -> InsightsScreen(onOpenLog = { nav.navigate(Routes.brewDetail(it)) })
+        AppTab.Recipes -> RecipesTab(nav, go, panes, windowClass)
+        AppTab.Log -> LogTab(nav, go, panes, windowClass)
+        AppTab.Insights -> InsightsScreen(onOpenLog = { go(Routes.brewDetail(it)) })
         AppTab.Gear -> GearScreen(
             onRunSetup = { nav.navigate(Routes.ONBOARDING) { launchSingleTop = true } },
         )
     }
 }
+
+/**
+ * Recipes: the library alone on narrow windows; at expanded and up the library beside the chosen
+ * recipe, or Today's next brew when nothing is chosen (§2.3: the pane is never empty).
+ */
+@Composable
+private fun RecipesTab(nav: NavHostController, go: (String) -> Unit, panes: PaneController, windowClass: WindowClass) {
+    val home: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
+    // Read through derivedStateOf, so a new Home state recomposes this only when the pick changes.
+    val homeState = home.state.collectAsStateWithLifecycle()
+    val fallback by remember(homeState) { derivedStateOf { homeState.value.nextRecipe?.id } }
+    val chosen = panes.selections.recipe
+    val shown = chosen ?: fallback
+    val showDetail = windowClass.usesPanes
+    val close: () -> Unit = remember(panes) { { panes.clear(AppTab.Recipes) } }
+    CompositionLocalProvider(LocalPaneSelection provides if (showDetail) shown?.let { PaneDetail.Recipe(it) } else null) {
+        ListDetailLayout(
+            showDetail = showDetail,
+            listWidth = windowClass.listPaneWidth,
+            detailKey = shown.orEmpty(),
+            backProgress = { panes.backProgress.value },
+            list = {
+                RecipeListScreen(
+                    onOpenRecipe = { go(Routes.recipe(it, SharedKeys.FROM_RECIPES)) },
+                    onNewRecipe = {
+                        nav.navigate(Routes.recipeEdit(null, EditorMode.New)) { launchSingleTop = true }
+                    },
+                )
+            },
+        ) { id ->
+            if (id.isEmpty()) {
+                EmptyPane("Pick a recipe to see it here.")
+            } else {
+                CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = close, canClose = chosen != null)) {
+                    RecipeDetailScreen(
+                        recipeId = id,
+                        sharedKeyPrefix = SharedKeys.FROM_RECIPES,
+                        onBack = close,
+                        onBrew = { nav.navigate(Routes.brew(it)) },
+                        onEdit = { rid ->
+                            nav.navigate(Routes.recipeEdit(rid, EditorMode.Edit, SharedKeys.FROM_RECIPES)) { launchSingleTop = true }
+                        },
+                        onDuplicate = { rid ->
+                            nav.navigate(Routes.recipeEdit(rid, EditorMode.Duplicate, SharedKeys.FROM_RECIPES)) { launchSingleTop = true }
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Log: the brews alone on narrow windows; at expanded and up beside the chosen or newest brew. */
+@Composable
+private fun LogTab(nav: NavHostController, go: (String) -> Unit, panes: PaneController, windowClass: WindowClass) {
+    val history: HistoryViewModel = viewModel(factory = HistoryViewModel.Factory)
+    val historyState = history.state.collectAsStateWithLifecycle()
+    val newest by remember(historyState) { derivedStateOf { historyState.value.logs.firstOrNull()?.id } }
+    val shown = panes.selections.log ?: newest
+    val showDetail = windowClass.usesPanes
+    val close: () -> Unit = remember(panes) { { panes.clear(AppTab.Log) } }
+    CompositionLocalProvider(LocalPaneSelection provides if (showDetail) shown?.let { PaneDetail.Brew(it) } else null) {
+        ListDetailLayout(
+            showDetail = showDetail,
+            listWidth = windowClass.listPaneWidth,
+            detailKey = shown ?: 0L,
+            backProgress = { panes.backProgress.value },
+            list = { HistoryScreen(onOpenLog = { go(Routes.brewDetail(it)) }, vm = history) },
+        ) { logId ->
+            if (logId <= 0L) {
+                EmptyPane("Your brews show up here. Brew something and rate it to start your log.")
+            } else {
+                CompositionLocalProvider(LocalPane provides PaneContext(inPane = true, close = close, canClose = panes.selections.log != null)) {
+                    BrewDetailScreen(
+                        logId = logId,
+                        onBack = close,
+                        onEdit = { nav.navigate(Routes.review(it)) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** What a pane shows when there is nothing to show yet: one quiet line, centred. */
+@Composable
+private fun EmptyPane(text: String) {
+    Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = CoffeeTheme.colors.inkMid,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.widthIn(max = 360.dp),
+        )
+    }
+}
+
 
 /**
  * True when Review sits directly on top of the same brew's detail, which is how Edit and
@@ -382,10 +698,19 @@ private fun NavHostController.reviewOpenedFromDetail(logId: Long): Boolean {
  * A detail page: an opaque canvas, the route's own AnimatedContentScope for shared-element
  * participants below it, and an optional Float rise (6 % of the height) driven by the route's
  * transition, so predictive back seeks it and it never steps whole pixels.
+ *
+ * [besideNav] pages (a recipe, a brew) start after the rail or sidebar, which stays usable; the
+ * strip they leave has no pointer input, so taps there reach the navigation underneath. Focus
+ * pages cover the whole window.
  */
 @Composable
-private fun AnimatedContentScope.DetailPage(rise: Boolean = false, content: @Composable () -> Unit) {
+private fun AnimatedContentScope.DetailPage(
+    rise: Boolean = false,
+    besideNav: Boolean = false,
+    content: @Composable () -> Unit,
+) {
     val scope = this
+    val inset = if (besideNav) LocalNavInset.current else 0.dp
     val offset = if (rise) {
         transition.animateFloat(
             transitionSpec = { spring(Motion.SpatialDefault.dampingRatio, Motion.SpatialDefault.stiffness, 0.001f) },
@@ -404,6 +729,7 @@ private fun AnimatedContentScope.DetailPage(rise: Boolean = false, content: @Com
                     Modifier
                 },
             )
+            .padding(start = inset)
             .background(CoffeeTheme.colors.bg),
     ) {
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides scope, content = content)
@@ -421,6 +747,7 @@ private val DetailExit: ExitTransition =
 private fun DetailNavHost(
     nav: NavHostController,
     go: (String) -> Unit,
+    panes: PaneController,
     onBaseScope: (AnimatedVisibilityScope) -> Unit,
     onBaseGone: (AnimatedVisibilityScope) -> Unit,
     onFinishedToToday: () -> Unit,
@@ -467,7 +794,7 @@ private fun DetailNavHost(
             popExitTransition = { fadeOut(Motion.EffectsDefault) },
         ) { entry ->
             val from = entry.arguments?.getString("from") ?: SharedKeys.FROM_HOME
-            DetailPage {
+            DetailPage(besideNav = true) {
                 RecipeDetailScreen(
                     recipeId = entry.arguments?.getString("id").orEmpty(),
                     sharedKeyPrefix = from,
@@ -513,6 +840,8 @@ private fun DetailNavHost(
                         when {
                             // Deleted: the page under the builder has nothing left to show.
                             savedId == null -> {
+                                // A recipe chosen in the Recipes pane is gone too: back to the default.
+                                if (recipeId != null && panes.selections.recipe == recipeId) panes.clear(AppTab.Recipes)
                                 if (nav.previousBackStackEntry?.destination?.route == Routes.RECIPE) {
                                     nav.popBackStack(Routes.RECIPE, inclusive = true)
                                 } else {
@@ -603,7 +932,7 @@ private fun DetailNavHost(
             Routes.BREW_DETAIL,
             arguments = listOf(navArgument("logId") { type = NavType.LongType }),
         ) { entry ->
-            DetailPage {
+            DetailPage(besideNav = true) {
                 BrewDetailScreen(
                     logId = entry.arguments?.getLong("logId") ?: 0L,
                     onBack = { nav.popBackStack() },
@@ -646,7 +975,7 @@ private fun BarScrim(modifier: Modifier = Modifier) {
  */
 private val ItemHeight = Dimens.BottomBarItem
 
-private val PillSpring = spring(
+internal val PillSpring = spring(
     dampingRatio = Motion.SpatialDefault.dampingRatio,
     stiffness = Motion.SpatialDefault.stiffness,
     // In item widths: a 70 dp item ends within about a tenth of a pixel.

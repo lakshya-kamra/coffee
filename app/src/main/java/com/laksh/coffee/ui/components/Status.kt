@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -217,7 +216,8 @@ fun StatusChip(
 ) {
     Row(
         modifier
-            .height(22.dp)
+            // A minimum: at 200 % text the word grows the pill instead of being clipped.
+            .heightIn(min = 22.dp)
             .clip(PillShape)
             .background(status.container())
             .padding(horizontal = 8.dp),

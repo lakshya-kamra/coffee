@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,7 +17,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.ui.theme.CoffeeTheme
+import com.laksh.coffee.ui.theme.LocalWindowClass
 import com.laksh.coffee.ui.theme.Motion
 import com.laksh.coffee.ui.theme.Num
 import com.laksh.coffee.ui.theme.PillShape
@@ -70,10 +76,12 @@ fun PrimaryButton(
     val interaction = remember { MutableInteractionSource() }
     Row(
         modifier
-            .height(height)
+            .heightIn(min = height)
+            .focusRing(interaction, PrimaryShape)
             .pressSquash(interaction, 0.97f)
             .clip(PrimaryShape)
             .drawBehind { drawRect(fill) }
+            .hoverTint(interaction, fg.copy(alpha = 0.08f))
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -116,10 +124,12 @@ fun SecondaryButton(
     Row(
         modifier
             .alpha(if (enabled) 1f else 0.4f)
-            .height(height)
+            .heightIn(min = height)
+            .focusRing(interaction, SecondaryShape)
             .pressSquash(interaction, 0.97f)
             .clip(SecondaryShape)
             .drawBehind { drawRect(fill) }
+            .hoverTint(interaction, colors.inkHigh.copy(alpha = 0.06f))
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -162,9 +172,11 @@ fun QuietButton(
     val base = if (enabled) 1f else 0.4f
     Row(
         modifier
-            .height(40.dp)
+            .heightIn(min = 40.dp)
+            .focusRing(interaction, QuietShape)
             .graphicsLayer { alpha = pressAlpha.value * base }
             .clip(QuietShape)
+            .hoverTint(interaction, tint.copy(alpha = 0.08f))
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -191,6 +203,10 @@ fun QuietButton(
 /**
  * A round icon button. surface1 on the canvas, surface2 inside a card. Destructive: tint =
  * fault. Play/pause: size 64.dp, fill inverse, tint onInverse, iconSize 30.dp.
+ *
+ * At expanded widths and up it gets a tooltip after a hover or on keyboard focus: the
+ * [contentDescription] plus the [shortcut] ("Pause  Space"). The shortcut is in the tooltip only,
+ * never in the accessible name (§5 A10).
  */
 @Composable
 fun IconWell(
@@ -204,29 +220,64 @@ fun IconWell(
     fill: Color = Color.Unspecified,
     iconSize: Dp = 20.dp,
     enabled: Boolean = true,
+    shortcut: String? = null,
 ) {
     val colors = CoffeeTheme.colors
     val bg = fill.takeOrElse { if (onCanvas) colors.surface1 else colors.surface2 }
     val fg = tint.takeOrElse { colors.inkHigh }
     val interaction = remember { MutableInteractionSource() }
-    Box(
-        modifier
-            .alpha(if (enabled) 1f else 0.4f)
-            .size(size)
-            .pressSquash(interaction, 0.92f)
-            .clip(CircleShape)
-            .background(bg)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                enabled = enabled,
-                role = Role.Button,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, contentDescription = contentDescription, tint = fg, modifier = Modifier.size(iconSize))
+    val well: @Composable () -> Unit = {
+        Box(
+            modifier
+                .alpha(if (enabled) 1f else 0.4f)
+                .size(size)
+                .focusRing(interaction, CircleShape)
+                .pressSquash(interaction, 0.92f)
+                .clip(CircleShape)
+                .background(bg)
+                .hoverTint(interaction, fg.copy(alpha = 0.08f))
+                .clickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    enabled = enabled,
+                    role = Role.Button,
+                    onClick = onClick,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = contentDescription, tint = fg, modifier = Modifier.size(iconSize))
+        }
     }
+    if (contentDescription != null && LocalWindowClass.current.showsTooltips) {
+        CoffeeTooltip(if (shortcut != null) "$contentDescription  $shortcut" else contentDescription, content = well)
+    } else {
+        well()
+    }
+}
+
+/**
+ * The plain tooltip used on pointer-sized windows: above the anchor, inverse ink. Hover and
+ * keyboard focus show it after the platform delay; a long press still shows it on touch.
+ */
+@Composable
+fun CoffeeTooltip(
+    text: String,
+    modifier: Modifier = Modifier,
+    position: TooltipAnchorPosition = TooltipAnchorPosition.Above,
+    content: @Composable () -> Unit,
+) {
+    val colors = CoffeeTheme.colors
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(position),
+        tooltip = {
+            PlainTooltip(containerColor = colors.inverse, contentColor = colors.onInverse) {
+                Text(text, style = MaterialTheme.typography.labelMedium)
+            }
+        },
+        state = rememberTooltipState(),
+        modifier = modifier,
+        content = content,
+    )
 }
 
 /** A small pill with a tabular label: steppers ("−5", "+1") and transport ("+5s"). */
@@ -242,10 +293,12 @@ fun PillButton(
     val interaction = remember { MutableInteractionSource() }
     Box(
         modifier
-            .height(height)
+            .heightIn(min = height)
+            .focusRing(interaction, PillShape)
             .pressSquash(interaction, 0.94f)
             .clip(PillShape)
             .background(if (onCanvas) colors.surface1 else colors.surface2)
+            .hoverTint(interaction, colors.inkHigh.copy(alpha = 0.06f))
             .clickable(
                 interactionSource = interaction,
                 indication = null,

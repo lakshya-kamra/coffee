@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -41,9 +42,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -94,10 +99,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.laksh.coffee.ui.nav.LocalPane
 import com.laksh.coffee.ui.theme.CardShape
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Eyebrow
+import com.laksh.coffee.ui.theme.LocalWindowClass
 import com.laksh.coffee.ui.theme.Micro
+import com.laksh.coffee.ui.theme.WidthClass
 import com.laksh.coffee.ui.theme.Motion
 import com.laksh.coffee.ui.theme.Num
 import com.laksh.coffee.ui.theme.PillShape
@@ -171,7 +179,7 @@ fun SectionLabel(
 ) {
     val interaction = remember { MutableInteractionSource() }
     Row(modifier.fillMaxWidth().padding(top = topGap, bottom = 10.dp)) {
-        EyebrowLabel(text, Modifier.alignByBaseline().weight(1f))
+        EyebrowLabel(text, Modifier.alignByBaseline().weight(1f).asHeading())
         if (trailing != null) {
             Text(
                 text = trailing,
@@ -182,12 +190,15 @@ fun SectionLabel(
                     .alignByBaseline()
                     .then(
                         if (onTrailing != null) {
-                            Modifier.clickable(
-                                interactionSource = interaction,
-                                indication = null,
-                                role = Role.Button,
-                                onClick = onTrailing,
-                            )
+                            Modifier
+                                .focusRing(interaction, QuietLinkShape)
+                                .handPointer()
+                                .clickable(
+                                    interactionSource = interaction,
+                                    indication = null,
+                                    role = Role.Button,
+                                    onClick = onTrailing,
+                                )
                         } else {
                             Modifier
                         },
@@ -224,6 +235,7 @@ fun ScreenHeader(
                     text = title,
                     style = MaterialTheme.typography.displaySmall,
                     color = CoffeeTheme.colors.inkHigh,
+                    modifier = Modifier.asHeading(),
                 )
             }
             trailing?.invoke(this)
@@ -235,7 +247,13 @@ fun ScreenHeader(
     }
 }
 
-/** Back well on the left, an optional quiet title, then the page's actions. */
+private val QuietLinkShape = RoundedCornerShape(8.dp)
+
+/**
+ * Back well on the left, an optional quiet title, then the page's actions. In a list-detail pane
+ * there is nothing to go back to: the well goes, and at large widths a quiet close takes its place
+ * (it returns the pane to its default).
+ */
 @Composable
 fun DetailTopBar(
     onBack: () -> Unit,
@@ -243,15 +261,21 @@ fun DetailTopBar(
     title: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    val pane = LocalPane.current
+    val wide = LocalWindowClass.current.width.atLeast(WidthClass.Large)
     Row(
         modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .height(56.dp)
+            .heightIn(min = 56.dp)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconWell(Icons.AutoMirrored.Rounded.ArrowBack, "Back", onBack)
+        when {
+            !pane.inPane -> IconWell(Icons.AutoMirrored.Rounded.ArrowBack, "Back", onBack, shortcut = "Esc")
+            wide && pane.canClose -> IconWell(Icons.Rounded.Close, "Close", pane.close, shortcut = "Esc")
+            else -> Spacer(Modifier.size(40.dp))
+        }
         if (title != null) {
             Text(
                 text = title,
@@ -355,11 +379,16 @@ fun SoftCard(
         else -> colors.inkHigh
     }
 
+    // One shade up under the pointer: surface1 cards lift to surface2, any other fill gets a
+    // faint ink wash.
+    val hover = if (color == colors.surface1) colors.surface2 else colors.inkHigh.copy(alpha = 0.06f)
+
     Surface(
         modifier = modifier.then(
             // Static cards get neither a graphics layer nor a press collector.
             if (onClick != null) {
                 Modifier
+                    .focusRing(interaction, shape)
                     .pressSquash(interaction, 0.975f)
                     .clickable(
                         interactionSource = interaction,
@@ -377,7 +406,12 @@ fun SoftCard(
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
     ) {
-        Column(Modifier.padding(contentPadding), content = content)
+        // The tint lives inside the Surface, over its fill: on the Surface's own modifier the
+        // opaque fill would paint over it.
+        Column(
+            (if (onClick != null) Modifier.hoverTint(interaction, hover) else Modifier).padding(contentPadding),
+            content = content,
+        )
     }
 }
 
@@ -515,8 +549,11 @@ fun SelectableChip(
     Row(
         modifier
             .alpha(if (enabled) 1f else 0.4f)
+            .focusRing(interaction, PillShape)
             .pressSquash(interaction, 0.94f)
-            .height(34.dp)
+            // A minimum, not a fixed height: at 200 % text the label grows the pill.
+            .heightIn(min = 34.dp)
+            .handPointer()
             .clip(PillShape)
             .drawWithCache {
                 val w = 1.dp.toPx()
@@ -544,13 +581,16 @@ fun SelectableChip(
                     }
                 }
             }
-            .clickable(
+            // A chip is an on/off choice: TalkBack reads "checked" / "not checked", not "button".
+            .toggleable(
+                value = selected,
                 interactionSource = interaction,
                 indication = null,
                 enabled = enabled,
-                onClick = onClick,
+                role = Role.Checkbox,
+                onValueChange = { onClick() },
             )
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leadingIcon != null) {
@@ -638,16 +678,21 @@ fun SegmentedControl(
         // (never a re-layout, never a whole-pixel step), equal shares mean the labels never
         // reflow underneath it, and label colours cross-fade in draw.
         val pill = animateFloatAsState(selectedIndex.toFloat(), SegmentSpring, label = "segX")
-        Box(Modifier.fillMaxWidth().height(SegmentHeight)) {
-            Box(
-                Modifier
-                    .fillMaxWidth(1f / options.size)
-                    .fillMaxHeight()
-                    .graphicsLayer { translationX = pill.value * size.width }
-                    .clip(PillShape)
-                    .background(indicator),
-            )
-            Row(Modifier.fillMaxHeight()) {
+        // A minimum height and intrinsic rows, so 200 % text grows the control instead of
+        // clipping it; the indicator fills whatever height that gives.
+        Box(Modifier.fillMaxWidth().heightIn(min = SegmentHeight)) {
+            Box(Modifier.matchParentSize()) {
+                Box(
+                    Modifier
+                        .fillMaxWidth(1f / options.size)
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = pill.value * size.width }
+                        .clip(PillShape)
+                        .background(indicator),
+                )
+            }
+            // One choice of several: a radio group to TalkBack ("selected, 2 of 3"), not tabs.
+            Row(Modifier.heightIn(min = SegmentHeight).height(IntrinsicSize.Min).selectableGroup()) {
                 options.forEachIndexed { i, label ->
                     val on = animateFloatAsState(
                         if (i == selectedIndex) 1f else 0f,
@@ -656,15 +701,20 @@ fun SegmentedControl(
                     )
                     val low = colors.inkMid
                     val high = colors.inkHigh
+                    val interaction = remember { MutableInteractionSource() }
                     Box(
                         Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
+                            .focusRing(interaction, PillShape)
+                            .handPointer()
+                            .selectable(
+                                selected = i == selectedIndex,
+                                interactionSource = interaction,
                                 indication = null,
-                                role = Role.Tab,
-                            ) { onSelect(i) },
+                                role = Role.RadioButton,
+                            ) { onSelect(i) }
+                            .padding(horizontal = 4.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         BasicText(
@@ -885,15 +935,21 @@ fun ToggleRow(
 ) {
     val colors = CoffeeTheme.colors
     val interaction = remember { MutableInteractionSource() }
+    // The whole row is the switch: one TalkBack stop that reads the label and "on/off", and the
+    // inner Switch is drawing only (null onCheckedChange), so it is not a second stop.
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
-            .clickable(
+            .focusRing(interaction, WellShape)
+            .hoverTint(interaction, CoffeeTheme.colors.inkHigh.copy(alpha = 0.04f), WellShape)
+            .toggleable(
+                value = checked,
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Switch,
-            ) { onChange(!checked) },
+                onValueChange = onChange,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
@@ -913,7 +969,7 @@ fun ToggleRow(
         Spacer(Modifier.width(12.dp))
         Switch(
             checked = checked,
-            onCheckedChange = onChange,
+            onCheckedChange = null,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = colors.bg,
                 checkedTrackColor = colors.inkHigh,
@@ -959,10 +1015,15 @@ fun RadioRow(
         modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
+            .focusRing(interaction, WellShape)
             .pressSquash(interaction, 0.98f)
             .clip(WellShape)
             .drawBehind { drawRect(bgState.value) }
-            .clickable(
+            .hoverTint(interaction, colors.inkHigh.copy(alpha = 0.04f))
+            // selectable, not clickable: TalkBack reads "selected" and, inside a parent with
+            // Modifier.selectableGroup(), "2 of 4".
+            .selectable(
+                selected = selected,
                 interactionSource = interaction,
                 indication = null,
                 role = Role.RadioButton,
@@ -985,7 +1046,7 @@ fun RadioRow(
                     Spacer(Modifier.width(6.dp))
                     Box(
                         Modifier
-                            .height(18.dp)
+                            .heightIn(min = 18.dp)
                             .clip(PillShape)
                             .background(colors.surface3)
                             .padding(horizontal = 6.dp),
@@ -1072,52 +1133,7 @@ fun rememberLivePulse(): State<Float> =
     rememberLoop(900, from = 0.45f, to = 0.9f, reverse = true, easing = EaseInOutSine)
 
 // ----------------------------------------------------------------- sheet and bar
-
-/**
- * The one bottom sheet: surface1 with a 28dp top radius, no tonal tint, a quiet handle, and
- * content padded clear of the navigation bar. The sheet is its own window, so the activity's
- * FLAG_SECURE does not reach it: a sheet that can show a secret passes [properties] with
- * SecureFlagPolicy.SecureOn.
- */
-@Composable
-fun CoffeeSheet(
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    properties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    val colors = CoffeeTheme.colors
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-        sheetState = sheetState,
-        properties = properties,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = colors.surface1,
-        contentColor = colors.inkHigh,
-        tonalElevation = 0.dp,
-        scrimColor = colors.scrim,
-        dragHandle = {
-            Box(
-                Modifier
-                    .padding(top = 10.dp, bottom = 6.dp)
-                    .size(36.dp, 4.dp)
-                    .clip(PillShape)
-                    .background(colors.inkFaint),
-            )
-        },
-    ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .navigationBarsPadding()
-                .padding(bottom = 16.dp),
-            content = content,
-        )
-    }
-}
+// CoffeeSheet and CoffeeConfirm live in Sheets.kt.
 
 /**
  * A bottom action bar that fades the content out above it. Put it in a Box aligned to
@@ -1235,7 +1251,7 @@ fun AccentBadge(
     val colors = CoffeeTheme.colors
     Box(
         modifier
-            .height(22.dp)
+            .heightIn(min = 22.dp)
             .clip(PillShape)
             .background(colors.surface2)
             .padding(horizontal = 8.dp),

@@ -66,7 +66,9 @@ fun RecipeCard(
     Column(
         modifier
             .testTag("recipe-card")
+            .focusRing(interaction, CardShape)
             .pressSquash(interaction, 0.97f)
+            .handPointer()
             .clip(CardShape)
             .background(colors.surface1)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick),

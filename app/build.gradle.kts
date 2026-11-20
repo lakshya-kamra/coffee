@@ -182,6 +182,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.animation.graphics)
+    implementation(libs.androidx.material3.adaptive)
     debugImplementation(libs.androidx.ui.tooling)
 
     implementation(libs.androidx.navigation.compose)

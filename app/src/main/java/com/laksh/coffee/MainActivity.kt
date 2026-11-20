@@ -3,6 +3,9 @@ package com.laksh.coffee
 import android.os.Build
 import android.os.Bundle
 import android.view.Display
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +17,7 @@ import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.ui.components.LocalToday
 import com.laksh.coffee.ui.nav.CoffeeAppRoot
 import com.laksh.coffee.ui.nav.FirstLaunch
+import com.laksh.coffee.ui.nav.KeyboardShortcuts
 import com.laksh.coffee.ui.theme.CoffeeTheme
 import com.laksh.coffee.ui.theme.Units
 import kotlinx.coroutines.flow.filterNotNull
@@ -61,9 +65,31 @@ class MainActivity : ComponentActivity() {
             val current = settings ?: initial
             CoffeeTheme(darkMode = current.darkMode, units = Units.of(current)) {
                 CompositionLocalProvider(LocalToday provides today) {
-                    CoffeeAppRoot(startRoute = startRoute, shouldOnboard = shouldOnboard)
+                    CoffeeAppRoot(
+                        startRoute = startRoute,
+                        shouldOnboard = shouldOnboard,
+                        sidebarCollapsed = current.sidebarCollapsed,
+                        // Per device, never in a backup. App-scoped so a quick second press still lands.
+                        onSidebarCollapsedChange = { collapsed ->
+                            app.appScope.launch { app.settings.setSidebarCollapsed(collapsed) }
+                        },
+                    )
                 }
             }
+        }
+    }
+
+    /**
+     * Meta+/ (the system keyboard shortcut helper) lists the app's shortcuts, from the same list
+     * the in-app `?` dialog shows.
+     */
+    override fun onProvideKeyboardShortcuts(data: MutableList<KeyboardShortcutGroup>, menu: Menu?, deviceId: Int) {
+        super.onProvideKeyboardShortcuts(data, menu, deviceId)
+        KeyboardShortcuts.groups.forEach { group ->
+            data += KeyboardShortcutGroup(
+                group.title,
+                group.items.map { KeyboardShortcutInfo(it.label, it.keyCode, it.modifiers) },
+            )
         }
     }
 

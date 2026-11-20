@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -111,6 +112,7 @@ fun GroupRow(
     Box(
         modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.focusRing(interaction, shape) else Modifier)
             .clip(shape)
             .drawBehind {
                 drawRect(bg.value)
@@ -120,7 +122,10 @@ fun GroupRow(
             }
             .then(
                 if (onClick != null) {
-                    Modifier.clickable(interactionSource = interaction, indication = null, onClick = onClick)
+                    // One shade up under the pointer, the same lift a press gives.
+                    Modifier
+                        .hoverTint(interaction, colors.surface2)
+                        .clickable(interactionSource = interaction, indication = null, onClick = onClick)
                 } else {
                     Modifier
                 },
@@ -200,7 +205,7 @@ fun LogRow(
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(68.dp)
+                .heightIn(min = 68.dp)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -294,7 +299,7 @@ fun ActionRow(
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .heightIn(min = 60.dp)
                 .alpha(if (enabled) 1f else 0.4f)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -39,6 +40,43 @@ object Dimens {
     val LogRowHeight = 68.dp
     val BottomBarHeight = 60.dp
     val BottomBarItem = 52.dp
+
+    /** The rail (medium and expanded, and large with the sidebar folded). */
+    val Rail = 80.dp
+
+    /** The labelled sidebar (large and up). */
+    val Sidebar = 248.dp
+
+    /** Clears nothing but the last row's breathing room: no bar floats over rail layouts. */
+    val ListBottomInsetNoBar = 32.dp
+
+    // The window-class tokens (v4 §1.2). Composable, so the constants above stay usable anywhere.
+
+    /** Width of the navigation beside the content: 0 with the bottom bar. */
+    val navWidth: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = when (LocalWindowClass.current.nav(LocalSidebarCollapsed.current)) {
+            NavKind.Bar -> 0.dp
+            NavKind.Rail -> Rail
+            NavKind.Sidebar -> Sidebar
+        }
+
+    /** Side gutter: 16 on phones, 24 at medium and expanded, 32 at large and up. */
+    val gutter: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalWindowClass.current.gutter
+
+    /** What a scrolling tab root leaves below its last row, before the navigation-bar inset. */
+    val listBottomInset: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = if (LocalWindowClass.current.nav(LocalSidebarCollapsed.current) == NavKind.Bar) {
+            ListBottomInset
+        } else {
+            ListBottomInsetNoBar
+        }
 }
 
 /** Corner radii. Card (22) is also the clip for every shared element. */
@@ -59,8 +97,9 @@ val PillShape: RoundedCornerShape = RoundedCornerShape(50)
 
 /**
  * Bottom content padding for any scrolling tab root, so the last item scrolls fully clear of
- * the floating bottom bar and the gesture area below it.
+ * the floating bottom bar (phones) and the gesture area below it. With a rail or sidebar there
+ * is no bar, so only breathing room is left.
  */
 @Composable
 fun listBottomPadding(): Dp =
-    Dimens.ListBottomInset + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    Dimens.listBottomInset + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
