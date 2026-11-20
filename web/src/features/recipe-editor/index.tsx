@@ -4,12 +4,15 @@
  * Start/end seconds are derived from step durations on save. Built-ins edited here are saved as
  * an override under the same id ("Reset to original" brings the published numbers back).
  */
-import { memo, useDeferredValue, useMemo, useRef, useState } from "react";
-import { nav } from "@/app/router";
+import { memo, useDeferredValue, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { nav, useRouter } from "@/app/router";
+import { useShortcuts, type Binding } from "@/app/shortcuts";
+import { atLeast, useWindowClass } from "@/app/windowClass";
 import { Brewers, catalog } from "@/catalog/catalog";
 import { retryCatalog, useCatalog, useCatalogFailed } from "@/catalog/useCatalog";
 import {
   CoffeeSheet,
+  ConfirmSheet,
   DetailTopBar,
   EyebrowLabel,
   FieldWell,
@@ -19,6 +22,7 @@ import {
   QuietButton,
   QuietPanel,
   SectionLabel,
+  SegmentedControl,
   SelectableChip,
   SoftCard,
   StatusLine,
@@ -27,7 +31,7 @@ import {
 import { repo } from "@/data/repo";
 import { useRecipe, useRecipes, useSettings, useStore } from "@/data/store";
 import { clock, ratio } from "@/domain/core/format";
-import { encodeRecipe, type Recipe } from "@/domain/core/recipe";
+import { encodeRecipe, type Recipe, type RecipeLevel, type RecipeNeed } from "@/domain/core/recipe";
 import { tempUnit, temp as tempText, unitsOf } from "@/domain/core/units";
 import {
   addStep,
@@ -56,12 +60,28 @@ import {
 import { brewerTitle, docFor } from "@/domain/search";
 import { CatalogPickerSheet, closeEnclosingSheet } from "@/features/catalog-picker";
 import { NumberStepper } from "@/features/grind";
-import { RecipeRoute } from "@/viz";
+import { JourneyLine, journeyNodes, RecipeRoute } from "@/viz";
 import s from "./editor.module.css";
 
 const resolveBrewer = (id: string) => Brewers.byId(id) ?? Brewers.resolve(id);
 
 type Dispatch = (f: (d: RecipeDraft) => RecipeDraft) => void;
+
+// v4 §6.4: level and needs feed the first-brew pick and "What you'll need".
+const LEVELS: readonly { id: RecipeLevel; label: string }[] = [
+  { id: "", label: "Not set" },
+  { id: "easy", label: "Easy" },
+  { id: "medium", label: "Medium" },
+  { id: "advanced", label: "Advanced" },
+];
+const NEEDS: readonly { id: RecipeNeed; label: string }[] = [
+  { id: "scale", label: "Scale" },
+  { id: "gooseneck", label: "Gooseneck kettle" },
+  { id: "grinder", label: "Grinder" },
+  { id: "thermometer", label: "Thermometer" },
+];
+
+const draftJson = (d: RecipeDraft | null) => (d ? JSON.stringify(d) : "");
 
 // ---------------------------------------------------------------- duration stepper (tap ±5 s, hold ±1 s)
 
@@ -233,8 +253,17 @@ export function RecipeEditorScreen({ id, mode }: { id: string | null; mode: "new
   const hasOverride = useStore((x) => (id ? x.savedRecipes.some((r) => r.id === id) : false), Object.is, id);
   const builtIn = id ? catalog.recipe(id) : null;
   const [draft, setDraft] = useState<RecipeDraft | null>(() => initialDraft(mode, source, st.name));
+  // What "unchanged" means, for the discard question (v4 §3.12).
+  const [baseline, setBaseline] = useState(() => draftJson(draft));
   // The recipe can arrive after the first frame (recipes.json still loading on a cold deep link).
-  if (draft == null && source != null && mode !== "new") setDraft(initialDraft(mode, source, st.name));
+  if (draft == null && source != null && mode !== "new") {
+    const d = initialDraft(mode, source, st.name);
+    setDraft(d);
+    setBaseline(draftJson(d));
+  }
+  const [askDiscard, setAskDiscard] = useState(false);
+  const wide = atLeast(useWindowClass().width, "expanded");
+  const onTop = useRouter((x) => x.top.kind === "recipeEdit", "recipe-edit-top");
   const [dispatch] = useState<Dispatch>(() => (f: (d: RecipeDraft) => RecipeDraft) => setDraft((d) => (d ? f(d) : d)));
   const [pickBrewer, setPickBrewer] = useState(false);
   const [startFrom, setStartFrom] = useState(false);
@@ -252,29 +281,11 @@ export function RecipeEditorScreen({ id, mode }: { id: string | null; mode: "new
   }, [issues]);
 
   const title = mode === "new" ? "New recipe" : mode === "duplicate" ? "Duplicate" : "Edit recipe";
-
-  if (!draft) {
-    return (
-      <div className={`column ${s.screen}`}>
-        <DetailTopBar onBack={nav.back} title={title} />
-        <QuietPanel text="This recipe isn't here any more. It may have been deleted on another tab." />
-      </div>
-    );
-  }
-
-  const set = (patch: Partial<RecipeDraft>) => setDraft({ ...draft, ...patch });
-  const dose = parseAmount(draft.dose);
-  const water = parseAmount(draft.water);
-  const fieldIssue = (f: Issue["field"]) => issues.find((i) => i.field === f && i.stepIndex == null)?.message ?? null;
-  const brewerLabel = docFor("brewer", draft.brewerId)?.title ?? brewerTitle(resolveBrewer(draft.brewerId));
+  const dirty = draft != null && draftJson(draft) !== baseline;
   const blocking = hasBlocking(issues);
-  // Step problems that belong to no single card, and empty required fields (which show no
-  // error under the field until you have typed in it).
-  const blank: Partial<Record<Issue["field"], boolean>> = { name: !draft.name.trim(), dose: !draft.dose.trim(), water: !draft.water.trim() };
-  const listIssues = issues.filter((i) => (i.field === "steps" ? i.stepIndex == null || i.code === "last-pour" : blank[i.field] === true));
 
   const save = async () => {
-    if (saving || blocking || noBrewers) return;
+    if (!draft || saving || blocking || noBrewers) return;
     // Validate the live draft, not the deferred one, so a fast tap after typing can't slip past.
     let recipe = recipeFromDraft(draft, resolveBrewer);
     if (hasBlocking(check(recipe))) return;
@@ -295,116 +306,215 @@ export function RecipeEditorScreen({ id, mode }: { id: string | null; mode: "new
       setSaving(false);
     }
   };
+  // Back, Escape: never lose typed work without asking (v4 §3.12).
+  const leave = () => {
+    if (dirty) setAskDiscard(true);
+    else nav.back();
+  };
+
+  // Read by the key bindings when they run, so the bindings themselves stay stable.
+  const keyActions = useRef({ save: () => undefined as void, leave: () => undefined as void });
+  useLayoutEffect(() => {
+    keyActions.current = { save: () => void save(), leave };
+  });
+  const bindings = useMemo<Binding[]>(
+    () => [
+      { keys: "mod+s", label: "Save recipe", group: "Editing", run: () => keyActions.current.save(), whileTyping: true },
+      { keys: "escape", label: "Leave the editor (asks first if changed)", group: "Editing", run: () => keyActions.current.leave() },
+    ],
+    [],
+  );
+  useShortcuts("recipe-editor", bindings, onTop);
+  const previewNodes = useMemo(() => (preview && preview.doseG > 0 && preview.waterG > 0 ? journeyNodes(preview) : null), [preview]);
+
+  if (!draft) {
+    return (
+      <div className={`column ${s.screen}`}>
+        <DetailTopBar onBack={nav.back} title={title} />
+        <QuietPanel text="This recipe isn't here any more. It may have been deleted on another tab." />
+      </div>
+    );
+  }
+
+  const set = (patch: Partial<RecipeDraft>) => setDraft({ ...draft, ...patch });
+  const dose = parseAmount(draft.dose);
+  const water = parseAmount(draft.water);
+  const fieldIssue = (f: Issue["field"]) => issues.find((i) => i.field === f && i.stepIndex == null)?.message ?? null;
+  const brewerLabel = docFor("brewer", draft.brewerId)?.title ?? brewerTitle(resolveBrewer(draft.brewerId));
+  // Step problems that belong to no single card, and empty required fields (which show no
+  // error under the field until you have typed in it).
+  const blank: Partial<Record<Issue["field"], boolean>> = { name: !draft.name.trim(), dose: !draft.dose.trim(), water: !draft.water.trim() };
+  const listIssues = issues.filter((i) => (i.field === "steps" ? i.stepIndex == null || i.code === "last-pour" : blank[i.field] === true));
+  const toggleNeed = (n: RecipeNeed) => set({ needs: draft.needs.includes(n) ? draft.needs.filter((x) => x !== n) : NEEDS.map((x) => x.id).filter((x) => x === n || draft.needs.includes(x)) });
+  const saveEnabled = !blocking && !saving && !noBrewers;
+
+  const extraActions = (
+    <>
+      {mode === "edit" && builtIn && hasOverride && (
+        <QuietButton
+          text="Reset to original"
+          onClick={() => {
+            void repo.resetRecipe(builtIn.id).then(() => nav.back());
+          }}
+        />
+      )}
+      {mode === "edit" && !builtIn && id && (
+        <QuietButton
+          text={armed ? "Tap again to delete" : "Delete recipe"}
+          color="var(--fault)"
+          onClick={() => {
+            if (!armed) {
+              setArmed(true);
+              setTimeout(() => setArmed(false), 4000);
+              return;
+            }
+            // Brews keep their recipeName snapshot, so the log never breaks.
+            void repo.deleteRecipe(id).then(() => nav.popToRoot("recipes"));
+          }}
+        />
+      )}
+    </>
+  );
 
   return (
-    <div className={`column ${s.screen}`}>
-      <DetailTopBar onBack={nav.back} title={title} />
+    <div className={`column ${s.screen}`} data-wide={wide || undefined}>
+      {/* Wide windows: Save stays top-right while the two columns scroll (v4 §3.12). */}
+      <div className={s.topBar}>
+        <DetailTopBar
+          onBack={leave}
+          title={title}
+          actions={wide ? <PrimaryButton text={saving ? "Saving…" : "Save"} enabled={saveEnabled} height={44} className={s.topSave} onClick={() => void save()} /> : undefined}
+        />
+      </div>
       <h1 className={`t-headline-l ${s.title}`}>{draft.name.trim() || title}</h1>
 
       <div className={s.form}>
-        {preview && preview.doseG > 0 && preview.waterG > 0 && (
-          <SoftCard>
-            <div className={s.preview}>
-              <RecipeRoute recipe={preview} numeral="num-medium" />
-              <p className={`t-body-s ${s.previewMeta}`}>
-                {clock(totalDurationSec(draft))} · {tempText(units, draft.tempC)} {tempUnit(units)} · {draft.steps.length} {draft.steps.length === 1 ? "step" : "steps"}
-              </p>
-            </div>
-          </SoftCard>
-        )}
         {mode === "new" && (
-          <div>
+          <div className={s.aStart}>
             <PillButton text="Start from a recipe…" onClick={() => setStartFrom(true)} />
           </div>
         )}
 
-        <SectionLabel text="The recipe" topGap={12} />
-        <FieldWell label="Name" value={draft.name} maxLength={60} onChange={(v) => set({ name: v })} />
-        <FieldWell label="Author" value={draft.author} maxLength={60} onChange={(v) => set({ author: v })} />
-        <div className={s.field}>
-          <EyebrowLabel text="Brewer" />
-          <button type="button" className={s.pickRow} aria-label={`Brewer: ${brewerLabel}`} onClick={() => setPickBrewer(true)}>
-            <span className="t-body-l">{brewerLabel}</span>
-            <Icon name="ChevronLeft" size={20} className={s.chev} />
-          </button>
+        <div className={s.aFields}>
+          <SectionLabel text="The recipe" topGap={0} />
+          <FieldWell label="Name" value={draft.name} maxLength={60} onChange={(v) => set({ name: v })} />
+          <FieldWell label="Author" value={draft.author} maxLength={60} onChange={(v) => set({ author: v })} />
+          <div className={s.field}>
+            <EyebrowLabel text="Brewer" />
+            <button type="button" className={s.pickRow} aria-label={`Brewer: ${brewerLabel}`} onClick={() => setPickBrewer(true)}>
+              <span className="t-body-l">{brewerLabel}</span>
+              <Icon name="ChevronLeft" size={20} className={s.chev} />
+            </button>
+          </div>
+          <div className={s.row2}>
+            <FieldWell
+              label="Coffee"
+              value={draft.dose}
+              suffix="g"
+              numeric
+              error={draft.dose.trim() ? fieldIssue("dose") : null}
+              onChange={(v) => set({ dose: v.replace(/[^\d.,]/g, "").slice(0, 5) })}
+            />
+            <FieldWell
+              label="Water"
+              value={draft.water}
+              suffix="g"
+              numeric
+              error={draft.water.trim() ? fieldIssue("water") : null}
+              helper={dose && water ? `Ratio ${ratio(dose, water)}` : undefined}
+              onChange={(v) => set({ water: v.replace(/[^\d.,]/g, "").slice(0, 6) })}
+            />
+          </div>
+          <div className={s.field}>
+            <EyebrowLabel text="Water temperature" />
+            <NumberStepper
+              label={`Temperature in ${tempUnit(units)}`}
+              value={tempDraft ?? tempText(units, draft.tempC)}
+              min={units.fahrenheit ? 32 : 0}
+              max={units.fahrenheit ? 212 : 100}
+              onText={(t) => {
+                setTempDraft(t);
+                const n = Number(t);
+                if (t === "" || !Number.isFinite(n)) return;
+                // °F is display only: the recipe keeps whole °C (A§7.8).
+                const c = units.fahrenheit ? Math.round(((n - 32) * 5) / 9) : n;
+                set({ tempC: Math.max(0, Math.min(100, c)) });
+              }}
+              onStep={(by) => {
+                setTempDraft(null);
+                set({ tempC: Math.max(0, Math.min(100, draft.tempC + by)) });
+              }}
+            />
+            {units.fahrenheit && <p className={`t-body-s ${s.helper}`}>Moves 1 °C at a time, shown in °F.</p>}
+          </div>
+          <FieldWell label="Grind" value={draft.grind} placeholder="Medium-fine" maxLength={60} helper="Words, not a number: each grinder's number differs." onChange={(v) => set({ grind: v })} />
+          <div className={s.field}>
+            <EyebrowLabel text="Level" />
+            <SegmentedControl label="Level" options={LEVELS.map((l) => l.label)} selectedIndex={LEVELS.findIndex((l) => l.id === draft.level)} onSelect={(i) => set({ level: LEVELS[i]?.id ?? "" })} />
+            <p className={`t-body-s ${s.helper}`}>How much practice it takes. New brewers are offered easy recipes first.</p>
+          </div>
+          <div className={s.field}>
+            <EyebrowLabel text="Needs" />
+            <div className={s.chipWrap} role="group" aria-label="Needs">
+              {NEEDS.map((n) => (
+                <SelectableChip key={n.id} text={n.label} selected={draft.needs.includes(n.id)} onClick={() => toggleNeed(n.id)} />
+              ))}
+            </div>
+            <p className={`t-body-s ${s.helper}`}>Beyond the brewer and a kettle. Someone without one is shown the way around it.</p>
+          </div>
+          <FieldWell label="About this recipe" value={draft.blurb} multiline onChange={(v) => set({ blurb: v })} />
         </div>
-        <div className={s.row2}>
-          <FieldWell
-            label="Coffee"
-            value={draft.dose}
-            suffix="g"
-            numeric
-            error={draft.dose.trim() ? fieldIssue("dose") : null}
-            onChange={(v) => set({ dose: v.replace(/[^\d.,]/g, "").slice(0, 5) })}
-          />
-          <FieldWell
-            label="Water"
-            value={draft.water}
-            suffix="g"
-            numeric
-            error={draft.water.trim() ? fieldIssue("water") : null}
-            helper={dose && water ? `Ratio ${ratio(dose, water)}` : undefined}
-            onChange={(v) => set({ water: v.replace(/[^\d.,]/g, "").slice(0, 6) })}
-          />
-        </div>
-        <div className={s.field}>
-          <EyebrowLabel text="Water temperature" />
-          <NumberStepper
-            label={`Temperature in ${tempUnit(units)}`}
-            value={tempDraft ?? tempText(units, draft.tempC)}
-            min={units.fahrenheit ? 32 : 0}
-            max={units.fahrenheit ? 212 : 100}
-            onText={(t) => {
-              setTempDraft(t);
-              const n = Number(t);
-              if (t === "" || !Number.isFinite(n)) return;
-              // °F is display only: the recipe keeps whole °C (A§7.8).
-              const c = units.fahrenheit ? Math.round(((n - 32) * 5) / 9) : n;
-              set({ tempC: Math.max(0, Math.min(100, c)) });
-            }}
-            onStep={(by) => {
-              setTempDraft(null);
-              set({ tempC: Math.max(0, Math.min(100, draft.tempC + by)) });
-            }}
-          />
-          {units.fahrenheit && <p className={`t-body-s ${s.helper}`}>Moves 1 °C at a time, shown in °F.</p>}
-        </div>
-        <FieldWell label="Grind" value={draft.grind} placeholder="Medium-fine" maxLength={60} helper="Words, not a number: each grinder's number differs." onChange={(v) => set({ grind: v })} />
-        <FieldWell label="About this recipe" value={draft.blurb} multiline onChange={(v) => set({ blurb: v })} />
 
-        <SectionLabel text="Steps" topGap={12} />
-        <div className={s.steps}>
-          {draft.steps.map((step, i) => (
-            <StepCard key={step.key} step={step} index={i} count={draft.steps.length} delta={pourDelta(draft, i)} issues={stepIssues.get(i) ?? []} dispatch={dispatch} />
-          ))}
-        </div>
-        <div>
-          <PillButton text="Add a step" icon="Add" onClick={() => dispatch((d) => addStep(d))} />
+        <div className={s.aSteps}>
+          {/* Live preview: the route and the journey line follow every keystroke (deferred). */}
+          {preview && previewNodes && (
+            <div className={s.previewWrap}>
+              <SoftCard>
+                <div className={s.preview}>
+                  <RecipeRoute recipe={preview} numeral="num-medium" />
+                  <JourneyLine nodes={previewNodes} style="live" progress={0} startLabel="0:00" endLabel={clock(totalDurationSec(draft))} label={`Preview: ${draft.steps.length} steps, ${clock(totalDurationSec(draft))} in all`} />
+                  <p className={`t-body-s ${s.previewMeta}`}>
+                    {clock(totalDurationSec(draft))} · {tempText(units, draft.tempC)} {tempUnit(units)} · {draft.steps.length} {draft.steps.length === 1 ? "step" : "steps"}
+                  </p>
+                </div>
+              </SoftCard>
+            </div>
+          )}
+          <SectionLabel text="Steps" topGap={12} />
+          <div className={s.steps}>
+            {draft.steps.map((step, i) => (
+              <StepCard key={step.key} step={step} index={i} count={draft.steps.length} delta={pourDelta(draft, i)} issues={stepIssues.get(i) ?? []} dispatch={dispatch} />
+            ))}
+          </div>
+          <div>
+            <PillButton text="Add a step" icon="Add" onClick={() => dispatch((d) => addStep(d))} />
+          </div>
         </div>
 
-        <SectionLabel text="Before you start" topGap={12} />
-        <TextList label="Prep" items={draft.prep} addLabel="Add a prep step" onChange={(v) => set({ prep: v })} />
-        <SectionLabel text="Tips" topGap={12} />
-        <TextList label="Tip" items={draft.tips} addLabel="Add a tip" onChange={(v) => set({ tips: v })} />
+        <div className={s.aPrep}>
+          <SectionLabel text="Before you start" topGap={12} />
+          <TextList label="Prep" items={draft.prep} addLabel="Add a prep step" onChange={(v) => set({ prep: v })} />
+        </div>
+        <div className={s.aTips}>
+          <SectionLabel text="Tips" topGap={12} />
+          <TextList label="Tip" items={draft.tips} addLabel="Add a tip" onChange={(v) => set({ tips: v })} />
+        </div>
 
         {draft.sourceNote && (
-          <>
+          <div className={s.aSource}>
             <SectionLabel text="Source" topGap={12} />
             <p className={`t-body-s ${s.helper}`}>{mode === "edit" && builtIn ? overrideNote(builtIn) : draft.sourceNote}</p>
-          </>
-        )}
-
-        {noBrewers && (
-          <div className={s.issues} role="status">
-            <div className={s.issue}>
-              <StatusLine status="fault" lead="Can't save yet" rest="The brewer list didn't load. Check your connection." />
-              <PillButton text="Try again" onClick={() => retryCatalog(["brewers", "recipes"])} />
-            </div>
           </div>
         )}
 
-        {listIssues.length > 0 && (
-          <div className={s.issues} role="status">
+        {(noBrewers || listIssues.length > 0) && (
+          <div className={`${s.issues} ${s.aIssues}`} role="status">
+            {noBrewers && (
+              <div className={s.issue}>
+                <StatusLine status="fault" lead="Can't save yet" rest="The brewer list didn't load. Check your connection." />
+                <PillButton text="Try again" onClick={() => retryCatalog(["brewers", "recipes"])} />
+              </div>
+            )}
             {listIssues.map((i) => (
               <div key={`${i.code}:${i.stepIndex ?? ""}`} className={s.issue}>
                 <StatusLine status="attention" lead="Check" rest={i.message} />
@@ -413,36 +523,30 @@ export function RecipeEditorScreen({ id, mode }: { id: string | null; mode: "new
             ))}
           </div>
         )}
+        {wide && <div className={`${s.wideActions} ${s.aRest}`}>{extraActions}</div>}
       </div>
 
-      <StickyCtaBar>
-        <div className={s.cta} style={{ flex: 1 }}>
-          <PrimaryButton text={saving ? "Saving…" : "Save"} enabled={!blocking && !saving && !noBrewers} onClick={() => void save()} />
-          {mode === "edit" && builtIn && hasOverride && (
-            <QuietButton
-              text="Reset to original"
-              onClick={() => {
-                void repo.resetRecipe(builtIn.id).then(() => nav.back());
-              }}
-            />
-          )}
-          {mode === "edit" && !builtIn && id && (
-            <QuietButton
-              text={armed ? "Tap again to delete" : "Delete recipe"}
-              color="var(--fault)"
-              onClick={() => {
-                if (!armed) {
-                  setArmed(true);
-                  setTimeout(() => setArmed(false), 4000);
-                  return;
-                }
-                // Brews keep their recipeName snapshot, so the log never breaks.
-                void repo.deleteRecipe(id).then(() => nav.popToRoot("recipes"));
-              }}
-            />
-          )}
-        </div>
-      </StickyCtaBar>
+      {!wide && (
+        <StickyCtaBar>
+          <div className={s.cta} style={{ flex: 1 }}>
+            <PrimaryButton text={saving ? "Saving…" : "Save"} enabled={saveEnabled} onClick={() => void save()} />
+            {extraActions}
+          </div>
+        </StickyCtaBar>
+      )}
+
+      {askDiscard && (
+        <ConfirmSheet
+          title="Discard changes?"
+          body="You've changed this recipe and haven't saved it."
+          confirmText="Discard"
+          cancelText="Keep editing"
+          danger
+          safe="cancel"
+          onClose={() => setAskDiscard(false)}
+          onConfirm={() => nav.back()}
+        />
+      )}
 
       {pickBrewer && (
         <CatalogPickerSheet

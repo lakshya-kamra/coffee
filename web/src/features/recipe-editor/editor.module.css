@@ -2,6 +2,38 @@
 
 .screen { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
 .form { display: flex; flex-direction: column; gap: 12px; }
+/* Each block is its own column of fields; on a phone they simply stack. */
+.aStart, .aFields, .aSteps, .aPrep, .aTips, .aSource, .aRest { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.aSteps { margin-top: 12px; }
+.chipWrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.topBar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+.topSave { width: auto; padding: 0 28px; }
+.wideActions { display: flex; flex-wrap: wrap; gap: 4px; margin-left: -12px; }
+
+/* Expanded and up (v4 §3.12): fields left; the live preview and the steps right. The steps span
+   every row, and the last row is 1fr, so a long step list never spreads the fields apart. */
+@container pane (min-width: 840px) {
+  .screen.screen { max-width: 1200px; padding-bottom: 64px; }
+  .form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-areas: "start steps" "fields steps" "prep steps" "tips steps" "source steps" "issues steps" "rest steps";
+    grid-template-rows: repeat(6, auto) 1fr;
+    column-gap: 40px;
+    row-gap: 12px;
+    align-items: start;
+  }
+  .aStart { grid-area: start; }
+  .aFields { grid-area: fields; }
+  .aSteps { grid-area: steps; margin-top: 0; }
+  .aPrep { grid-area: prep; }
+  .aTips { grid-area: tips; }
+  .aSource { grid-area: source; }
+  .aIssues { grid-area: issues; }
+  .aRest { grid-area: rest; }
+  /* The preview stays in view while the steps scroll under the sticky top bar. */
+  .previewWrap { position: sticky; top: 64px; z-index: 1; padding-bottom: 4px; background: var(--bg); }
+}
 .title { margin: 4px 0 12px; }
 .preview { display: flex; flex-direction: column; gap: 10px; }
 .previewMeta { color: var(--ink-mid); }
@@ -15,6 +47,10 @@
 .stepHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .kinds { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 2px 18px; }
 .kinds::-webkit-scrollbar { display: none; }
+/* With a mouse the kinds wrap instead of hiding off the edge (§2.5). */
+@media (pointer: fine) {
+  .kinds { flex-wrap: wrap; overflow: visible; margin: 0; padding: 2px 0; }
+}
 .kinds > * { flex: none; }
 .durRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .durValue { min-width: 4ch; text-align: center; }

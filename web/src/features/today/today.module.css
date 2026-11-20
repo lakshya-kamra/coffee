@@ -1,13 +1,69 @@
-/* Today (port of HomeScreen.kt). */
+/* Today (port of HomeScreen.kt), adaptive in v4 §3.1. One tree; data-mode places the blocks:
+   column (phone), split (medium: Recent beside Your coffee), dashboard (12 columns, 7 / 5). */
 
+.today {
+  width: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter) var(--list-bottom-pad);
+}
+/* The wrappers only exist for the dashboard's two columns; elsewhere their children flow. */
+.head, .left, .right { display: contents; }
+.lead { display: flex; flex-direction: column; }
+.tiles, .stats, .recentBlock, .start, .nudge { min-width: 0; }
+.today[data-mode="column"] .tiles { display: none; }
+
+/* ---------------------------------------------------------------- split (medium) */
+.today[data-mode="split"] {
+  display: grid;
+  /* Recent gets the room its names need; Your coffee is one small tile. */
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: start;
+}
+/* Source order keeps the tiles beside the pass for the dashboard; here they sit beside Recent. */
+.today[data-mode="split"] .head > *,
+.today[data-mode="split"] .lead,
+.today[data-mode="split"] .stats,
+.today[data-mode="split"] .start,
+.today[data-mode="split"] .nudge { grid-column: 1 / -1; }
+.today[data-mode="split"] .head > * { order: 0; }
+.today[data-mode="split"] .lead { order: 1; }
+.today[data-mode="split"] .stats { order: 2; }
+.today[data-mode="split"] .recentBlock { order: 3; grid-column: 1; }
+.today[data-mode="split"] .tiles { order: 4; grid-column: 2; margin-top: 24px; }
+.today[data-mode="split"] .start { order: 5; }
+.today[data-mode="split"] .nudge { order: 6; }
+
+/* ---------------------------------------------------------------- dashboard (expanded and up) */
+.today[data-mode="dashboard"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+  max-width: 1200px;
+}
+.today[data-mode="dashboard"][data-size="large"],
+.today[data-mode="dashboard"][data-size="xl"] { column-gap: 24px; }
+.today[data-mode="dashboard"] .head > *,
+.today[data-mode="dashboard"] .start,
+.today[data-mode="dashboard"] .nudge { grid-column: 1 / -1; }
+.today[data-mode="dashboard"] .left,
+.today[data-mode="dashboard"] .right { display: flex; flex-direction: column; min-width: 0; }
+.today[data-mode="dashboard"] .left { grid-column: 1 / span 7; }
+.today[data-mode="dashboard"] .right { grid-column: 8 / span 5; }
+.today[data-mode="dashboard"] .tiles { margin-top: var(--card-gap); }
+/* The stats lead the right column level with the pass. */
+.today[data-mode="dashboard"] .stats { margin-top: var(--card-gap); padding: 0; background: none; }
+
+/* ---------------------------------------------------------------- header */
+.headTrailing { display: inline-flex; align-items: flex-start; gap: 8px; }
 /* Light ceramic vanishes on paper, so light mode draws the shell one step deeper. */
 .mug { --mug-body: var(--art-shell); display: inline-flex; flex: none; }
-:root[data-theme="light"] .mug, :root[data-theme="light"] .empty { --mug-body: var(--outline-strong); }
-.empty { --mug-body: var(--art-shell); display: flex; align-items: center; gap: 14px; }
-.emptyArt { flex: none; display: inline-flex; }
+:root[data-theme="light"] .mug { --mug-body: var(--outline-strong); }
 
 .block { margin-top: var(--card-gap); gap: 8px; }
-.actions { display: flex; justify-content: flex-end; gap: 4px; margin-right: -8px; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; margin-right: -8px; }
 
 .banner {
   display: flex;
@@ -50,23 +106,116 @@
   flex-direction: column;
   width: 100%;
   text-align: left;
-  transition: transform var(--press-ms) var(--ease-emphasized);
+  transition: transform var(--press-ms) var(--ease-emphasized), background-color 120ms var(--ease-emphasized);
 }
 .passOpen:active { transform: scale(0.985); }
 .passEyebrow { display: block; margin-bottom: 2px; }
-.passBody { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 0; }
-.passGrid { display: block; }
-.passCta { padding: 16px 18px 18px; }
+.passBody { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 0; }
+/* The primary button never spans a wide window (§2.5): capped and at the end. */
+.passCta { display: flex; justify-content: flex-end; padding: 16px 18px 18px; }
+.passCta > button { max-width: var(--primary-max); }
 button.inverse { background: var(--inverse); color: var(--on-inverse); }
+@media (hover: hover) and (pointer: fine) {
+  .passOpen { cursor: pointer; }
+  .passOpen:hover [data-title], .firstOpen:hover [data-title] { color: var(--ink-high); text-decoration: underline; text-underline-offset: 3px; }
+}
 
-/* ---------------------------------------------------------------- stats, recent, carousel */
-.stats {
+/* Short landscape (a phone on its side): Start brew joins the numbers row, no scrolling to it. */
+.today[data-inline] .pass { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.today[data-inline] .passCta { padding: 16px 18px 18px 0; }
+.today[data-inline] .passCta > button { width: auto; padding: 0 22px; white-space: nowrap; }
+.today[data-inline] .first { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: start; }
+.today[data-inline] .first > * { grid-column: 1; }
+.today[data-inline] .first > .passCta { grid-column: 2; grid-row: 1 / span 3; padding: 0; }
+
+/* ---------------------------------------------------------------- your first brew (§4.6) */
+.first {
   margin-top: var(--card-gap);
-  padding: 6px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 18px 0;
   border-radius: var(--r-card);
   background: var(--surface1);
 }
-.recent { display: flex; flex-direction: column; }
+.first > :last-child { margin-bottom: 18px; }
+.first > .passCta { padding: 4px 0 0; }
+.first > .passCta:last-child { margin-bottom: 18px; }
+.firstOpen { display: flex; flex-direction: column; gap: 4px; text-align: left; border-radius: 8px; }
+.firstName { color: var(--ink-high); }
+.needs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.need {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  color: var(--ink-high);
+}
+.checklist { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.checklist li { display: flex; align-items: baseline; gap: 12px; }
+.checkNum { flex: none; width: 1.25em; color: var(--ink-low); }
+
+/* ---------------------------------------------------------------- stats, tiles */
+.stats {
+  margin-top: var(--card-gap);
+  padding: 4px 18px;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+}
+.tileAction { margin-top: 4px; margin-left: -12px; }
+
+/* ---------------------------------------------------------------- recent */
+.recentList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+  overflow: hidden;
+}
+.recentRow { display: flex; align-items: center; min-width: 0; padding-right: 6px; }
+.recentRow + .recentRow { box-shadow: inset 0 1px 0 var(--hairline); }
+.recentOpen {
+  flex: 1;
+  min-width: 0;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 6px 10px 18px;
+  text-align: left;
+  border-radius: inherit;
+}
+.recentWhen { flex: none; width: 4.75rem; display: flex; flex-direction: column; gap: 2px; }
+.recentMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.recentName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recentScore { flex: none; min-width: 1.5em; text-align: right; }
+.nowrap { white-space: nowrap; }
+.again {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  color: var(--ink-mid);
+}
+@media (hover: hover) and (pointer: fine) {
+  /* Rows sit on a card, so their hover lifts to surface2 (the shell's lifts bare rows to surface1). */
+  .recentList .recentRow:hover { background: var(--surface2); }
+  .again:hover { background: var(--surface1); color: var(--ink-high); }
+}
+
+.empty { display: flex; align-items: center; gap: 14px; }
+.emptyText { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.emptyAction { margin-left: -12px; }
+
+/* ---------------------------------------------------------------- start from */
 .carousel {
   display: flex;
   gap: 12px;
@@ -80,3 +229,21 @@ button.inverse { background: var(--inverse); color: var(--on-inverse); }
 }
 .carousel::-webkit-scrollbar { display: none; }
 .carouselItem { flex: none; display: flex; scroll-snap-align: start; }
+/* At most --cols columns, fewer when a card would get narrower than 220 (§2.5: no carousel
+   on wide screens). */
+.startGrid {
+  --cols: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(220px, calc((100% - (var(--cols) - 1) * 16px) / var(--cols))), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cardCell { display: flex; min-width: 0; }
+@media (hover: hover) and (pointer: fine) {
+  /* The card (viz) carries no hover of its own: lift it and its header one shade (§2.6). */
+  .cardCell > button { cursor: pointer; transition: background-color 120ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+  .cardCell > button > :first-child { transition: background-color 120ms var(--ease-emphasized); }
+  .cardCell > button:hover, .cardCell > button:hover > :first-child { background-color: var(--surface2); }
+}

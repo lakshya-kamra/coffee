@@ -1,0 +1,22 @@
+/* StatGrid (v4 §5 A7): 3 -> 2 -> 1 columns by the width it is given, in rem so large text wraps
+   sooner. */
+.wrap { width: 100%; }
+/* auto-fit with a rem minimum: three across on a phone, fewer as the space or the text size
+   asks (200% text on a phone is one column). Cells never get narrower than their numbers. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr));
+  column-gap: 16px;
+  row-gap: 14px;
+  margin: 0;
+}
+.cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 10px 0; }
+.label, .value, .sub { margin: 0; min-width: 0; }
+/* A number and its unit stay together but may drop below the label as a whole; never "…". */
+.value { display: flex; flex-wrap: wrap; overflow-wrap: break-word; }
+.text { overflow-wrap: break-word; color: var(--ink-high); }
+.sub { display: flex; flex-wrap: wrap; }
+
+/* Tiles: each cell is its own small surface (Today's dashboard). */
+.wrap[data-tiles] .grid { column-gap: 12px; row-gap: 12px; }
+.wrap[data-tiles] .cell { padding: 14px 16px; border-radius: var(--r-card); background: var(--surface1); }

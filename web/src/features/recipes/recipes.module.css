@@ -1,6 +1,23 @@
-/* Recipes list and detail (ports of RecipeListScreen.kt and RecipeDetailScreen.kt). */
+/* Recipes list and detail (ports of RecipeListScreen.kt and RecipeDetailScreen.kt), adaptive in
+   v4 §3.2 / §3.3. Widths inside are container queries on the pane (tab layer, list pane, detail
+   pane or detail layer), never the viewport. */
 
 /* ---------------------------------------------------------------- list */
+.listScreen { min-height: 100%; }
+.paneHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 0 8px; }
+.paneHeadText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.headActions { display: inline-flex; gap: 8px; }
+/* In the list pane the search stays reachable while the rows scroll under it. */
+.searchBar { padding: 0; }
+.listScreen[data-panes] .searchBar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 0;
+  margin: 0 calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+  background: var(--surface0);
+}
 .search {
   display: flex;
   align-items: center;
@@ -34,6 +51,7 @@
   background: var(--surface2);
   color: var(--ink-mid);
 }
+/* Touch phones scroll the chips sideways; wider panes and mice wrap them (§2.5). */
 .chips {
   display: flex;
   gap: 8px;
@@ -45,24 +63,144 @@
 }
 .chips::-webkit-scrollbar { display: none; }
 .chips > * { flex: none; }
-.list { display: flex; flex-direction: column; gap: var(--card-gap); margin-top: 8px; }
+@container pane (min-width: 520px) {
+  .chips { flex-wrap: wrap; overflow: visible; margin: 12px 0 4px; padding: 6px 0; }
+}
+@media (pointer: fine) {
+  .chips { flex-wrap: wrap; overflow: visible; margin: 12px 0 4px; padding: 6px 0; }
+}
+.listScreen[data-panes] .chips { flex-wrap: wrap; overflow: visible; margin: 8px 0 4px; padding: 0; }
+.moreChip { color: var(--ink-mid); }
+
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.sortLabel { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink-mid); }
+.sort {
+  min-height: 36px;
+  padding: 0 28px 0 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--ink-high);
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+.listScreen[data-panes] .sort { background-color: var(--surface1); }
+.count { color: var(--ink-low); }
+.missing { margin-top: 8px; }
+
+/* Cards: one column on a phone, a grid from medium (§2.5). 280 rather than 320 so a 700 wide
+   tablet gets the two columns §3.2 asks for; a card still fits its route row at 280. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--card-gap);
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cards > li { display: flex; min-width: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .cards > li > button { cursor: pointer; transition: background-color 120ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized); }
+  .cards > li > button > :first-child { transition: background-color 120ms var(--ease-emphasized); }
+  .cards > li > button:hover, .cards > li > button:hover > :first-child { background-color: var(--surface2); }
+}
+
+/* Compact rows in the list pane (~76 px): who, which brewer, the numbers. */
+.rows { display: flex; flex-direction: column; margin: 8px calc(-1 * var(--gutter)) 0; padding: 0; list-style: none; }
+.rowItem { position: relative; display: flex; align-items: center; min-width: 0; }
+.row {
+  flex: 1;
+  min-width: 0;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px 10px var(--gutter);
+  text-align: left;
+}
+.rowIcon { flex: none; display: inline-flex; color: var(--ink-mid); }
+.rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.rowName { display: flex; align-items: baseline; gap: 8px; min-width: 0; color: var(--ink-high); }
+.rowNameText { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.rowDot { flex: none; width: 8px; height: 8px; border-radius: 50%; transform: translateY(-1px); }
+.rowMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Numbers never ellipsize: they keep their width and the words give way. */
+.rowNums { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; white-space: nowrap; }
+.rowMore {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  margin-right: calc(var(--gutter) - 12px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-well);
+  color: var(--ink-mid);
+}
+@media (hover: hover) and (pointer: fine) {
+  .rowMore:hover { background: var(--surface2); color: var(--ink-high); }
+}
+
 .empty { padding: 16px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.emptyMine { display: flex; align-items: center; gap: 16px; padding: 18px; margin-top: 8px; border-radius: var(--r-card); background: var(--surface1); }
+.emptyMineText { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.emptyActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .clearAll { margin-left: -12px; }
+.noDetail { padding: 48px 0; }
 
 /* ---------------------------------------------------------------- detail */
 .detail { min-height: 100%; display: flex; flex-direction: column; }
+.detail[data-in-pane] { padding-bottom: 48px; }
 .gone { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 24px; }
 .placeholder { height: 900px; flex: none; }
-/* The lower half of the detail: skipped until it nears the viewport. The side padding (taken
-   back by the margin) keeps focus rings inside the box that paint containment clips to. */
-.below { content-visibility: auto; contain-intrinsic-block-size: auto 1200px; margin: 0 -6px; padding: 0 6px 6px; }
-.headerFoot {
-  padding: 16px 18px 18px;
-  background: var(--surface1);
-  border-radius: 0 0 var(--r-card) var(--r-card);
+.paneTop { display: flex; justify-content: flex-end; padding-top: 12px; margin-bottom: -8px; }
+
+/* One column: head, numbers, method. Two columns at 880: numbers left (sticky), method right. */
+.layout { display: flex; flex-direction: column; }
+.head { display: flex; flex-direction: column; }
+.headCta { display: none; }
+.side, .main { min-width: 0; }
+.detail[data-in-pane] .head { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 16px; padding: 24px 0 16px; }
+.detail[data-in-pane] .head > :first-child { flex: 1 1 320px; min-width: 0; }
+.detail[data-in-pane] .headCta { display: flex; flex: 0 1 280px; min-width: 200px; margin-left: auto; }
+.headCta > button { max-width: 360px; }
+
+.paneTitle { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.paneArt { flex: none; width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-card); background: var(--surface1); color: var(--ink-mid); }
+.paneTitleText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.paneTitleText h1 { overflow-wrap: anywhere; }
+
+.numbers { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 8px; background: var(--surface1); border-radius: 0 0 var(--r-card) var(--r-card); }
+.detail[data-in-pane] .numbers { border-radius: var(--r-card); }
+.ratioLine { margin: 2px 0 0; }
+
+.noScale { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.noScaleSide { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.noScaleArrow { padding-top: 22px; font-size: 1.25rem; }
+
+@container pane (min-width: 880px) {
+  .detail.detail { max-width: var(--detail-max); }
+  .layout {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    column-gap: 32px;
+    align-items: start;
+  }
+  .head { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 16px; padding: 8px 0 20px; }
+  .head > :first-child { flex: 1 1 320px; min-width: 0; }
+  .headCta { display: flex; flex: 0 1 360px; margin-left: auto; }
+  /* Pushed from Today: the flying header sits on the canvas here, the numbers get their own card. */
+  .layout .head > :first-child:not(.paneTitle) { background: transparent; padding: 0; }
+  .numbers { border-radius: var(--r-card); }
+  .side { position: sticky; top: 16px; padding-bottom: 24px; }
+  .main > :first-child { margin-top: 0; }
+  .fidelity { margin-top: 0; }
+  .detail .sticky { display: none; }
+  .placeholder { grid-column: 1 / -1; }
 }
+
 .gap12 { margin-top: 12px; }
-.gridCard { padding: 6px 18px; border-radius: var(--r-card); background: var(--surface1); }
 .fidelity { display: flex; margin-top: 16px; }
 .blurb { margin-top: 10px; }
 .scaler { display: flex; align-items: center; gap: 12px; }
@@ -81,7 +219,10 @@
   transition: transform var(--press-ms) var(--ease-emphasized);
 }
 .step:active { transform: scale(0.97); }
+.presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
 .quietLeft { align-self: center; margin-top: 4px; }
+.needs { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.needs li { display: flex; flex-direction: column; gap: 2px; }
 .numbered { display: flex; flex-direction: column; }
 .numbered li { display: flex; align-items: baseline; padding: 6px 0; }
 .numbered li > :first-child { width: 24px; flex: none; }
@@ -91,13 +232,18 @@
 .sourceNote { font-size: 0.75rem; line-height: 1.0625rem; }
 .sources { display: flex; flex-direction: column; gap: 4px; }
 .link { color: var(--ink-high); text-decoration: underline; text-underline-offset: 2px; }
+/* The lower half of the detail: skipped until it nears the viewport. The side padding (taken
+   back by the margin) keeps focus rings inside the box that paint containment clips to. */
+.below { content-visibility: auto; contain-intrinsic-block-size: auto 1200px; margin: 0 -6px; padding: 0 6px 6px; }
 .sticky {
   position: sticky;
   bottom: 0;
   margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
   padding: 40px 0 calc(12px + env(safe-area-inset-bottom));
   background: linear-gradient(to bottom, transparent, var(--bg) 40px);
   pointer-events: none;
 }
-.sticky > * { pointer-events: auto; }
+.sticky > * { pointer-events: auto; max-width: var(--primary-max); }
 button.inverse { background: var(--inverse); color: var(--on-inverse); }

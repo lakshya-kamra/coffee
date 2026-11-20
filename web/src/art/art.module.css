@@ -104,3 +104,8 @@
   87.5% { transform: translate(87.5%, 38.75%) rotate(472.5deg); opacity: 0.51; }
   100% { transform: translate(100%, 60%) rotate(540deg); opacity: 0.35; }
 }
+
+/* ---------------------------------------------------------------- empty states (v4 §4.12) */
+/* Pale shell on dark; one step deeper on paper, where light ceramic would vanish. */
+.emptyArt { --empty-art-ink: var(--art-shell); flex: none; display: inline-flex; color: var(--art-shell); }
+:root[data-theme="light"] .emptyArt { --empty-art-ink: var(--outline-strong); color: var(--outline-strong); }

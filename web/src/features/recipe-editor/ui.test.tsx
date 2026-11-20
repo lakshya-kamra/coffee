@@ -104,4 +104,21 @@ describe("RecipeEditorScreen", () => {
     render(<RecipeEditorScreen id="hoffmann-v60" mode="duplicate" />);
     expect(screen.getByRole<HTMLInputElement>("textbox", { name: "Name" }).value).toMatch(/\(mine\)$/);
   });
+
+  it("edits level and needs (v4 §6.4), carried into the saved recipe's draft", () => {
+    if (!catalog.recipe("hoffmann-v60")) return;
+    render(<RecipeEditorScreen id="hoffmann-v60" mode="duplicate" />);
+    const level = screen.getByRole("radiogroup", { name: "Level" });
+    const medium = screen.getByRole("radio", { name: "Medium" });
+    expect(level.contains(medium)).toBe(true);
+    expect(medium.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(screen.getByRole("radio", { name: "Easy" }));
+    expect(screen.getByRole("radio", { name: "Easy" }).getAttribute("aria-checked")).toBe("true");
+    const thermo = screen.getByRole("button", { name: "Thermometer" });
+    expect(thermo.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(thermo);
+    expect(screen.getByRole("button", { name: "Thermometer" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Scale" }));
+    expect(screen.getByRole("button", { name: "Scale" }).getAttribute("aria-pressed")).toBe("false");
+  });
 });

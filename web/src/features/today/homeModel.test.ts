@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { newBrew, type BrewRow } from "@/data/schema";
+import { newBean, newBrew, type BrewRow } from "@/data/schema";
 import { DEFAULT_SETTINGS } from "@/data/settings";
 import { makeBrewer, type Brewer } from "@/domain/core/brewer";
+import { epochDayOf } from "@/domain/core/format";
 import type { Recipe } from "@/domain/core/recipe";
-import { brewsThisWeek, brewsToday, eyebrowDate, headline, lastFiveAvg, lastGrindFor, mugFill, nextRecipe, playfulTitle, prevFiveAvg, streakDays } from "./homeModel";
+import { beanOnDeck, brewsThisWeek, brewsToday, daysOffRoast, headline, lastFiveAvg, lastGrindFor, mugFill, nextRecipe, playfulTitle, prevFiveAvg, startFromRecipes, streakDays } from "./homeModel";
 
 const NOW = new Date(2026, 10, 17, 9, 0).getTime();
 const DAY = 86_400_000;
@@ -28,7 +29,6 @@ describe("Today counts (HomeViewModel)", () => {
     expect(mugFill(0)).toBe(0.12);
     expect(mugFill(2)).toBeCloseTo(2 / 3);
     expect(mugFill(9)).toBe(1);
-    expect(eyebrowDate("Morning", NOW)).toBe("MORNING · TUE 17 NOV");
   });
 });
 
@@ -70,8 +70,34 @@ describe("next brew", () => {
     expect(nextRecipe([], [], DEFAULT_SETTINGS, byId)).toBeNull();
   });
 
+  it("Start from: owned families first, without the next brew, capped", () => {
+    const families = new Set(["pourover:V60"]);
+    expect(startFromRecipes(recipes, families, "v60-1", 5).map((x) => x.id)).toEqual(["v60-2", "aero-1"]);
+    expect(startFromRecipes(recipes, new Set(), null, 2).map((x) => x.id)).toEqual(["aero-1", "v60-1"]);
+    expect(startFromRecipes(recipes, families, null, 0)).toEqual([]);
+  });
+
   it("the grind to offer skips 0 clicks", () => {
     expect(lastGrindFor([brew({ recipeId: "x", grindClicks: 0 }), brew({ recipeId: "x", grindClicks: 82 })], "x")).toBe(82);
     expect(lastGrindFor([brew({ recipeId: "x", grindClicks: null })], "x")).toBeNull();
+  });
+});
+
+describe("Your coffee (bean on deck)", () => {
+  const bean = (id: number, name: string, p: Partial<Parameters<typeof newBean>[0]> = {}) => ({ ...newBean({ name, ...p }, NOW - id * 1000), id });
+  const a = bean(1, "A", { roastedOnEpochDay: epochDayOf(NOW) - 12 });
+  const b = bean(2, "B");
+  const gone = { ...bean(3, "Gone"), isArchived: true };
+
+  it("default, else the newest brew's coffee, else the newest coffee; never archived", () => {
+    expect(beanOnDeck([a, b], 2, [])?.name).toBe("B");
+    expect(beanOnDeck([a, b], 0, [brew({ beanId: 1 })])?.name).toBe("A");
+    expect(beanOnDeck([a, b, gone], 3, [brew({ beanId: 3 })])?.name).toBe("A");
+    expect(beanOnDeck([gone], 3, [])).toBeNull();
+  });
+
+  it("days off roast from the roast day; null when not recorded", () => {
+    expect(daysOffRoast(a, NOW)).toBe(12);
+    expect(daysOffRoast(b, NOW)).toBeNull();
   });
 });

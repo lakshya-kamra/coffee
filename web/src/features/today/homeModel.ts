@@ -3,7 +3,7 @@
  * is passed in so tests pin the clock. Logs are newest first. "Scored" means overall > 0;
  * unrated brews never move an average.
  */
-import type { BrewRow } from "@/data/schema";
+import type { BeanRow, BrewRow } from "@/data/schema";
 import type { Settings } from "@/data/settings";
 import { brewerFamily, type Brewer } from "@/domain/core/brewer";
 import { epochDayOf, oneDp } from "@/domain/core/format";
@@ -121,10 +121,28 @@ export function lastGrindFor(logs: readonly BrewRow[], recipeId: string): number
   return logs.find((l) => l.recipeId === recipeId && (l.grindClicks ?? 0) > 0)?.grindClicks ?? null;
 }
 
-/** "MORNING · TUE 17 NOV". */
-export function eyebrowDate(greet: string, now: number): string {
-  const d = new Date(now);
-  const day = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
-  const mon = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][d.getMonth()];
-  return `${greet.toUpperCase()} · ${day} ${d.getDate()} ${mon}`;
+/**
+ * Start from (v4 §3.1): recipes for the brewers you own first, then the rest, in library order,
+ * without the one already offered as the next brew.
+ */
+export function startFromRecipes(recipes: readonly Recipe[], families: ReadonlySet<string>, nextId: string | null, count: number): Recipe[] {
+  const rest = recipes.filter((r) => r.id !== nextId);
+  const owned = rest.filter((r) => families.has(brewerFamily(r.brewer)));
+  const other = rest.filter((r) => !families.has(brewerFamily(r.brewer)));
+  return [...owned, ...other].slice(0, Math.max(0, count));
+}
+
+/**
+ * The coffee on deck for "Your coffee": the default coffee, else the one in the newest brew that
+ * named one, else the newest coffee you have. Archived coffees are never offered.
+ */
+export function beanOnDeck(beans: readonly BeanRow[], defaultBeanId: number, logs: readonly BrewRow[]): BeanRow | null {
+  const live = beans.filter((b) => !b.isArchived);
+  const byId = (id: number | null | undefined) => (id ? live.find((b) => b.id === id) ?? null : null);
+  return byId(defaultBeanId) ?? byId(logs.find((l) => l.beanId != null)?.beanId) ?? [...live].sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? null;
+}
+
+/** Whole days since roasting, from today; null when the roast date is not recorded. */
+export function daysOffRoast(bean: Pick<BeanRow, "roastedOnEpochDay">, now: number): number | null {
+  return bean.roastedOnEpochDay == null ? null : Math.max(0, epochDayOf(now) - bean.roastedOnEpochDay);
 }

@@ -42,14 +42,28 @@ const ARTS: Record<BrewerArt, Art> = {
   Espresso: { line: "M20 34L72 34L66 70L26 70Z M71 40Q92 44 68 60 M10 82L84 82" },
   // A jar with a lid and a fill line.
   ColdBrew: { line: `${box(22, 26, 78, 90, 10)} M30 54L70 54`, solid: box(28, 10, 72, 22, 3) },
-  // v4 placeholders: the drawing each brewer showed before it had its own art. The Recipes
-  // package replaces them with real drawings.
-  Drip: { line: "M14 22L86 22L54 70L46 70Z M26 82L74 82 M50 70L50 82" },
-  Cezve: {
-    line: "M28 90L72 90L64 56L36 56Z M36 52L64 52L72 20L28 20Z M28 20L16 15 M44 12L56 12 M71 24L86 30L84 48L67 46",
+  // A drip machine: the head with its filter basket, the tower, a carafe on the hot plate. The
+  // coffee in the carafe is the solid, as the cold brew's lid.
+  Drip: {
+    line: `${box(14, 10, 86, 28, 5)} M50 28L70 28L66 38L54 38Z M24 28L24 90 M14 90L86 90 M44 50L76 50L80 84L40 84Z M78 58Q92 62 80 76`,
+    solid: "M42.1 70L77.9 70L80 84L40 84Z",
   },
-  Siphon: { line: "M22 10L78 10L56 46L80 90L20 90L44 46Z", solid: "M36 39L64 39L62 55L38 55Z" },
-  Phin: { line: `${box(30, 36, 70, 84)} ${box(36, 16, 64, 36)} M24 12L76 12 M22 90L78 90` },
+  // A cezve: a flared lip with a pouring spout, a pinched neck, a wide belly and a long handle
+  // whose grip is the solid.
+  Cezve: {
+    line: "M10 26L54 26 M10 26L6 20 M16 26L24 44L14 84Q14 90 20 90L48 90Q54 90 54 84L44 44L52 26 M47 50L92 34",
+    solid: "M69 39L91 31L93 37L71 45Z",
+  },
+  // A siphon: the upper chamber and its tube, the round lower flask, the stand's pole and clamp.
+  Siphon: {
+    line: "M34 8L62 8L62 30L52 40L44 40L34 30Z M48 40L48 54 M32 70A16 16 0 1 0 64 70A16 16 0 1 0 32 70Z M82 12L82 92 M62 20L82 20 M16 92L90 92",
+    solid: "M32.5 74L63.5 74A16 16 0 0 1 32.5 74Z",
+  },
+  // A phin: the lid with its knob, the small chamber, the wide plate it rests on, a glass below.
+  Phin: {
+    line: `M30 16L70 16 ${box(34, 20, 66, 52, 3)} M16 56L84 56 M28 62L32 92L68 92L72 62`,
+    solid: "M45 9A5 4 0 1 0 55 9A5 4 0 1 0 45 9Z M31.2 80L68.8 80L68 92L32 92Z",
+  },
 };
 
 export const BrewerIcon = memo(function BrewerIcon({
