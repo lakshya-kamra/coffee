@@ -2,7 +2,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { catalog } from "@/catalog/catalog";
 import { newGrinder } from "@/data/schema";
-import { burrSizeText, fieldsFromCatalog, findExistingGrinder, joinAltitude, localCurrency, restStatus, scaleDifferences, scaleFromCatalog, scaleNoticeText, scaleSummary, splitAltitude } from "./mapping";
+import { burrSizeText, feetToMetres, fieldsFromCatalog, findExistingGrinder, isTimed, joinAltitude, localCurrency, metresToFeetText, roastedAgoText, restStatus, scaleDifferences, scaleFromCatalog, scaleNoticeText, scaleSummary, splitAltitude } from "./mapping";
 
 beforeAll(async () => {
   await catalog.load(["grinders"]);
@@ -27,6 +27,7 @@ describe("grinder from the catalog", () => {
       step: 1,
       catalogId: "1zpresso-k-ultra",
       dialFormat: "",
+      settingUnit: "",
       defaultFilterSetting: null,
       defaultEspressoSetting: null,
     });
@@ -43,6 +44,16 @@ describe("grinder from the catalog", () => {
     const accepted = { ...legacy, ...scaleFromCatalog(c) };
     expect(accepted.clicksPerRotation).toBe(100);
     expect(accepted.defaultFilterSetting).toBe(75); // 75 stays 75
+  });
+
+  it("fills a blade grinder as timed in seconds (v4 §4.2)", async () => {
+    await catalog.load(["grinders"]);
+    const c = catalog.grinder("blade-grinder");
+    if (!c) return;
+    const row = newGrinder(fieldsFromCatalog(c));
+    expect(row).toMatchObject({ settingUnit: "s", settingStyle: "stepless", burrType: "blade", catalogId: "blade-grinder" });
+    expect(isTimed(row)).toBe(true);
+    expect(scaleSummary(row)).toBe("timed in seconds · longer is finer");
   });
 
   it("formats burr sizes without a trailing .0", () => {
@@ -71,6 +82,20 @@ describe("beans", () => {
     expect(joinAltitude("1900", "1700")).toBe("1700-1900");
     expect(joinAltitude("1800", "1800")).toBe("1800");
     expect(joinAltitude("", "2000")).toBe("2000");
+  });
+
+  it("shows altitude in feet and reads feet back as metres", () => {
+    expect(metresToFeetText("1700-1900")).toBe("5580-6230");
+    expect(metresToFeetText("1850")).toBe("6070");
+    expect(metresToFeetText("")).toBe("");
+    expect(feetToMetres("6000")).toBe("1829");
+    expect(feetToMetres("")).toBe("");
+  });
+
+  it("says how long ago it was roasted", () => {
+    expect(roastedAgoText(0)).toBe("Roasted today");
+    expect(roastedAgoText(1)).toBe("Roasted about 1 day ago");
+    expect(roastedAgoText(9)).toBe("Roasted about 9 days ago");
   });
 
   it("says resting only while the roaster's rest is ahead", () => {

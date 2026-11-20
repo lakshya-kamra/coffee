@@ -5,23 +5,16 @@
  */
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useRef, useState } from "react";
+import { showToast } from "@/app/toast";
 import { repo } from "@/data/repo";
 import { requestPersist, SAFARI_EVICTION_NOTE, shouldShowSafariNote, storageStatus, type StorageStatus } from "@/data/storage";
-import {
-  ActionRow,
-  CoffeeSheet,
-  GroupRow,
-  QuietButton,
-  QuietPanel,
-  SecondaryButton,
-  StatusLine,
-  ToggleRow,
-} from "@/design/components";
+import { ActionRow, ConfirmSheet, GroupRow, QuietButton, QuietPanel, StatusLine, ToggleRow } from "@/design/components";
 import type { Status } from "@/domain/core/status";
 import type { ReadResult } from "@/domain/backup/read";
 import { DELETE_ALL_CONFIRM, PHOTOS_WONT_ALL_FIT, readErrorText, savedMessage, shortDate } from "./copy";
 import { aboutSize, estimateBackupBytes, MAX_BACKUP_BYTES } from "./exporter";
 import { ImportPreviewSheet } from "./ImportPreviewSheet";
+import { subscribeImport, takeImport } from "./importRequest";
 import { lastBackupAt } from "./meta";
 import { saveBackup } from "./save";
 import { readBackupFile } from "./workerClient";
@@ -48,6 +41,25 @@ async function runSave(includePhotos: boolean): Promise<Message | null> {
     console.error("Backup failed", e);
     return SAVE_FAILED;
   }
+}
+
+/** Reads a picked file, then shows its preview or says why it can't be imported. */
+async function openFile(
+  file: File,
+  set: { setBusy: (b: "saving" | "reading" | null) => void; setMessage: (m: Message | null) => void; setRead: (r: ReadOk | null) => void },
+): Promise<void> {
+  set.setBusy("reading");
+  set.setMessage(null);
+  const r = await readBackupFile(file);
+  set.setBusy(null);
+  if (r.ok) set.setRead(r);
+  else set.setMessage({ status: "fault", lead: "Can't import", rest: readErrorText(r.error) });
+}
+
+/** The palette's "Export a backup": the same file as Back up everything (photos in), said in a toast. */
+export async function exportBackupNow(): Promise<void> {
+  const m = await runSave(true);
+  if (m) showToast({ text: m.rest ? `${m.lead}. ${m.rest}` : m.lead });
 }
 
 /** Deletes every row, then any saved AI keys, then starts the app fresh. */
@@ -83,6 +95,16 @@ export function BackupSection() {
     };
   }, []);
 
+  // A file picked from the palette ("Import a backup") opens the same preview.
+  useEffect(() => {
+    const check = () => {
+      const f = takeImport();
+      if (f) void openFile(f, { setBusy, setMessage, setRead });
+    };
+    check();
+    return subscribeImport(check);
+  }, []);
+
   const size = estimate ? aboutSize(includePhotos ? estimate.withPhotos : estimate.withoutPhotos) : null;
   const withPhotos = includePhotos && (estimate?.photoCount ?? 0) > 0;
   // Said before the tap: a file over the import limit could never be restored, so the writer stops short of it.
@@ -103,15 +125,7 @@ export function BackupSection() {
     if (m) setMessage(m);
   };
 
-  const onFile = async (file: File | undefined) => {
-    if (!file) return;
-    setBusy("reading");
-    setMessage(null);
-    const r = await readBackupFile(file);
-    setBusy(null);
-    if (r.ok) setRead(r);
-    else setMessage({ status: "fault", lead: "Can't import", rest: readErrorText(r.error) });
-  };
+  const onFile = (file: File | undefined) => (file ? openFile(file, { setBusy, setMessage, setRead }) : Promise.resolve());
 
   const onKeepSafe = async () => {
     const granted = await requestPersist();
@@ -197,28 +211,18 @@ export function BackupSection() {
   );
 }
 
+/** A role "confirm" dialog (sheet on compact) with Cancel, the safe action, focused first (A6). */
 function DeleteEverythingSheet({ onClose }: { onClose: () => void }) {
-  const root = useRef<HTMLDivElement>(null);
-  const [deleting, setDeleting] = useState(false);
   return (
-    <CoffeeSheet label="Delete everything" onClose={onClose}>
-      <div ref={root} className={s.sheet}>
-        <h2 className={`t-title-l ${s.sheetTitle}`}>Delete everything?</h2>
-        <p className="t-body-l">{DELETE_ALL_CONFIRM}</p>
-        <div className={s.buttons}>
-          <SecondaryButton
-            text={deleting ? "Deleting…" : "Delete everything"}
-            enabled={!deleting}
-            className={s.danger}
-            onClick={() => {
-              setDeleting(true);
-              void deleteEverything();
-            }}
-          />
-          <QuietButton text="Cancel" enabled={!deleting} onClick={() => root.current?.closest("dialog")?.dispatchEvent(new Event("cancel", { cancelable: true }))} />
-        </div>
-      </div>
-    </CoffeeSheet>
+    <ConfirmSheet
+      title="Delete everything?"
+      body={DELETE_ALL_CONFIRM}
+      confirmText="Delete everything"
+      danger
+      safe="cancel"
+      onConfirm={() => void deleteEverything()}
+      onClose={onClose}
+    />
   );
 }
 

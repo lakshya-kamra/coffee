@@ -1,5 +1,5 @@
 /** Small building blocks shared by the Gear editors (ports of GearScreen.kt's private helpers). */
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode, type Ref } from "react";
 import { EyebrowLabel, Icon, SelectableChip } from "@/design/components";
 import { epochDayToIso, isoToEpochDay } from "@/domain/core/format";
 import s from "./gear.module.css";
@@ -47,12 +47,29 @@ export function ChoiceChips<T extends string>({
   );
 }
 
-/** A row that opens a picker: label above, the current choice (or a placeholder), a chevron. */
-export function PickRow({ label, value, placeholder, onClick, trailing }: { label: string; value: string; placeholder: string; onClick: () => void; trailing?: ReactNode }) {
+/**
+ * A row that opens a picker: label above, the current choice (or a placeholder), a chevron.
+ * `anchorRef` lands on the button, so the picker can open as a popover under it (v4 §2.4).
+ */
+export function PickRow({
+  label,
+  value,
+  placeholder,
+  onClick,
+  trailing,
+  anchorRef,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onClick: () => void;
+  trailing?: ReactNode;
+  anchorRef?: Ref<HTMLButtonElement>;
+}) {
   return (
     <div className={s.field}>
       <EyebrowLabel text={label} />
-      <button type="button" className={s.pickRow} onClick={onClick} aria-label={`${label}: ${value || placeholder}`}>
+      <button ref={anchorRef} type="button" className={s.pickRow} onClick={onClick} aria-haspopup="dialog" aria-label={`${label}: ${value || placeholder}`}>
         <span className={s.pickText}>
           <span className={`t-body-l ${s.pickValue}`} data-empty={!value}>
             {value || placeholder}
@@ -66,12 +83,15 @@ export function PickRow({ label, value, placeholder, onClick, trailing }: { labe
 }
 
 /** "More details" / "Edit the scale": the space opens at once and the content fades in. */
-export function Disclosure({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: (v: boolean) => void; children: ReactNode }) {
+export function Disclosure({ label, hint, open, onToggle, children }: { label: string; hint?: string; open: boolean; onToggle: (v: boolean) => void; children: ReactNode }) {
   const id = useId();
   return (
     <>
       <button type="button" className={`${s.disclosure} t-label-l`} aria-expanded={open} aria-controls={id} onClick={() => onToggle(!open)}>
-        {label}
+        <span className={s.disclosureText}>
+          {label}
+          {hint && <span className={`t-body-s ${s.disclosureHint}`}>{hint}</span>}
+        </span>
         <Icon name="ChevronLeft" size={18} className={s.disclosureChev} />
       </button>
       {open && (

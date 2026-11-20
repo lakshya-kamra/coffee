@@ -7,12 +7,16 @@
  * Input stays urgent (rule 12): the field updates on every keystroke; the query used for
  * results is debounced 80 ms and read through useDeferredValue.
  */
-import { memo, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { memo, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { catalog } from "@/catalog/catalog";
 import { retryCatalog, useCatalog, useCatalogFailed } from "@/catalog/useCatalog";
-import { CoffeeSheet, Icon, PillButton } from "@/design/components";
+import { CoffeeSheet, Icon, PillButton, useSheetPresentation } from "@/design/components";
 import { useSettings } from "@/data/store";
 import { docsFor, KIND_FILE, search, type CatalogKind, type SearchDoc } from "@/domain/search";
+import { roasterGroups } from "./roasterOrder";
 import s from "./picker.module.css";
+
+export { inRegion, roasterGroups, type RoasterGroup } from "./roasterOrder";
 
 export type { CatalogKind };
 
@@ -48,10 +52,15 @@ interface Group {
 }
 
 /**
- * Groups for the empty query, with the picker's ordering rules: roasters put your favourites at
- * the very top and your area first; everything else keeps the catalog's group order.
+ * Groups for the empty query, with the picker's ordering rules: roasters follow roasterGroups
+ * (favourites and your region, then supermarket brands, then specialty A-Z, v4 §4.7); origins
+ * put your area first; everything else keeps the catalog's group order.
  */
 function groupsFor(kind: CatalogKind, docs: readonly SearchDoc[], homeArea: string, favourites: readonly string[], owned: readonly string[]): Group[] {
+  if (kind === "roaster") {
+    const byId = new Map(docs.map((d) => [d.id, d]));
+    return roasterGroups(catalog.roasters, homeArea, favourites).map((g) => ({ name: g.name, docs: g.ids.map((id) => byId.get(id)).filter((d): d is SearchDoc => d != null) }));
+  }
   const byName = new Map<string, SearchDoc[]>();
   for (const d of docs) {
     let g = byName.get(d.group);
@@ -59,14 +68,7 @@ function groupsFor(kind: CatalogKind, docs: readonly SearchDoc[], homeArea: stri
     g.push(d);
   }
   let groups: Group[] = [...byName].map(([name, list]) => ({ name, docs: list }));
-  if (kind === "roaster" || kind === "origin") {
-    if (homeArea) groups = [...groups.filter((g) => g.name === homeArea), ...groups.filter((g) => g.name !== homeArea)];
-  }
-  if (kind === "roaster" && favourites.length) {
-    const fav = new Set(favourites);
-    const top = docs.filter((d) => fav.has(d.id));
-    if (top.length) groups = [{ name: "Your roasters", docs: top }, ...groups];
-  }
+  if (kind === "origin" && homeArea) groups = [...groups.filter((g) => g.name === homeArea), ...groups.filter((g) => g.name !== homeArea)];
   if (kind === "brewer" && owned.length) {
     // Owned brewers first (A§7.7), still listed in their category below.
     const mine = new Set(owned);
@@ -126,6 +128,10 @@ export function CatalogPickerList({
   const ready = useCatalog([KIND_FILE[kind]]);
   const failed = useCatalogFailed([KIND_FILE[kind]]);
   const settings = useSettings();
+  // Inside a dialog or popover the body pads less than the screen gutter; the sticky head and
+  // group headers bleed by exactly that much (null = inline in a screen).
+  const pres = useSheetPresentation();
+  const pad = pres == null || pres.kind === "bottom" || pres.kind === "full" ? undefined : pres.kind === "popover" ? "16px" : "24px";
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const deferred = useDeferredValue(query);
@@ -179,7 +185,7 @@ export function CatalogPickerList({
   const exact = hits?.some((d) => d.title.toLowerCase() === typed.toLowerCase()) ?? false;
 
   return (
-    <div ref={root} className={s.picker}>
+    <div ref={root} className={s.picker} style={pad ? ({ "--pick-pad": pad } as CSSProperties) : undefined}>
       <div ref={head} className={s.head}>
         {(title || trailing) && (
           <div className={s.titleRow}>
@@ -286,6 +292,7 @@ export function CatalogPickerSheet({
   multiSelect = false,
   selected = [],
   allowCustom = true,
+  anchor,
   onPick,
   onDone,
   onClose,
@@ -295,6 +302,8 @@ export function CatalogPickerSheet({
   multiSelect?: boolean;
   selected?: string[];
   allowCustom?: boolean;
+  /** The field that opened it: at expanded+ the picker is a popover under it (v4 §2.4). */
+  anchor?: RefObject<HTMLElement | null>;
   // Property syntax (same shape as the §20.4 contract's methods) so destructuring is safe.
   onPick: (pick: { id: string } | { custom: string }) => void;
   onDone?: (ids: string[]) => void;
@@ -303,9 +312,12 @@ export function CatalogPickerSheet({
   const [picked, setPicked] = useState<string[]>(selected);
   const box = useRef<HTMLDivElement>(null);
   // Always `full`, so system Back closes it, including over an editor sheet: every CoffeeSheet
-  // tags its own history entry. Full height also keeps it from resizing as results narrow.
+  // tags its own history entry. Full height also keeps it from resizing as results narrow. Role
+  // "picker": a popover anchored to the field at expanded+, a dialog without an anchor.
   return (
     <CoffeeSheet
+      role="picker"
+      anchor={anchor}
       label={title}
       onClose={() => {
         if (multiSelect) onDone?.(picked);
@@ -313,7 +325,7 @@ export function CatalogPickerSheet({
       }}
       full
     >
-      <div ref={box} className={TALL.has(kind) ? s.tall : undefined}>
+      <TallBox box={box} tall={TALL.has(kind)}>
         <CatalogPickerList
           kind={kind}
           title={title}
@@ -331,7 +343,18 @@ export function CatalogPickerSheet({
             ) : undefined
           }
         />
-      </div>
+      </TallBox>
     </CoffeeSheet>
+  );
+}
+
+/** Long lists hold a bottom sheet near full height; a popover or dialog sizes to its own box. */
+function TallBox({ box, tall, children }: { box: RefObject<HTMLDivElement | null>; tall: boolean; children: ReactNode }) {
+  const pres = useSheetPresentation();
+  const sheet = pres == null || pres.kind === "bottom" || pres.kind === "full";
+  return (
+    <div ref={box} className={tall && sheet ? s.tall : undefined}>
+      {children}
+    </div>
   );
 }

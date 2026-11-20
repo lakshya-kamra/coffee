@@ -1,13 +1,13 @@
 /* Catalog picker (A§7.2): pinned search, sticky group headers, 56 px rows, custom entry. */
 
-.picker { --head-h: 0px; position: relative; }
+.picker { --head-h: 0px; --pick-pad: var(--gutter); position: relative; }
 
 .head {
   position: sticky;
   top: 0;
   z-index: 2;
-  margin: 0 calc(-1 * var(--gutter));
-  padding: 0 var(--gutter) 10px;
+  margin: 0 calc(-1 * var(--pick-pad));
+  padding: 0 var(--pick-pad) 10px;
   background: var(--surface1);
   display: flex;
   flex-direction: column;
@@ -44,8 +44,8 @@
   position: sticky;
   top: var(--head-h);
   z-index: 1;
-  margin: 0 calc(-1 * var(--gutter));
-  padding: 10px var(--gutter) 6px;
+  margin: 0 calc(-1 * var(--pick-pad));
+  padding: 10px var(--pick-pad) 6px;
   background: var(--surface1);
 }
 

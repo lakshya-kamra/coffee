@@ -109,3 +109,131 @@
 /* Two fields side by side must shrink with the column, never push past it. */
 .row2 > * { min-width: 0; }
 .row2 input { min-width: 0; width: 100%; }
+
+/* ---------------------------------------------------------------- v4: grids, list rows, panes */
+
+/* Medium: cards in a grid (§2.5); compact keeps the single column it always had. */
+.cardGrid { display: grid; gap: var(--card-gap); padding-top: 0; }
+@container pane (min-width: 600px) {
+  .cardGrid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; align-items: start; }
+}
+
+/* Expanded+: the list pane holds compact rows. */
+.rowList { display: flex; flex-direction: column; gap: 2px; padding: 8px 0 var(--list-bottom-pad); }
+.listRow {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-well);
+  text-align: left;
+  color: var(--ink-mid);
+}
+.listRowText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.listRowTitle { color: var(--ink-high); overflow-wrap: anywhere; }
+.listRowSub { color: var(--ink-mid); overflow-wrap: anywhere; }
+.listRowEnd { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.listRow[data-finished="true"] .listRowTitle { color: var(--ink-mid); }
+.listAdd { margin-top: 8px; }
+
+/* The list pane's header: same gutter as the pane, no centred column. */
+.listColumn { padding: 0 var(--gutter); min-height: 100%; }
+/* The sticky Gear header takes the list pane's shade, not the canvas's. */
+.listColumn > header { background: var(--surface0); }
+
+/* Empty states with a next step (§4.12) */
+.emptyBody { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.emptyActions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.emptyDone { color: var(--ink-mid); }
+
+/* The inline editor (§3.10): sticky pane header, form below at most 720 wide. */
+.paneEditor { min-height: 100%; }
+.paneHeader {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: calc(env(safe-area-inset-top) + 20px) var(--gutter) 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--hairline);
+}
+.paneHeaderText { flex: 1 1 240px; min-width: 0; }
+.paneTitle { margin-top: 4px; overflow-wrap: anywhere; }
+.paneState { margin-top: 2px; color: var(--ink-low); }
+.paneActions { display: flex; align-items: center; gap: 8px; flex: none; }
+.paneRevert, .paneSave {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.paneRevert { color: var(--ink-high); background: var(--surface1); }
+.paneSave { color: var(--bg); background: var(--ink-high); }
+.paneRevert:disabled, .paneSave:disabled { opacity: 0.45; cursor: default; }
+.paneKbd { opacity: 0.7; }
+@media (hover: hover) and (pointer: fine) {
+  .paneRevert:not(:disabled):hover { background: var(--surface2); }
+}
+.paneForm { display: flex; flex-direction: column; gap: 16px; max-width: 720px; padding: 20px var(--gutter) 48px; }
+.paneDelete { padding-top: 8px; }
+.paneDeleteBtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--fault); }
+
+/* "Brewed with this coffee" */
+.brewed { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--hairline); }
+.brewedHead { margin: 0; }
+.brewedList { display: flex; flex-direction: column; }
+.brewedRow { width: 100%; min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: var(--r-well); text-align: left; }
+.brewedText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.brewedScore { color: var(--ink-high); flex: none; }
+
+/* Bean editor bits */
+.labelRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.unitToggle { width: 112px; flex: none; }
+.anchorWrap { display: inline-flex; }
+.disclosureText { display: inline-flex; flex-direction: column; align-items: flex-start; text-align: left; }
+.disclosureHint { color: var(--ink-mid); }
+
+/* ---------------------------------------------------------------- Settings */
+.jumpRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.jumpRow::-webkit-scrollbar { display: none; }
+/* Wrap, never scroll sideways, from medium and on any mouse (§2.5). */
+@container pane (min-width: 600px) { .jumpRow { flex-wrap: wrap; overflow-x: visible; } }
+@media (pointer: fine) { .jumpRow { flex-wrap: wrap; overflow-x: visible; } }
+.jump {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  background: var(--surface1);
+  color: var(--ink-high);
+  white-space: nowrap;
+}
+.jump[aria-current="true"] { background: var(--ink-high); color: var(--bg); }
+.settingsSection { scroll-margin-top: var(--gear-head-h, 220px); }
+.settingsPane { max-width: 720px; padding: 0 var(--gutter) 48px; }
+.settingsPaneHead { padding: calc(env(safe-area-inset-top) + 20px) 0 8px; }
+.sectionRows { display: flex; flex-direction: column; gap: 2px; padding: 8px 0 var(--list-bottom-pad); }
+.sectionRow { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--r-well); text-align: left; color: var(--ink-high); }
+.sectionRow .chev { margin-left: auto; }
+.radioGroup { display: flex; flex-direction: column; }
+
+/* 200% text (A7): two fields side by side stack once the column is narrower than ~21 lines of
+   type (rem grows with the text size, so this only trips at large text on a phone). */
+@container (max-width: 21rem) {
+  .row2 { grid-template-columns: 1fr; }
+}

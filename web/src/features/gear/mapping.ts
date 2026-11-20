@@ -23,7 +23,7 @@ export function burrSizeText(mm: number | null): string {
  */
 export function fieldsFromCatalog(c: CatalogGrinder): Pick<
   GrinderRow,
-  "brand" | "model" | "burrType" | "burrSizeMm" | "settingStyle" | "clicksPerRotation" | "micronsPerClick" | "lowerIsFiner" | "minSetting" | "maxSetting" | "step" | "catalogId" | "dialFormat"
+  "brand" | "model" | "burrType" | "burrSizeMm" | "settingStyle" | "clicksPerRotation" | "micronsPerClick" | "lowerIsFiner" | "minSetting" | "maxSetting" | "step" | "catalogId" | "dialFormat" | "settingUnit"
 > {
   return {
     brand: c.brand,
@@ -39,7 +39,20 @@ export function fieldsFromCatalog(c: CatalogGrinder): Pick<
     step: c.setting.step > 0 ? c.setting.step : 1,
     catalogId: c.id,
     dialFormat: "",
+    // A blade grinder is timed (v4 §4.2): its "setting" is seconds of grinding.
+    settingUnit: c.setting.settingUnit === "s" ? "s" : "",
   };
+}
+
+/** "1Zpresso K-Ultra"; the generic catalog rows (brand "Any") read as just their model. */
+export function grinderName(g: Pick<GrinderRow, "brand" | "model">): string {
+  const brand = g.brand.trim();
+  return (brand.toLowerCase() === "any" ? g.model.trim() : `${brand} ${g.model.trim()}`).trim();
+}
+
+/** A blade grinder: the setting is seconds of grinding, not a dial. */
+export function isTimed(g: Pick<GrinderRow, "settingUnit">): boolean {
+  return g.settingUnit === "s";
 }
 
 /** The numbers "Use these numbers" copies from the catalog (A§7.4): the scale only. */
@@ -99,7 +112,8 @@ export const SCALE_NOTICE_FOOTNOTE = "Your logged settings keep their numbers. 7
 const STYLE_WORD: Readonly<Record<SettingStyle, string>> = { clicks: "clicks", numbers: "numbered dial", stepless: "stepless", microns: "microns" };
 
 /** "clicks · fewer is finer · 100 a turn · 20 µm a click" (A§7.3 scale words). */
-export function scaleSummary(g: Pick<GrinderRow, "settingStyle" | "lowerIsFiner" | "clicksPerRotation" | "micronsPerClick" | "minSetting" | "maxSetting" | "step">): string {
+export function scaleSummary(g: Pick<GrinderRow, "settingStyle" | "lowerIsFiner" | "clicksPerRotation" | "micronsPerClick" | "minSetting" | "maxSetting" | "step"> & { settingUnit?: GrinderRow["settingUnit"] }): string {
+  if (g.settingUnit === "s") return "timed in seconds · longer is finer";
   const clicks = g.settingStyle === "clicks";
   const parts: string[] = [STYLE_WORD[g.settingStyle]];
   parts.push(clicks ? (g.lowerIsFiner ? "fewer is finer" : "more is finer") : g.lowerIsFiner ? "lower is finer" : "higher is finer");
@@ -139,6 +153,27 @@ export function joinAltitude(low: string, high: string): string {
   const h = high.replace(/[^\d]/g, "");
   if (l && h && l !== h) return Number(l) <= Number(h) ? `${l}-${h}` : `${h}-${l}`;
   return l || h;
+}
+
+const FEET_PER_METRE = 3.28084;
+
+/** Stored metres ("1700" or "1700-1900") shown in feet, each end rounded to 10 ft. */
+export function metresToFeetText(m: string): string {
+  const [lo, hi] = splitAltitude(m);
+  const ft = (t: string) => (/^\d+$/.test(t) ? String(Math.round((Number(t) * FEET_PER_METRE) / 10) * 10) : "");
+  return joinAltitude(ft(lo), ft(hi));
+}
+
+/** One altitude typed in feet back to whole metres (what is stored). */
+export function feetToMetres(ft: string): string {
+  const d = ft.replace(/[^\d]/g, "");
+  return d ? String(Math.round(Number(d) / FEET_PER_METRE)) : "";
+}
+
+/** "Roasted about 9 days ago" under the roast date (v4 §4.7). */
+export function roastedAgoText(days: number): string {
+  if (days <= 0) return "Roasted today";
+  return `Roasted about ${days} ${days === 1 ? "day" : "days"} ago`;
 }
 
 /**

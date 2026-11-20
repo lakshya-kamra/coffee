@@ -1,22 +1,23 @@
 /**
- * Gear › Grinders (A§7.4, §7.8): one card per grinder with its numbers in the dial's own words,
- * a one-line starting point for the method you brew most, and the "Check the scale" notice when
- * a linked catalog entry disagrees with the row.
+ * Gear › Grinders (A§7.4, §7.8, v4 §3.10): one card per grinder with its numbers in the dial's
+ * own words, a one-line starting point for the method you brew most, and the "Check the scale"
+ * notice when a linked catalog entry disagrees with the row. A blade grinder reads in seconds.
+ * Compact: cards; medium: a card grid; expanded+: compact rows beside the inline editor.
  */
 import { memo, useMemo } from "react";
-import { Dripper } from "@/art";
 import { Brewers } from "@/catalog/catalog";
 import { useCatalogGrinder } from "@/catalog/useCatalog";
-import { DataGrid, EyebrowLabel, HairLine, PillButton, SoftCard, StatusChip, StatusLine, type Cell } from "@/design/components";
+import { DataGrid, EyebrowLabel, HairLine, PillButton, PrimaryButton, SecondaryButton, SoftCard, StatusChip, StatusLine, useRovingList, type Cell } from "@/design/components";
 import { repo } from "@/data/repo";
 import type { BrewRow, GrinderRow } from "@/data/schema";
 import { settings } from "@/data/settings";
+import { useSettings } from "@/data/store";
 import { grams, oneDp } from "@/domain/core/format";
 import type { BrewMethod } from "@/domain/core/brewer";
 import { finerWords } from "@/domain/grind";
 import { dialWords, GrindRangeCard, useGrindScale } from "@/features/grind";
 import { EmptyGear } from "./BeansTab";
-import { SCALE_NOTICE_FOOTNOTE, scaleFromCatalog, scaleNoticeId, scaleNoticeText } from "./mapping";
+import { grinderName, isTimed, SCALE_NOTICE_FOOTNOTE, scaleFromCatalog, scaleNoticeId, scaleNoticeText } from "./mapping";
 import s from "./gear.module.css";
 
 interface GrinderUse {
@@ -49,6 +50,39 @@ function useByGrinder(brews: readonly BrewRow[]): Map<number, GrinderUse> {
 }
 
 const STYLE_LABEL: Readonly<Record<string, string>> = { numbers: "Numbered dial", stepless: "Stepless", microns: "Microns" };
+
+/** "Clicks", "Numbered dial", "Timed in seconds": the list row's second line. */
+export function settingStyleWord(g: GrinderRow): string {
+  if (isTimed(g)) return "Timed in seconds";
+  return g.settingStyle === "clicks" ? (g.clicksPerRotation > 0 ? `Clicks · ${g.clicksPerRotation} a turn` : "Clicks") : (STYLE_LABEL[g.settingStyle] ?? "Dial");
+}
+
+const BladeCard = memo(function BladeCard({ g, use, onEdit }: { g: GrinderRow; use: GrinderUse | undefined; onEdit: (g: GrinderRow) => void }) {
+  const brews = use?.brews ?? 0;
+  const cells: Cell[] = [
+    { label: "Grind for", value: g.defaultFilterSetting == null ? null : grams(g.defaultFilterSetting), unit: "s" },
+    { label: "Brews", value: String(brews) },
+  ];
+  return (
+    <div className={s.cardWrap}>
+      <button type="button" className={s.cardHit} onClick={() => onEdit(g)} aria-label={`Edit ${grinderName(g)}`} />
+      <SoftCard padding="18px 18px 6px">
+        <div className={s.cardBody}>
+          <div className={s.cardTop}>
+            <EyebrowLabel text={g.brand.trim().toLowerCase() === "any" ? "Grinder" : g.brand.trim() || "Grinder"} />
+            {g.isDefault && <StatusChip status="neutral" text="Default" />}
+          </div>
+          <h3 className={`t-headline-s ${s.cardName}`}>{g.model.trim() || "Unnamed"}</h3>
+          <p className={`t-body-s ${s.cardMeta}`}>Timed in seconds · longer is finer · pulse and shake</p>
+        </div>
+        <div className={s.cardRule}>
+          <HairLine />
+        </div>
+        <DataGrid cells={cells} columns={3} />
+      </SoftCard>
+    </div>
+  );
+});
 
 const GrinderCard = memo(function GrinderCard({ g, use, notice, onEdit }: { g: GrinderRow; use: GrinderUse | undefined; notice: boolean; onEdit: (g: GrinderRow) => void }) {
   const scale = useGrindScale(g);
@@ -117,24 +151,103 @@ const GrinderCard = memo(function GrinderCard({ g, use, notice, onEdit }: { g: G
   );
 });
 
-export function GrindersTab({ grinders, brews, notices, onEdit }: { grinders: readonly GrinderRow[]; brews: readonly BrewRow[]; notices: readonly string[]; onEdit: (g: GrinderRow) => void }) {
+export function sortGrinders(grinders: readonly GrinderRow[]): GrinderRow[] {
+  return [...grinders].sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || (a.id ?? 0) - (b.id ?? 0));
+}
+
+/**
+ * Grinders, with actions (§4.12). "I buy ground coffee" sets buysGround and says what that means;
+ * the confirmation stays while there is no grinder.
+ */
+export function GrindersEmpty({ onAdd }: { onAdd: () => void }) {
+  const st = useSettings();
+  return (
+    <EmptyGear text="Add your grinder so grind settings make sense.">
+      <div className={s.emptyActions}>
+        <PrimaryButton text="Add a grinder" onClick={onAdd} height={48} />
+        {!st.buysGround && <SecondaryButton text="I buy ground coffee" onClick={() => void settings.set("buysGround", true)} />}
+      </div>
+      {st.buysGround && (
+        <p className={`t-body-m ${s.emptyDone}`} role="status">
+          You&apos;re set: brews will use the coffee as bought.
+        </p>
+      )}
+    </EmptyGear>
+  );
+}
+
+export function GrinderCards({
+  grinders,
+  brews,
+  notices,
+  onEdit,
+  onAdd,
+}: {
+  grinders: readonly GrinderRow[];
+  brews: readonly BrewRow[];
+  notices: readonly string[];
+  onEdit: (g: GrinderRow) => void;
+  onAdd: () => void;
+}) {
   const use = useByGrinder(brews);
   const pending = useMemo(() => new Set(notices), [notices]);
-  const sorted = useMemo(() => [...grinders].sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || (a.id ?? 0) - (b.id ?? 0)), [grinders]);
-  if (sorted.length === 0)
-    return (
-      <EmptyGear
-        text="Grind setting is the variable you will change most often, so it is worth recording which grinder the number belongs to. Pick yours from the list of popular grinders."
-        art={<Dripper />}
-      />
-    );
+  const sorted = useMemo(() => sortGrinders(grinders), [grinders]);
+  if (sorted.length === 0) return <GrindersEmpty onAdd={onAdd} />;
   return (
-    <ul className={s.pane} style={{ paddingTop: 0 }}>
+    <ul className={s.cardGrid}>
       {sorted.map((g) => (
         <li key={g.uid}>
-          <GrinderCard g={g} use={g.id != null ? use.get(g.id) : undefined} notice={pending.has(scaleNoticeId(g.uid))} onEdit={onEdit} />
+          {isTimed(g) ? (
+            <BladeCard g={g} use={g.id != null ? use.get(g.id) : undefined} onEdit={onEdit} />
+          ) : (
+            <GrinderCard g={g} use={g.id != null ? use.get(g.id) : undefined} notice={pending.has(scaleNoticeId(g.uid))} onEdit={onEdit} />
+          )}
         </li>
       ))}
+    </ul>
+  );
+}
+
+/** Expanded+: compact rows (name, how it adjusts); a pending scale notice shows as a chip. */
+export function GrinderRows({
+  grinders,
+  notices,
+  selectedUid,
+  onSelect,
+  newRow,
+}: {
+  grinders: readonly GrinderRow[];
+  notices: readonly string[];
+  selectedUid: string | null;
+  onSelect: (uid: string) => void;
+  newRow: GrinderRow | null;
+}) {
+  const pending = useMemo(() => new Set(notices), [notices]);
+  const rows = useMemo(() => [...(newRow ? [newRow] : []), ...sortGrinders(grinders)], [grinders, newRow]);
+  const selectedIndex = rows.findIndex((g) => g.uid === selectedUid);
+  const list = useRovingList({ count: rows.length, selectedIndex, onSettle: (i) => onSelect(rows[i]!.uid) });
+  return (
+    <ul className={s.rowList} aria-label="Grinders">
+      {rows.map((g, i) => {
+        const isNew = g === newRow;
+        const name = grinderName(g);
+        return (
+          <li key={g.uid}>
+            <button type="button" {...list.itemProps(i)} className={`${s.listRow} interactive-row`} aria-current={i === selectedIndex ? "true" : undefined} onClick={() => onSelect(g.uid)}>
+              <span className={s.listRowText}>
+                <span className={`t-title-m ${s.listRowTitle}`} data-title="">
+                  {name || (isNew ? "New grinder" : "Unnamed")}
+                </span>
+                <span className={`t-body-s ${s.listRowSub}`}>{isNew && !name ? "Not saved yet" : settingStyleWord(g)}</span>
+              </span>
+              <span className={s.listRowEnd}>
+                {g.isDefault && <StatusChip status="neutral" text="Default" />}
+                {pending.has(scaleNoticeId(g.uid)) && <StatusChip status="attention" text="Check the scale" />}
+              </span>
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

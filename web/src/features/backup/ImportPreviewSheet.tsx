@@ -47,7 +47,8 @@ export function ImportPreviewSheet({ read, onClose, onImported }: { read: ReadOk
   };
 
   return (
-    <CoffeeSheet label="Restore from a backup" onClose={onClose}>
+    // Role "content": a bottom sheet on compact, a centred dialog at expanded+ (v4 §2.4).
+    <CoffeeSheet role="content" label="Restore from a backup" onClose={onClose}>
       <div ref={root} className={s.sheet}>
         <h2 className={`t-title-l ${s.sheetTitle}`}>Restore from a backup</h2>
         <div className={s.lines}>

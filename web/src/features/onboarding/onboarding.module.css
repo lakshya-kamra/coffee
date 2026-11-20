@@ -1,8 +1,27 @@
-/* Onboarding (A§7.3): five steps over the brew screen's mesh, progress dots, Skip and Back. */
+/* Onboarding (A§7.3, v4 §3.11): six steps over the brew screen's mesh, progress dots, Skip and Back.
+   Compact: the column as before. Medium: a centred card, max 560. Expanded+: a 960 frame split
+   40/60 with why-we-ask on the left. Short (>= 600 wide): the same split without the art. All by
+   the layer's width (container queries); "short" is the shell's html[data-short]. */
 
 .screen { position: relative; min-height: 100%; display: flex; flex-direction: column; }
 .mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-.body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+.frame {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.body { flex: 1; display: flex; flex-direction: column; min-width: 0; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+.why { display: none; }
+.whyText { color: var(--ink-mid); max-width: 36ch; }
+.whyArt { color: var(--ink-mid); }
 
 .top {
   display: flex;
@@ -19,6 +38,9 @@
 
 .step { display: flex; flex-direction: column; gap: 16px; padding-top: 12px; flex: 1; }
 .step[hidden] { display: none; }
+.title { margin-top: -8px; }
+.title:focus { outline: none; }
+.title:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 4px; border-radius: 6px; }
 .lede { color: var(--ink-mid); }
 .group { display: flex; flex-direction: column; gap: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -35,6 +57,55 @@
   background: var(--surface1);
   border-radius: var(--r-card);
 }
+.anchorWrap { display: inline-flex; }
+
+/* Big choice cards: a native radio in a label (arrows move, Space picks, Enter goes Next). */
+.choices { display: flex; flex-direction: column; gap: 10px; }
+.choicesTight { display: flex; flex-direction: column; gap: 8px; }
+.choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 14px 16px;
+  border-radius: var(--r-card);
+  background: var(--surface1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.choice[data-checked="true"] { background: var(--surface2); border-color: var(--ink-high); }
+.choice:has(.choiceInput:focus-visible) { outline: 2px solid var(--ink-high); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover { background: var(--surface2); }
+}
+.choiceInput { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.choiceText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.choiceMark {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--outline-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.choice[data-checked="true"] .choiceMark { border-color: var(--ink-high); }
+.choice[data-checked="true"] .choiceMark::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-high); }
+@media (forced-colors: active) {
+  .choice { border-color: ButtonBorder; }
+  .choice[data-checked="true"] { border-color: Highlight; }
+  .choice[data-checked="true"] .choiceMark::after { background: Highlight; forced-color-adjust: none; }
+}
+
+.disclosure { align-self: flex-start; min-height: 44px; color: var(--ink-high); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Your first brew */
+.need { display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: var(--r-pill); background: var(--surface2); color: var(--ink-high); }
+.checklist { display: flex; flex-direction: column; gap: 8px; padding-left: 1.4em; list-style: decimal; color: var(--ink-high); }
+.checklist li { padding-left: 4px; }
 
 .footer {
   /* In the flow, not sticky: steps grow to push it to the bottom, and nothing scrolls under it. */
@@ -47,3 +118,57 @@
 /* Two fields side by side must shrink with the column, never push past it. */
 .row2 > * { min-width: 0; }
 .row2 input { min-width: 0; width: 100%; }
+
+/* ---------------------------------------------------------------- medium: a centred card */
+@container pane (min-width: 600px) {
+  .frame {
+    flex: 0 0 auto;
+    max-width: 560px;
+    margin: 32px auto;
+    padding: 8px 32px 0;
+    border-radius: var(--r-sheet);
+    /* The card is one shade above the canvas, so cards and choices on it still lift by shade. */
+    background: var(--surface0);
+  }
+  .footer { flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: 16px; }
+  .footer > :first-child { flex: 0 1 var(--primary-max); }
+  .footer > * { white-space: nowrap; }
+}
+
+/* ---------------------------------------------------------------- expanded+: 960, split 40/60 */
+@container pane (min-width: 840px) {
+  .frame {
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 40px;
+    padding: 8px 40px 0;
+    margin: 48px auto;
+  }
+  .why { display: flex; flex-direction: column; gap: 12px; padding: 72px 0 40px; position: sticky; top: 0; align-self: start; }
+  .whyArt { width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+}
+/* Two columns of grinder rows from large (§3.11). */
+@container pane (min-width: 1200px) {
+  .pickerBox ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+}
+
+/* ---------------------------------------------------------------- short: the split, no art */
+@container pane (min-width: 600px) {
+  :global(html[data-short]) .frame {
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 24px;
+    margin: 12px auto;
+    padding: 0 24px;
+  }
+  :global(html[data-short]) .why { display: flex; flex-direction: column; gap: 8px; padding: 24px 0; }
+  :global(html[data-short]) .whyArt { display: none; }
+  :global(html[data-short]) .top { min-height: 48px; }
+}
+
+/* 200% text (A7): side-by-side fields stack when the column is narrow for the type size. */
+@container (max-width: 21rem) {
+  .row2 { grid-template-columns: 1fr; }
+}
