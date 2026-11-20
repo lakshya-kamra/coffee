@@ -85,3 +85,25 @@ export function reloadOnceForPreloadError(): boolean {
   location.reload();
   return true;
 }
+
+/**
+ * Per-device shell conveniences (v4 §2.2 sidebar collapse, §2.8 palette recents). Never in
+ * backups, never shared. Storage blocked or full: reads give null and writes are dropped.
+ */
+export type DeviceKey = "coffee.sidebar" | "coffee.paletteRecent";
+
+export function readDeviceKey(key: DeviceKey): string | null {
+  try {
+    return safeLocal()?.getItem(key) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeDeviceKey(key: DeviceKey, value: string): void {
+  try {
+    safeLocal()?.setItem(key, value);
+  } catch {
+    // Blocked or full: the preference lasts for this page only.
+  }
+}

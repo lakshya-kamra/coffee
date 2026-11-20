@@ -36,6 +36,9 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.configs.recommended.rules,
       "no-restricted-syntax": ["error", ...cspBans],
+      // v4 §2.4: CoffeeSheet/ConfirmSheet take a presentation `role` ("editor", "picker"…); only
+      // DOM elements' role is ARIA.
+      "jsx-a11y/aria-role": ["error", { ignoreNonDOM: true }],
       "no-restricted-globals": ["error", { name: "localStorage", message: storageMessage }, { name: "sessionStorage", message: storageMessage }],
       "no-restricted-properties": [
         "error",

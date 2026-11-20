@@ -170,6 +170,14 @@ function pendingAfterPopChain(fn: () => void) {
   };
 }
 
+/**
+ * Runs `fn` after the pop now on its way (popToRoot, history.back) lands, after anything queued
+ * before it. Used to open a detail in another tab from a covered screen (panes.openInTab).
+ */
+export function afterNextPop(fn: () => void): void {
+  pendingAfterPopChain(fn);
+}
+
 function popToRoot(tab?: TabId) {
   if (snap.depth > 0) {
     if (tab) pendingAfterPopChain(() => switchTab(tab));

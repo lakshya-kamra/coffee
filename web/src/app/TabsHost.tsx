@@ -75,7 +75,7 @@ export function TabsHost() {
   const tab = useRouter((s) => s.tab);
   const [mounted, setMounted] = useState<ReadonlySet<TabId>>(() => new Set([tab]));
   const shown = useRef<TabId | null>(null);
-  const host = useRef<HTMLDivElement>(null);
+  const host = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
     shellElements.tabs = host.current;
@@ -111,10 +111,12 @@ export function TabsHost() {
   }, [tab]);
 
   return (
-    <div ref={host} className={shell.tabs}>
+    // <main> (A5): when a layer covers the tabs they stop painting and leave the accessibility
+    // tree, and the layer itself is the main landmark.
+    <main ref={host} id="main" className={shell.tabs}>
       {TABS.map((id) => (
         <TabLayer key={id} id={id} mounted={mounted.has(id)} register={register} />
       ))}
-    </div>
+    </main>
   );
 }

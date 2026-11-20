@@ -1,0 +1,43 @@
+/* Command palette (v4 §2.8). Rows lift by background colour only (paint, one element). */
+.palette { display: flex; flex-direction: column; min-height: 0; height: 100%; gap: 8px; }
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  color: var(--ink-low);
+  border: 1.5px solid transparent;
+}
+.field:focus-within { border-color: var(--ink-high); }
+.input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink-high); padding: 14px 0; }
+.input::placeholder { color: var(--ink-low); }
+.list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; max-height: min(56vh, 520px); }
+:global([data-present="full"]) .list { max-height: none; }
+.group { padding-top: 8px; }
+.groupLabel { padding: 6px 12px; }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 12px;
+  border-radius: var(--r-well);
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.row[aria-selected="true"] { background: var(--surface2); }
+.icon { width: 24px; display: flex; justify-content: center; color: var(--ink-mid); flex: none; }
+.text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.text > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub { color: var(--ink-low); }
+.empty { padding: 16px 12px; }
+.foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 4px 0; }
+@media (pointer: coarse) { .foot { display: none; } }
+
+@media (forced-colors: active) {
+  .row[aria-selected="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .field { border: 1px solid ButtonBorder; }
+}

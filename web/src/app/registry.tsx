@@ -26,6 +26,8 @@ const loadBrew = () => import("@/features/brew");
 const loadReview = () => import("@/features/review");
 const loadOnboarding = () => import("@/features/onboarding");
 const loadRecipeEditor = () => import("@/features/recipe-editor");
+// V4-WSHELL stub, replaced by V4-WLOG (who may move it behind features/log's index).
+const loadCompare = () => import("@/features/log/CompareScreen");
 
 export const TabScreens: { [K in Exclude<TabId, "gear">]: Lazy<object> } & { gear: Lazy<{ tab: GearTab }> } = {
   today: screen(loadToday, (m) => m.TodayScreen),
@@ -38,9 +40,11 @@ export const TabScreens: { [K in Exclude<TabId, "gear">]: Lazy<object> } & { gea
 export const DetailScreens = {
   recipe: screen(loadRecipes, (m) => m.RecipeDetailScreen),
   recipeEdit: screen(loadRecipeEditor, (m) => m.RecipeEditorScreen),
-  brew: screen(loadBrew, (m) => m.BrewScreen),
+  // `againUid` (v4 §4.10, /brew/:id/again/:uid): optional, so today's BrewScreen still fits.
+  brew: screen<Awaited<ReturnType<typeof loadBrew>>, { recipeId: string; againUid?: string }>(loadBrew, (m) => m.BrewScreen),
   review: screen(loadReview, (m) => m.ReviewScreen),
   brewDetail: screen(loadLog, (m) => m.BrewDetailScreen),
+  compare: screen(loadCompare, (m) => m.CompareScreen),
   onboarding: screen(loadOnboarding, (m) => m.OnboardingScreen),
 };
 
@@ -52,11 +56,13 @@ export function DetailScreen({ route, from }: { route: DetailRoute; from: Shared
     case "recipeEdit":
       return <DetailScreens.recipeEdit id={route.id} mode={route.mode} />;
     case "brew":
-      return <DetailScreens.brew recipeId={route.recipeId} />;
+      return <DetailScreens.brew recipeId={route.recipeId} againUid={route.againUid} />;
     case "review":
       return <DetailScreens.review brewUid={route.brewUid} />;
     case "brewDetail":
       return <DetailScreens.brewDetail brewUid={route.brewUid} />;
+    case "compare":
+      return <DetailScreens.compare brewUid={route.brewUid} otherUid={route.otherUid} />;
     case "onboarding":
       return <DetailScreens.onboarding />;
   }
@@ -83,6 +89,7 @@ export const prefetchers: Record<DetailRoute["kind"] | TabId, () => Promise<unkn
   brew: () => loadBrew().then((m) => m.prefetch()),
   review: () => loadReview().then((m) => m.prefetch()),
   brewDetail: () => loadLog().then((m) => m.prefetch()),
+  compare: () => Promise.all([loadCompare(), loadLog().then((m) => m.prefetch())]),
   onboarding: () => loadOnboarding().then((m) => m.prefetch()),
 };
 

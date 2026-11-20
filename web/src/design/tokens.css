@@ -56,6 +56,60 @@
   --z-bar: 10;
   --z-details: 20;
   --z-toast: 30;
+  --z-tooltip: 40;
+
+  /* v4 §1.2 adaptive tokens, compact values. Media queries below are the §1.1 classes, written
+     literally (no custom-media plugin); app/windowClass.ts holds the same numbers for JS. */
+  --nav-w: 0px;
+  --pane-gap: 24px;
+  --list-pane-w: 100%;
+  --primary-max: 100%;
+  --measure: none;
+  --detail-max: 960px;
+  --rail-w: 80px;
+  --sidebar-w: 248px;
+  /* The nav and list panes sit one shade above the canvas (lift by shade, no border, no shadow). */
+  --surface0: color-mix(in srgb, var(--bg) 55%, var(--surface1));
+}
+
+/* medium 600-839: rail */
+@media (min-width: 600px) {
+  :root {
+    --nav-w: var(--rail-w);
+    --gutter: 24px;
+    --list-bottom-pad: calc(32px + env(safe-area-inset-bottom));
+    --primary-max: 420px;
+    --measure: 72ch;
+    --column-max: 720px;
+  }
+}
+/* expanded 840-1199: rail + list-detail */
+@media (min-width: 840px) {
+  :root {
+    --list-bottom-pad: 32px;
+    --list-pane-w: 360px;
+  }
+}
+/* large 1200-1599: sidebar (the rail when collapsed) */
+@media (min-width: 1200px) {
+  :root {
+    --nav-w: var(--sidebar-w);
+    --gutter: 32px;
+    --list-pane-w: 400px;
+  }
+  :root[data-sidebar="collapsed"] { --nav-w: var(--rail-w); }
+}
+/* extra-large >= 1600 */
+@media (min-width: 1600px) {
+  :root {
+    --pane-gap: 32px;
+    --list-pane-w: 420px;
+    --detail-max: 1080px;
+  }
+}
+/* short (height < 480): the gutter tightens; the rail drops its labels (shell.module.css) */
+@media (max-height: 479.98px) {
+  :root { --gutter: 16px; --pane-gap: 16px; }
 }
 
 /* Type.kt: size/line in rem, tracking in px. */

@@ -2,6 +2,7 @@
 import { memo, type ReactNode } from "react";
 import type { IconName } from "../icons";
 import { Icon } from "./Icon";
+import { tooltipProps, type TooltipSide } from "./Tooltip";
 import s from "./components.module.css";
 
 interface BaseButton {
@@ -49,7 +50,10 @@ export const PillButton = memo(function PillButton({ text, onClick, icon, enable
   );
 });
 
-/** A square icon button. `label` is the accessible name (contentDescription). */
+/**
+ * A square icon button. `label` is the accessible name (contentDescription) and the tooltip
+ * (v4 §2.6, A10); `keys` adds the shortcut to the tooltip and aria-keyshortcuts, never the name.
+ */
 export const IconWell = memo(function IconWell({
   icon,
   label,
@@ -62,9 +66,14 @@ export const IconWell = memo(function IconWell({
   enabled = true,
   className,
   children,
+  keys,
+  tooltipSide,
 }: {
   icon: IconName;
   label: string;
+  /** Shortcut shown in the tooltip ("space", "mod+k"). */
+  keys?: string;
+  tooltipSide?: TooltipSide;
   onClick: () => void;
   size?: number;
   iconSize?: number;
@@ -82,7 +91,7 @@ export const IconWell = memo(function IconWell({
       data-on-canvas={onCanvas}
       style={{ width: size, height: size, color: tint, background: fill }}
       aria-label={label}
-      title={label}
+      {...tooltipProps(label, keys, tooltipSide)}
       disabled={!enabled}
       onClick={onClick}
     >

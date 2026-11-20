@@ -4,13 +4,21 @@
  * visibility:hidden (stop painting), and they are made visible again synchronously at the start
  * of a pop, before the exit animation runs. All enter/exit values are opacity and whole
  * transform strings (compositor).
+ *
+ * v4 §2.3: a pane-able detail whose tab has a mounted ListDetail renders in that tab's pane at
+ * expanded and up (layerPlan.ts decides). It gets no layer here, and `tabs[data-covered]` is set
+ * only by a real layer. A detail that moves between pane and layer because of a resize (or a
+ * ListDetail mounting) appears or disappears without animation, and every layer keeps its key
+ * (`index:path`), so a brew or a half-written review above it keeps its state (§2.10).
  */
 import { AnimatePresence, m, type TargetAndTransition, type Transition } from "motion/react";
 import { Suspense, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { effectsFast, spatialDefault, spatialFast } from "@/design/motion";
+import { flippedKeys, layersOf, type PlannedDetail } from "./layerPlan";
+import { useDetailPlan } from "./paneHosts";
 import { DetailScreen } from "./registry";
 import { useRoute } from "./router";
-import { pathOf, type DetailRoute, type SharedFrom } from "./routes";
+import type { DetailRoute, SharedFrom } from "./routes";
 import { SHARED_ELEMENT } from "./sharedKeys";
 import { beginTransition, prefersReducedMotion, recentPointer, SettledContext, shellElements } from "./transitionState";
 import shell from "./shell.module.css";
@@ -78,6 +86,23 @@ export function choreographyFor(kind: DetailRoute["kind"], reduced: boolean, sha
   }
 }
 
+/** Human names for each layer (v4 A3); also the first part of most document titles. */
+export const LAYER_LABELS: Readonly<Record<DetailRoute["kind"], string>> = {
+  recipe: "Recipe",
+  recipeEdit: "Edit recipe",
+  brew: "Brew",
+  review: "Rate this brew",
+  brewDetail: "Brew details",
+  compare: "Compare brews",
+  onboarding: "Welcome",
+};
+
+export function layerLabel(route: DetailRoute): string {
+  if (route.kind === "recipeEdit") return route.mode === "new" ? "New recipe" : route.mode === "duplicate" ? "Duplicate recipe" : "Edit recipe";
+  return LAYER_LABELS[route.kind];
+}
+
+/** Real layers by their position among layers (0 = lowest), not by stack index. */
 const detailEls = new Map<number, HTMLElement>();
 
 function setCovered(el: HTMLElement | null | undefined, covered: boolean) {
@@ -87,55 +112,67 @@ function setCovered(el: HTMLElement | null | undefined, covered: boolean) {
 }
 
 /** Once a push settles: everything below the top stops painting. */
-function coverBelow(index: number) {
+function coverBelow(pos: number) {
   setCovered(shellElements.tabs, true);
-  for (const [i, el] of detailEls) if (i < index) setCovered(el, true);
+  for (const [i, el] of detailEls) if (i < pos) setCovered(el, true);
 }
 
-function DetailLayer({ route, from, index, instant }: { route: DetailRoute; from: SharedFrom | undefined; index: number; instant: boolean }) {
+const INSTANT_EXIT: TargetAndTransition = { opacity: 0, transition: { duration: 0 } };
+
+function DetailLayer({ route, from, pos, layerKey, instant, focus }: { route: DetailRoute; from: SharedFrom | undefined; pos: number; layerKey: string; instant: boolean; focus: boolean }) {
   // Read once per layer: a preference change mid-flight must not swap the choreography.
   const [c] = useState(() => {
     const reduced = prefersReducedMotion();
-    const ch = choreographyFor(route.kind, reduced, SHARED_ELEMENT && !reduced);
+    const ch = choreographyFor(route.kind, reduced, SHARED_ELEMENT && !reduced && !instant);
     const p = recentPointer();
     return p && !ch.backdrop && route.kind === "recipe" ? { ...ch, origin: `${p.x}px ${p.y}px` } : ch;
   });
   const [settled, setSettled] = useState(instant);
   const end = useRef<(() => void) | null>(null);
+  const self = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
-    if (instant) coverBelow(index);
+    if (instant) coverBelow(pos);
     else end.current = beginTransition();
     return () => end.current?.();
-    // Mount-only: a layer's index never changes while it is mounted (keys include the index).
+    // Mount-only: covering happens once, when the layer has entered.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onEntered = (def: unknown) => {
     if (def !== "visible" || settled) return;
     setSettled(true);
-    coverBelow(index);
+    coverBelow(pos);
     end.current?.();
     end.current = null;
   };
 
   const style: CSSProperties | undefined = c.origin ? { transformOrigin: c.origin } : undefined;
+  // `custom` comes from AnimatePresence at exit time: the keys that flipped to a pane leave at once.
+  const exit = (flipped: ReadonlySet<string> | undefined) => (flipped?.has(layerKey) ? INSTANT_EXIT : c.exit);
 
   return (
-    <m.section
+    <m.main
       ref={(el: HTMLElement | null) => {
-        if (el) detailEls.set(index, el);
-        else detailEls.delete(index);
+        if (el) {
+          self.current = el;
+          detailEls.set(pos, el);
+        } else if (detailEls.get(pos) === self.current) {
+          detailEls.delete(pos);
+        }
       }}
       className={shell.detail}
+      data-focus={focus || undefined}
       data-backdrop={c.backdrop || undefined}
+      data-layer-key={layerKey}
+      tabIndex={-1}
       style={style}
-      variants={c.backdrop ? undefined : { hidden: c.initial, visible: c.animate }}
-      initial={c.backdrop ? undefined : "hidden"}
+      variants={c.backdrop ? { exit } : { hidden: c.initial, visible: c.animate, exit }}
+      initial={c.backdrop || instant ? false : "hidden"}
       animate={c.backdrop ? undefined : "visible"}
-      exit={c.exit}
+      exit="exit"
       onAnimationComplete={c.backdrop ? undefined : onEntered}
-      aria-label={route.kind}
+      aria-label={layerLabel(route)}
     >
       {c.backdrop && (
         <m.div
@@ -155,35 +192,46 @@ function DetailLayer({ route, from, index, instant }: { route: DetailRoute; from
           </Suspense>
         </SettledContext.Provider>
       </div>
-    </m.section>
+    </m.main>
   );
 }
 
 export function DetailHost() {
   const r = useRoute();
-  const details = r.stack.slice(1) as DetailRoute[];
-  const prevDepth = useRef(details.length);
-  // Details present on the first render (a deep link) appear without animating.
-  const [bootDepth] = useState(details.length);
-  const [firstKeys] = useState(() => new Set(details.map((d, i) => `${i}:${pathOf(d)}`)));
+  const plan = useDetailPlan();
+  const layers = layersOf(plan);
+  const prevCount = useRef(layers.length);
+  // Layers present on the first render (a deep link) appear without animating.
+  const [firstKeys] = useState(() => new Set(layers.map((d) => d.key)));
+  // Keys whose placement flipped (pane <-> layer) in the latest plan change: no enter or exit
+  // animation for them. Derived while rendering (React's "adjust state" pattern), not in an effect.
+  const [flips, setFlips] = useState<{ plan: readonly PlannedDetail[]; keys: ReadonlySet<string> }>(() => ({ plan, keys: new Set() }));
+  if (flips.plan !== plan) setFlips({ plan, keys: flippedKeys(flips.plan, plan) });
 
   useLayoutEffect(() => {
-    const depth = details.length;
-    if (depth < prevDepth.current) {
-      // A pop: reveal what is underneath before the exit animation paints its first frame.
-      if (depth === 0) setCovered(shellElements.tabs, false);
-      else setCovered(detailEls.get(depth - 1), false);
+    const count = layers.length;
+    if (count < prevCount.current) {
+      // A pop (or a layer moving into a pane): reveal what is underneath before any exit paints.
+      if (count === 0) setCovered(shellElements.tabs, false);
+      else setCovered(detailEls.get(count - 1), false);
     }
-    prevDepth.current = depth;
-  }, [details.length]);
+    prevCount.current = count;
+  }, [layers.length]);
 
   return (
     <div className={shell.details}>
-      <AnimatePresence initial={false}>
-        {details.map((d, i) => {
-          const key = `${i}:${pathOf(d)}`;
-          return <DetailLayer key={key} route={d} from={r.froms[i] ?? undefined} index={i} instant={i < bootDepth && firstKeys.has(key)} />;
-        })}
+      <AnimatePresence initial={false} custom={flips.keys}>
+        {layers.map((d, pos) => (
+          <DetailLayer
+            key={d.key}
+            route={d.route}
+            from={r.froms[d.index] ?? undefined}
+            pos={pos}
+            layerKey={d.key}
+            focus={d.placement === "focus"}
+            instant={firstKeys.has(d.key) || flips.keys.has(d.key)}
+          />
+        ))}
       </AnimatePresence>
     </div>
   );

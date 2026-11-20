@@ -11,9 +11,10 @@ export type Route =
   | { kind: "tab"; tab: TabId; gearTab?: GearTab }
   | { kind: "recipe"; id: string }
   | { kind: "recipeEdit"; id: string | null; mode: "new" | "edit" | "duplicate" }
-  | { kind: "brew"; recipeId: string }
+  | { kind: "brew"; recipeId: string; againUid?: string }
   | { kind: "review"; brewUid: string }
   | { kind: "brewDetail"; brewUid: string }
+  | { kind: "compare"; brewUid: string; otherUid: string }
   | { kind: "onboarding" };
 
 export type DetailRoute = Exclude<Route, { kind: "tab" }>;
@@ -39,8 +40,10 @@ export function parsePath(pathname: string): Route | null {
   const clean = pathname.replace(/\/+$/, "") || "/";
   if (clean === "/") return { kind: "tab", tab: "today" };
   const parts = clean.split("/").slice(1);
-  const [a, b, c, ...rest] = parts;
+  const [a, b, c, d, e, ...rest] = parts;
   if (rest.length > 0) return null;
+  // Only /log/:uid/compare/:other and /brew/:id/again/:uid have more than three segments.
+  if (d != null && !(a === "log" && c === "compare") && !(a === "brew" && c === "again")) return null;
   switch (a) {
     case "recipes": {
       if (b == null) return c == null ? { kind: "tab", tab: "recipes" } : null;
@@ -55,7 +58,10 @@ export function parsePath(pathname: string): Route | null {
     case "log": {
       if (b == null) return { kind: "tab", tab: "log" };
       const uid = seg(b);
-      return uid && c == null ? { kind: "brewDetail", brewUid: uid } : null;
+      if (!uid) return null;
+      if (c == null) return { kind: "brewDetail", brewUid: uid };
+      const other = seg(d);
+      return c === "compare" && other && e == null ? { kind: "compare", brewUid: uid, otherUid: other } : null;
     }
     case "insights":
       return b == null ? { kind: "tab", tab: "insights" } : null;
@@ -66,7 +72,10 @@ export function parsePath(pathname: string): Route | null {
       return null;
     case "brew": {
       const id = seg(b);
-      return id && c == null ? { kind: "brew", recipeId: id } : null;
+      if (!id) return null;
+      if (c == null) return { kind: "brew", recipeId: id };
+      const again = seg(d);
+      return c === "again" && again && e == null ? { kind: "brew", recipeId: id, againUid: again } : null;
     }
     case "review": {
       const uid = seg(b);
@@ -91,11 +100,13 @@ export function pathOf(r: Route): string {
     case "recipeEdit":
       return r.mode === "new" || r.id == null ? "/recipes/new" : `/recipes/${enc(r.id)}/${r.mode}`;
     case "brew":
-      return `/brew/${enc(r.recipeId)}`;
+      return r.againUid ? `/brew/${enc(r.recipeId)}/again/${enc(r.againUid)}` : `/brew/${enc(r.recipeId)}`;
     case "review":
       return `/review/${enc(r.brewUid)}`;
     case "brewDetail":
       return `/log/${enc(r.brewUid)}`;
+    case "compare":
+      return `/log/${enc(r.brewUid)}/compare/${enc(r.otherUid)}`;
     case "onboarding":
       return "/welcome";
   }
@@ -110,6 +121,7 @@ export function parentTab(r: Route): TabId {
     case "recipeEdit":
       return "recipes";
     case "brewDetail":
+    case "compare":
       return "log";
     case "brew":
     case "review":
@@ -117,6 +129,15 @@ export function parentTab(r: Route): TabId {
       return "today";
   }
 }
+
+/**
+ * Routes that may render inside their tab's detail pane at >= expanded (v4 §2.3). Gear has no
+ * detail routes yet: its panes select in-tab (ListDetail's `detail` prop).
+ */
+export const PANEABLE_KINDS: ReadonlySet<DetailRoute["kind"]> = new Set(["recipe", "brewDetail", "compare"]);
+
+/** Focus modes (v4 D4): full window over the navigation at every size. */
+export const FOCUS_KINDS: ReadonlySet<DetailRoute["kind"]> = new Set(["brew", "review", "onboarding", "recipeEdit"]);
 
 export function tabRoute(tab: TabId, gearTab?: GearTab): Route {
   return tab === "gear" ? { kind: "tab", tab, gearTab: gearTab ?? "beans" } : { kind: "tab", tab };

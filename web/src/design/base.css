@@ -65,3 +65,64 @@ img, svg, canvas { display: block; }
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
 }
+
+/* ---------------------------------------------------------------- v4 §2.6 hover and focus */
+/* Every card or row that opens something. Hover lifts one shade (background colour on one element,
+   120 ms, paint only); the focus ring is the global :focus-visible above and follows the radius. */
+.interactive-card, .interactive-row {
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.interactive-row[aria-current="true"], .interactive-row[aria-current="page"], .interactive-row[aria-selected="true"] { background: var(--surface2); }
+.interactive-card[aria-current="true"] { background: var(--surface2); }
+@media (hover: hover) and (pointer: fine) {
+  .interactive-card:hover { background: var(--surface2); }
+  .interactive-row:hover { background: var(--surface1); }
+  .interactive-row[aria-current="true"]:hover, .interactive-row[aria-current="page"]:hover { background: var(--surface2); }
+  .interactive-card:hover [data-title], .interactive-row:hover [data-title] { color: var(--ink-high); }
+  /* Optional 1 px rise, recipe grid cards only (§2.9 rule 4). */
+  .interactive-card[data-lift]:hover { transform: translateY(-1px); }
+  .interactive-card[data-lift] { transition: background-color 120ms var(--ease-emphasized), transform 120ms var(--ease-emphasized); }
+  a:hover { text-decoration-thickness: 2px; }
+}
+/* The "..." button on a row shows on hover or focus within, and is always reachable by keyboard. */
+@media (hover: hover) and (pointer: fine) {
+  .interactive-row .row-more, .interactive-card .row-more { opacity: 0; transition: opacity 120ms var(--ease-emphasized); }
+  .interactive-row:hover .row-more, .interactive-row:focus-within .row-more,
+  .interactive-card:hover .row-more, .interactive-card:focus-within .row-more { opacity: 1; }
+}
+
+/* Skip link (A5): the first Tab stop, visible only when focused. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--r-button);
+  background: var(--inverse);
+  color: var(--on-inverse);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }
+
+/* Body text never runs wider than a comfortable line at medium and up (--measure). */
+.measure { max-width: var(--measure); }
+
+/* ---------------------------------------------------------------- forced colors (A1) */
+@media (forced-colors: active) {
+  :focus-visible { outline: 2px solid Highlight; }
+  .interactive-card, .interactive-row { border: 1px solid CanvasText; }
+  .interactive-row[aria-current="true"], .interactive-row[aria-current="page"], .interactive-card[aria-current="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  .skip-link { border: 2px solid CanvasText; }
+}
+
+/* Headings and layers focused by the shell on a route change (A5) announce themselves; they are
+   not controls, so no ring. Every control keeps its ring. */
+h1[tabindex="-1"]:focus, main[tabindex="-1"]:focus, [data-tab][tabindex="-1"]:focus { outline: none; }

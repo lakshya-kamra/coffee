@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { choreographyFor } from "./DetailHost";
 import { nav, router, startRouter, stopRouterForTests } from "./router";
-import { parentTab, parsePath, pathOf, type Route } from "./routes";
+import { FOCUS_KINDS, PANEABLE_KINDS, parentTab, parsePath, pathOf, type Route } from "./routes";
 import { SharedKeys } from "./sharedKeys";
 
 const CASES: [string, Route][] = [
@@ -22,6 +22,9 @@ const CASES: [string, Route][] = [
   ["/review/0b6c6f3e-uid", { kind: "review", brewUid: "0b6c6f3e-uid" }],
   ["/log/0b6c6f3e-uid", { kind: "brewDetail", brewUid: "0b6c6f3e-uid" }],
   ["/welcome", { kind: "onboarding" }],
+  // v4: compare two brews (pane-able, Log) and brew again from a logged brew.
+  ["/log/0b6c6f3e-uid/compare/9a8b-uid", { kind: "compare", brewUid: "0b6c6f3e-uid", otherUid: "9a8b-uid" }],
+  ["/brew/kasuya-46/again/0b6c6f3e-uid", { kind: "brew", recipeId: "kasuya-46", againUid: "0b6c6f3e-uid" }],
 ];
 
 describe("routes", () => {
@@ -32,14 +35,26 @@ describe("routes", () => {
     }
   });
   it("rejects unknown paths and tolerates a trailing slash", () => {
-    for (const p of ["/nope", "/recipes/a/b/c", "/brew", "/gear/x", "/insights/1"]) expect(parsePath(p), p).toBeNull();
+    for (const p of ["/nope", "/recipes/a/b/c", "/brew", "/gear/x", "/insights/1", "/log/a/compare", "/log/a/compare/b/c", "/log/a/b/c", "/brew/a/again", "/brew/a/x/b", "/recipes/a/edit/b"])
+      expect(parsePath(p), p).toBeNull();
     expect(parsePath("/log/")).toEqual({ kind: "tab", tab: "log" });
   });
   it("encodes ids", () => {
     expect(pathOf({ kind: "recipe", id: "a b/c" })).toBe("/recipes/a%20b%2Fc");
     expect(parsePath("/recipes/a%20b%2Fc")).toEqual({ kind: "recipe", id: "a b/c" });
   });
+  it("encodes both uids of a compare and the again uid", () => {
+    expect(pathOf({ kind: "compare", brewUid: "a/b", otherUid: "c d" })).toBe("/log/a%2Fb/compare/c%20d");
+    expect(parsePath("/log/a%2Fb/compare/c%20d")).toEqual({ kind: "compare", brewUid: "a/b", otherUid: "c d" });
+    expect(pathOf({ kind: "brew", recipeId: "x", againUid: undefined })).toBe("/brew/x");
+  });
+  it("marks pane-able and focus routes (v4 §2.3, D4)", () => {
+    expect([...PANEABLE_KINDS].sort()).toEqual(["brewDetail", "compare", "recipe"]);
+    expect([...FOCUS_KINDS].sort()).toEqual(["brew", "onboarding", "recipeEdit", "review"]);
+  });
   it("knows each detail's parent tab", () => {
+    expect(parentTab({ kind: "compare", brewUid: "x", otherUid: "y" })).toBe("log");
+    expect(parentTab({ kind: "brew", recipeId: "x", againUid: "u" })).toBe("today");
     expect(parentTab({ kind: "brewDetail", brewUid: "x" })).toBe("log");
     expect(parentTab({ kind: "recipe", id: "x" })).toBe("recipes");
     expect(parentTab({ kind: "review", brewUid: "x" })).toBe("today");

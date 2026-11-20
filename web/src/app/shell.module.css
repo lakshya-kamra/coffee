@@ -1,22 +1,26 @@
-/* App shell: keep-alive tab layers, the detail layer, the bottom bar (web-spec §6.3–6.7). */
+/* App shell: keep-alive tab layers, the detail layer, the navigation (bottom bar on compact, rail
+   on medium/expanded, sidebar on large+), list-detail panes, toasts (web-spec §6.3–6.7, v4 §2). */
 
 .tabs {
   position: fixed;
   inset: 0;
   z-index: var(--z-tabs);
 }
-/* Covered by an opaque detail: stop painting the tabs entirely. */
+/* Covered by an opaque detail: stop painting the tabs entirely. Pane selections never set this. */
 .tabs[data-covered="true"] { visibility: hidden; }
 
-/* One scroll layer per tab. The body never scrolls (base.css), so viewport coordinates equal
-   page coordinates for layout measurement and pull-to-refresh never reloads a running brew. */
+/* One scroll layer per tab, beside the rail or sidebar (--nav-w is 0 on compact). The body never
+   scrolls (base.css), so viewport coordinates equal page coordinates for layout measurement and
+   pull-to-refresh never reloads a running brew. */
 .layer {
   position: fixed;
   inset: 0;
+  inset-inline-start: var(--nav-w);
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   contain: layout paint;
+  container: pane / inline-size;
   background: var(--bg);
   -webkit-overflow-scrolling: touch;
 }
@@ -38,7 +42,8 @@
   min-height: 100%;
 }
 
-/* Details sit above the bar; each is an opaque scroll layer with its own canvas. */
+/* Details sit above the nav; each is an opaque scroll layer with its own canvas. A detail beside
+   the rail starts at --nav-w; a focus mode (brew, review, onboarding, editor) covers everything. */
 .details {
   position: fixed;
   inset: 0;
@@ -48,12 +53,16 @@
 .detail {
   position: fixed;
   inset: 0;
+  inset-inline-start: var(--nav-w);
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;
+  container: pane / inline-size;
   background: var(--bg);
   pointer-events: auto;
+  outline: none;
 }
+.detail[data-focus] { inset-inline-start: 0; }
 .detail[data-covered="true"] { visibility: hidden; }
 /* Recipe detail with the shared header: the canvas fades in behind content that is not faded,
    so the flying header stays fully visible. */
@@ -61,12 +70,39 @@
 .detailBackdrop {
   position: fixed;
   inset: 0;
+  inset-inline-start: var(--nav-w);
   background: var(--bg);
   z-index: -1;
 }
+.detail[data-focus] .detailBackdrop { inset-inline-start: 0; }
 .detailContent { position: relative; min-height: 100%; }
 
-/* ---------------------------------------------------------------- bottom bar */
+/* ---------------------------------------------------------------- list-detail panes (§2.3) */
+/* Single mode (compact, medium): the list is the tab's whole screen and the layer scrolls. */
+.listDetail { min-height: 100%; }
+.listPane { min-height: 100%; }
+/* Pane mode: two scroll containers side by side, each with its own scroll position. */
+.listDetail[data-panes] {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: var(--list-pane-w) minmax(0, 1fr);
+  min-height: 0;
+}
+.listDetail[data-panes] > .listPane,
+.detailPane {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  container: pane / inline-size;
+}
+.listDetail[data-panes] > .listPane { background: var(--surface0); }
+.detailPane { background: var(--bg); }
+.paneSwap { min-height: 100%; }
+
+/* ---------------------------------------------------------------- bottom bar (compact) */
 .barScrim {
   position: fixed;
   left: 0;
@@ -88,7 +124,7 @@
 .bar {
   position: relative;
   pointer-events: auto;
-  height: var(--bottom-bar-h);
+  min-height: var(--bottom-bar-h);
   border-radius: var(--r-nav);
   background: var(--bar);
   border: 1px solid var(--bar-border);
@@ -98,10 +134,10 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  height: 100%;
+  min-height: calc(var(--bottom-bar-h) - 10px);
 }
 .barTrack { position: absolute; inset: 0; pointer-events: none; }
-.barPill {
+.barPill, .railPill {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -110,9 +146,9 @@
   background: rgb(from var(--ink-high) r g b / 0.1);
   will-change: transform;
 }
-:root[data-theme="light"] .barPill { background: rgb(from var(--ink-high) r g b / 0.06); }
+:root[data-theme="light"] .barPill, :root[data-theme="light"] .railPill { background: rgb(from var(--ink-high) r g b / 0.06); }
 @supports not (color: rgb(from red r g b)) {
-  .barPill { background: var(--surface3); }
+  .barPill, .railPill { background: var(--surface3); }
 }
 .barItem {
   position: relative;
@@ -122,17 +158,205 @@
   justify-content: center;
   gap: 2px;
   min-height: var(--bottom-bar-item);
+  min-width: 0;
+  padding: 2px 0;
   color: var(--ink-low);
   text-decoration: none;
-  transition: color 160ms var(--ease-emphasized);
   -webkit-user-select: none;
   user-select: none;
 }
 .barItem[aria-current="page"] { color: var(--ink-high); }
 .barIcon { display: flex; }
-.barItem .barLabel { letter-spacing: 0.2px; }
+/* Labels may wrap to two lines at large text (A7): never collide with the neighbour. */
+.barItem .barLabel { letter-spacing: 0.2px; text-align: center; overflow-wrap: anywhere; max-width: 100%; }
 
-/* ---------------------------------------------------------------- notices */
+/* ---------------------------------------------------------------- rail (medium, expanded, collapsed large) */
+.rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-bar);
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 16px) 0 calc(env(safe-area-inset-bottom) + 16px);
+  background: var(--surface0);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.railTop { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 12px; }
+.railSearch, .railStart, .railIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 50%;
+  transition: transform var(--press-ms) var(--ease-emphasized), background-color 120ms var(--ease-emphasized);
+}
+.railSearch, .railIconBtn { width: 48px; height: 48px; color: var(--ink-mid); }
+.railStart { width: 56px; height: 56px; background: var(--inverse); color: var(--on-inverse); }
+.railSearch:active, .railStart:active, .railIconBtn:active { transform: scale(0.95); }
+.railItems {
+  position: relative;
+  display: grid;
+  grid-auto-rows: 1fr;
+  width: 100%;
+  padding: 0 8px;
+}
+.railTrack { position: absolute; inset: 0 8px; pointer-events: none; }
+.railPill { right: 0; bottom: auto; border-radius: 16px; }
+.railItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 6px 2px;
+  color: var(--ink-low);
+  text-decoration: none;
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.railItem[aria-current="page"] { color: var(--ink-high); }
+.railLabel { overflow-wrap: anywhere; max-width: 100%; }
+.railBottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 0 8px; }
+/* Short windows: no labels, 48-tall items, 40 buttons (§2.2). */
+.rail[data-short] { gap: 8px; padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+.rail[data-short] .railTop { gap: 8px; margin-bottom: 4px; }
+.rail[data-short] .railSearch, .rail[data-short] .railIconBtn, .rail[data-short] .railStart { width: 40px; height: 40px; }
+.rail[data-short] .railItem { min-height: 48px; padding: 4px 2px; }
+.rail[data-short] .railLabel { display: none; }
+
+/* The live-brew pill: the only crema outside the timer. */
+.livePill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+  min-height: 52px;
+  padding: 8px 4px;
+  border-radius: 16px;
+  background: var(--surface2);
+  color: var(--ink-high);
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.liveDot { width: 8px; height: 8px; border-radius: 50%; background: var(--crema); flex: none; }
+.liveDot[data-running="true"] { animation: live-pulse 1.6s var(--ease-emphasized) infinite; }
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ---------------------------------------------------------------- sidebar (large, XL) */
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-bar);
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 12px);
+  background: var(--surface0);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sideHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding-left: 8px; }
+.sideSearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0 10px 0 12px;
+  border-radius: var(--r-well);
+  background: var(--surface1);
+  color: var(--ink-low);
+  text-align: left;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.sideSearchText { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sideStart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 8px 0 12px;
+  border-radius: var(--r-button);
+  background: var(--inverse);
+  color: var(--on-inverse);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.sideStart:active { transform: scale(0.98); }
+.sideList { display: flex; flex-direction: column; gap: 2px; }
+.sideItem, .sideSub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-well);
+  color: var(--ink-mid);
+  text-decoration: none;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.sideSub { min-height: 36px; padding-left: 44px; }
+.sideItem[aria-current="page"], .sideSub[aria-current="page"] { background: var(--surface2); color: var(--ink-high); }
+.sideItem[data-parent="true"] { color: var(--ink-high); }
+.sideItemLabel { flex: 1; min-width: 0; }
+.sideDigit { color: var(--ink-low); opacity: 0; }
+.sideItem:focus-visible .sideDigit { opacity: 1; }
+.liveRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  color: var(--ink-high);
+  text-align: left;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.liveRowStep { grid-column: 2 / 4; color: var(--ink-mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sideFoot { margin-top: auto; padding-top: 12px; }
+.sideFootBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-well);
+  color: var(--ink-low);
+  transition: background-color 120ms var(--ease-emphasized);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .railSearch:hover, .railIconBtn:hover { background: var(--surface1); }
+  .railItem:hover { color: var(--ink-high); }
+  .sideItem:hover, .sideSub:hover, .sideFootBtn:hover { background: var(--surface1); }
+  .sideItem[aria-current="page"]:hover, .sideSub[aria-current="page"]:hover { background: var(--surface2); }
+  .sideItem:hover .sideDigit { opacity: 1; }
+  .sideSearch:hover { background: var(--surface2); }
+  .livePill:hover, .liveRow:hover { background: var(--surface3); }
+}
+
+/* ---------------------------------------------------------------- notices (§3.14) */
 .toast {
   position: fixed;
   left: 0;
@@ -143,6 +367,11 @@
   justify-content: center;
   pointer-events: none;
   padding: 0 var(--gutter);
+}
+/* Medium and up: bottom-centre of the content area, 24 above the edge, at most 480 wide. */
+@media (min-width: 600px) {
+  .toast { left: var(--nav-w); bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .toastBody { max-width: 480px; }
 }
 .toastBody {
   pointer-events: auto;
@@ -164,6 +393,7 @@
   color: var(--on-inverse);
   font-weight: 700;
 }
+.toastStack { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; }
 
 .fatal {
   height: 100%;
@@ -174,3 +404,32 @@
   text-align: center;
   color: var(--ink-mid);
 }
+
+/* ---------------------------------------------------------------- forced colors (A1) */
+@media (forced-colors: active) {
+  .bar, .rail, .sidebar { border: 1px solid CanvasText; }
+  .barPill, .railPill { display: none; }
+  .barItem[aria-current="page"], .railItem[aria-current="page"], .sideItem[aria-current="page"], .sideSub[aria-current="page"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-radius: 12px;
+  }
+  .railSearch, .railStart, .railIconBtn, .sideSearch, .sideStart, .sideFootBtn, .livePill, .liveRow, .toastAction { border: 1px solid ButtonBorder; }
+  .liveDot { forced-color-adjust: none; background: Highlight; }
+  .toastBody { border: 1px solid CanvasText; }
+}
+
+/* ---------------------------------------------------------------- shortcuts dialog */
+.shortcuts { display: flex; flex-direction: column; gap: 20px; }
+.shortcutGroup { display: flex; flex-direction: column; gap: 6px; }
+.shortcutGroup dl { margin: 0; display: flex; flex-direction: column; }
+.shortcutRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  border-bottom: 1px solid var(--hairline);
+}
+.shortcutRow dd { margin: 0; }

@@ -1,5 +1,5 @@
 /** Port of ui/components/Bits.kt (except CoffeeSheet, in Sheet.tsx). */
-import { memo, useId, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { memo, useId, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import type { Status } from "@/domain/core/status";
 import { useSlidingIndicator } from "../useSlidingIndicator";
 import { IconWell } from "./Buttons";
@@ -190,18 +190,83 @@ export function ChipFlow({ options, selected, onToggle, label }: { options: read
   );
 }
 
-/** One indicator sliding with transform + spatialDefault, like the bottom bar's pill. */
-export function SegmentedControl({ options, selectedIndex, onSelect, onCard = false, label }: { options: readonly string[]; selectedIndex: number; onSelect: (i: number) => void; onCard?: boolean; label?: string }) {
+/**
+ * Arrow/Home/End movement for a one-of-N group (A2): the next index from a key, or null for any
+ * other key. Left/Up go back, Right/Down forward, both wrap.
+ */
+export function stepIndex(key: string, index: number, count: number): number | null {
+  if (count <= 0) return null;
+  switch (key) {
+    case "ArrowRight":
+    case "ArrowDown":
+      return (Math.max(index, -1) + 1) % count;
+    case "ArrowLeft":
+    case "ArrowUp":
+      return (Math.max(index, 0) - 1 + count) % count;
+    case "Home":
+      return 0;
+    case "End":
+      return count - 1;
+    default:
+      return null;
+  }
+}
+
+/**
+ * One indicator sliding with transform + spatialDefault, like the bottom bar's pill. A radio
+ * group with a roving tabindex (A2): Tab lands on the selected option, arrows move and select.
+ * Pass `panelIds` only when the options really switch panels (Gear's sections): it then becomes a
+ * tablist whose tabs have aria-controls.
+ */
+export function SegmentedControl({
+  options,
+  selectedIndex,
+  onSelect,
+  onCard = false,
+  label,
+  panelIds,
+}: {
+  options: readonly string[];
+  selectedIndex: number;
+  onSelect: (i: number) => void;
+  onCard?: boolean;
+  label?: string;
+  /** One element id per option: renders role="tab" + aria-controls instead of radios. */
+  panelIds?: readonly string[];
+}) {
   const track = useRef<HTMLDivElement>(null);
   const indicator = useRef<HTMLDivElement>(null);
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   useSlidingIndicator(track, indicator, selectedIndex, options.length);
+  const tabs = panelIds != null;
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const next = stepIndex(e.key, selectedIndex, options.length);
+    if (next == null) return;
+    e.preventDefault();
+    onSelect(next);
+    buttons.current[next]?.focus();
+  };
   return (
-    <div className={s.segmented} data-on-card={onCard} role="tablist" aria-label={label}>
+    <div className={s.segmented} data-on-card={onCard} role={tabs ? "tablist" : "radiogroup"} aria-label={label}>
       <div ref={track} className={s.segTrack} aria-hidden="true">
         <div ref={indicator} className={s.segIndicator} />
       </div>
       {options.map((o, i) => (
-        <button key={o} type="button" role="tab" aria-selected={i === selectedIndex} className={`${s.segOption} t-label-l`} onClick={() => onSelect(i)}>
+        <button
+          key={o}
+          ref={(el) => {
+            buttons.current[i] = el;
+          }}
+          type="button"
+          role={tabs ? "tab" : "radio"}
+          aria-selected={tabs ? i === selectedIndex : undefined}
+          aria-checked={tabs ? undefined : i === selectedIndex}
+          aria-controls={tabs ? panelIds[i] : undefined}
+          tabIndex={i === selectedIndex || (selectedIndex < 0 && i === 0) ? 0 : -1}
+          className={`${s.segOption} t-label-l`}
+          onClick={() => onSelect(i)}
+          onKeyDown={onKeyDown}
+        >
           {o}
         </button>
       ))}
@@ -246,11 +311,34 @@ export function AxisSlider({ label, hint, value, onChange, accent }: { label: st
   );
 }
 
+/** Overall score as a radio group (A2): roving tabindex, arrows move and set, Home/End jump. */
 export function DotRating({ value, onChange, max = 10, accent, label = "Overall" }: { value: number; onChange: (v: number) => void; max?: number; accent?: string; label?: string }) {
+  const dots = useRef<(HTMLButtonElement | null)[]>([]);
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const next = stepIndex(e.key, value - 1, max);
+    if (next == null) return;
+    e.preventDefault();
+    onChange(next + 1);
+    dots.current[next]?.focus();
+  };
   return (
     <div className={s.dots} role="radiogroup" aria-label={label} style={accent ? ({ "--dot-accent": accent } as CSSProperties) : undefined}>
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
-        <button key={n} type="button" role="radio" aria-checked={n === value} aria-label={`${n} of ${max}`} className={s.dot} data-on={n <= value} onClick={() => onChange(n === value ? 0 : n)} />
+        <button
+          key={n}
+          ref={(el) => {
+            dots.current[n - 1] = el;
+          }}
+          type="button"
+          role="radio"
+          aria-checked={n === value}
+          aria-label={`${n} of ${max}`}
+          tabIndex={n === value || (value < 1 && n === 1) ? 0 : -1}
+          className={s.dot}
+          data-on={n <= value}
+          onClick={() => onChange(n === value ? 0 : n)}
+          onKeyDown={onKeyDown}
+        />
       ))}
     </div>
   );

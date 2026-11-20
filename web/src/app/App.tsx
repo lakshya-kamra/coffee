@@ -1,16 +1,22 @@
 /**
- * The shell: keep-alive tabs, the bottom bar, the detail layer and the update prompt, inside
- * LazyMotion (domMax, strict: only `m.*` components). No LayoutGroup: nothing uses Motion's
- * layout projection (the recipe header's flight is app/sharedFlight.ts).
+ * The shell: skip link, the navigation for the window class (bar, rail or sidebar), keep-alive
+ * tabs (with list-detail panes inside them), the detail layer, toasts, tooltips, the command
+ * palette and the shortcuts dialog, inside LazyMotion (domMax, strict: only `m.*` components). No
+ * LayoutGroup: nothing uses Motion's layout projection (the recipe header's flight is
+ * app/sharedFlight.ts). See ADAPTIVE.md for the adaptive APIs the screens use.
  */
 import { LazyMotion, MotionConfig } from "motion/react";
-import { useEffect, useSyncExternalStore } from "react";
+import { lazy, Suspense, useEffect, useSyncExternalStore } from "react";
 import { useSettings } from "@/data/store";
-import { BottomBar } from "./BottomBar";
+import { TooltipLayer } from "@/design/components/Tooltip";
+import { SkipLink, useDocumentTitle, useRouteFocus } from "./a11y";
 import { DetailHost } from "./DetailHost";
-import { nav, router } from "./router";
-import { TABS } from "./routes";
+import { Navigation } from "./Nav";
+import { closePalette, closeShortcuts, useShellUi } from "./shellUi";
+import { useShellShortcuts } from "./shellKeys";
+import { startShortcuts } from "./shortcuts";
 import { TabsHost } from "./TabsHost";
+import { ToastHost } from "./toast";
 import { rememberPointer } from "./transitionState";
 import { UpdateToast, VersionChangeNotice } from "./UpdateToast";
 import { versionChanged } from "./boot";
@@ -21,47 +27,61 @@ import { versionChanged } from "./boot";
 const motionFeatures = import("./motionFeatures").then((mod) => mod.default);
 const loadMotionFeatures = () => motionFeatures;
 
-function isTyping(t: EventTarget | null): boolean {
-  const el = t as HTMLElement | null;
-  if (!el) return false;
-  return el.isContentEditable || el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT";
-}
+// The palette and the shortcuts dialog load the first time they open.
+const Palette = lazy(() => import("./palette/Palette"));
+const ShortcutsDialog = lazy(() => import("./ShortcutsDialog"));
 
-/** 1–5 switch tabs, Escape goes back (dialogs handle their own Escape). */
-function useShellKeys() {
+function useShellEvents() {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return;
-      if (document.querySelector("dialog[open]")) return;
-      if (e.key >= "1" && e.key <= "5" && router.get().depth === 0) {
-        const tab = TABS[Number(e.key) - 1];
-        if (tab) nav.switchTab(tab);
-      } else if (e.key === "Escape" && router.get().depth > 0) {
-        nav.back();
-      }
-    };
+    const stop = startShortcuts();
     const onPointer = (e: PointerEvent) => rememberPointer(e.clientX, e.clientY);
-    window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer, { capture: true, passive: true });
+    // The shell's own palette commands (palette/builtins.ts) load with the palette itself.
     return () => {
-      window.removeEventListener("keydown", onKey);
+      stop();
       document.removeEventListener("pointerdown", onPointer, { capture: true });
     };
   }, []);
 }
 
+/**
+ * Route-driven shell work in its own component, so a navigation re-renders this (which renders
+ * nothing) rather than App and everything under it.
+ */
+function ShellEffects() {
+  useShellShortcuts();
+  useDocumentTitle();
+  useRouteFocus();
+  return null;
+}
+
+function Overlays() {
+  const ui = useShellUi();
+  return (
+    <Suspense fallback={null}>
+      {ui.palette && <Palette initialQuery={ui.paletteQuery} onClose={closePalette} />}
+      {ui.shortcuts && <ShortcutsDialog onClose={closeShortcuts} />}
+    </Suspense>
+  );
+}
+
 export function App() {
   const motionPref = useSettings().motion;
   const dbReplaced = useSyncExternalStore(versionChanged.subscribe, versionChanged.get, versionChanged.get);
-  useShellKeys();
+  useShellEvents();
   return (
     <LazyMotion features={loadMotionFeatures} strict>
       <MotionConfig reducedMotion={motionPref === "reduced" ? "always" : "user"}>
+        <SkipLink />
+        <Navigation />
         <TabsHost />
-        <BottomBar />
         <DetailHost />
+        <ToastHost />
         <UpdateToast />
         {dbReplaced && <VersionChangeNotice />}
+        <Overlays />
+        <TooltipLayer />
+        <ShellEffects />
       </MotionConfig>
     </LazyMotion>
   );

@@ -120,7 +120,7 @@
   background: var(--surface2);
   color: var(--ink-high);
   border: 1px solid transparent;
-  transition: background-color 160ms var(--ease-emphasized), color 160ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
+  transition: background-color 160ms var(--ease-emphasized), transform var(--press-ms) var(--ease-emphasized);
   position: relative;
 }
 /* 44 px hit area around a 34 px chip. */
@@ -156,9 +156,9 @@
   min-height: 40px;
   border-radius: calc(var(--r-button) - 4px);
   color: var(--ink-mid);
-  transition: color 160ms var(--ease-emphasized);
+  /* Colour changes snap: transitions stay on transform, opacity and background-color (v4 §8.3). */
 }
-.segOption[aria-selected="true"] { color: var(--ink-high); }
+.segOption[aria-selected="true"], .segOption[aria-checked="true"] { color: var(--ink-high); }
 
 /* ---------------------------------------------------------------- slider, rating */
 .axis { display: flex; flex-direction: column; gap: 6px; }
@@ -459,7 +459,7 @@ textarea.fieldInput { min-height: var(--field-multiline-h); resize: vertical; }
   text-align: left;
 }
 
-/* ---------------------------------------------------------------- sheet */
+/* ---------------------------------------------------------------- sheet (v4 §2.4: by role) */
 .sheet {
   /* <dialog> resets: the panel draws everything. */
   position: fixed;
@@ -477,7 +477,9 @@ textarea.fieldInput { min-height: var(--field-multiline-h); resize: vertical; }
 }
 .sheet::backdrop { background: transparent; }
 .sheetScrim { position: absolute; inset: 0; background: var(--scrim); }
-/* Outer box: position and the open/close slide (WAAPI). Inner: the surface that drags. */
+/* A popover keeps the page visible: the scrim only catches the outside click. */
+.sheetScrim[data-clear="true"] { background: transparent; }
+/* Outer box: position and the open/close motion (WAAPI). Inner: the surface that drags. */
 .sheetPanel {
   position: absolute;
   left: 0;
@@ -499,6 +501,46 @@ textarea.fieldInput { min-height: var(--field-multiline-h); resize: vertical; }
   border-radius: var(--r-sheet) var(--r-sheet) 0 0;
 }
 .sheetPanel[data-full="true"] .sheetInner { height: 100%; }
+
+/* Centred dialog (confirm 400/420, content 640, picker 520). Width comes inline as max-width. */
+.sheetPanel[data-present="dialog"] {
+  top: 0;
+  bottom: 0;
+  width: calc(100% - 48px);
+  height: fit-content;
+  max-height: calc(100% - 48px);
+  margin: auto;
+}
+.sheet[data-align="top"] .sheetPanel[data-present="dialog"] { margin-top: 18vh; max-height: calc(100% - 18vh - 24px); }
+.sheetPanel[data-present="dialog"] .sheetInner { border-radius: var(--r-sheet); }
+
+/* Right side sheet (editors at expanded+): full height, 560 wide. */
+.sheetPanel[data-present="side"] {
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  width: min(560px, 100%);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+.sheetPanel[data-present="side"] .sheetInner { height: 100%; border-radius: var(--r-sheet) 0 0 var(--r-sheet); }
+
+/* Popover anchored to a field (pickers at expanded+); left/top/width come inline. */
+.sheetPanel[data-present="popover"] {
+  right: auto;
+  bottom: auto;
+  margin: 0;
+  max-width: none;
+}
+.sheetPanel[data-present="popover"] .sheetInner {
+  height: auto;
+  border-radius: var(--r-card);
+  background: var(--surface2);
+  outline: 1px solid var(--hairline);
+}
+
 .sheetGrabber {
   flex: none;
   display: flex;
@@ -514,9 +556,203 @@ textarea.fieldInput { min-height: var(--field-multiline-h); resize: vertical; }
   overscroll-behavior: contain;
   padding: 0 var(--gutter) calc(24px + env(safe-area-inset-bottom));
   touch-action: pan-y;
+  container: sheet / inline-size;
 }
+.sheetBody[data-present="dialog"] { padding: 24px; }
+.sheetBody[data-present="side"] { padding: 8px 24px 24px; }
+.sheetBody[data-present="popover"] { padding: 16px; }
 
+/* Side sheet header: title, Cancel, Save (Ctrl/Cmd+S). Sticky above the scrolling body. */
+.sideHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 12px 16px 12px 24px;
+  border-bottom: 1px solid var(--hairline);
+}
+.sideTitle { flex: 1; min-width: 0; }
+.sideCancel, .sideSave {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--r-button);
+}
+.sideCancel { color: var(--ink-mid); }
+.sideSave { background: var(--inverse); color: var(--on-inverse); }
+
+/* ---------------------------------------------------------------- confirm */
+.confirmBox { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.confirmActions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.confirmBtn {
+  flex: 1 1 140px;
+  min-height: var(--secondary-h);
+  padding: 0 16px;
+  border-radius: var(--r-button);
+  background: var(--surface2);
+  color: var(--ink-high);
+  transition: transform var(--press-ms) var(--ease-emphasized);
+}
+.confirmBtn:active { transform: scale(0.97); }
+.confirmGo { background: var(--inverse); color: var(--on-inverse); }
+.confirmDanger { background: var(--fault-container); color: var(--fault); }
+
+/* ---------------------------------------------------------------- kbd */
+.kbd { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.kbdKey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--surface3);
+  color: var(--ink-mid);
+  font: 500 0.6875rem/1 var(--font-sans);
+  letter-spacing: 0.2px;
+}
+.kbdThen { color: var(--ink-low); font-size: 0.6875rem; }
+
+/* ---------------------------------------------------------------- tooltip (one shared element) */
+.tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--inverse);
+  color: var(--on-inverse);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-emphasized);
+}
+.tooltip[data-shown="true"] { opacity: 1; }
+.tooltip .kbdKey { background: rgb(from var(--on-inverse) r g b / 0.14); color: var(--on-inverse); }
+
+/* ---------------------------------------------------------------- menu (context menu) */
+.menu {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  min-width: 200px;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: min(420px, calc(100vh - 32px));
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: var(--r-well);
+  background: var(--surface2);
+  outline: 1px solid var(--hairline);
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  text-align: left;
+  color: var(--ink-high);
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.menuItem:focus-visible { outline-offset: -2px; }
+.menuItem[data-danger="true"] { color: var(--fault); }
+.menuItem:disabled { opacity: 0.4; cursor: default; }
+.menuItem[data-active="true"] { background: var(--surface3); }
+.menuLabel { flex: 1; min-width: 0; }
+
+/* ---------------------------------------------------------------- term (glossary word) */
+.term {
+  display: inline;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.term[data-chip="true"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface2);
+  text-decoration: none;
+}
+.termHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--surface3);
+  color: var(--ink-mid);
+  font: 700 0.625rem/1 var(--font-sans);
+  vertical-align: middle;
+  text-decoration: none;
+}
+.termPop {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(420px, calc(100vh - 32px));
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: var(--r-card);
+  background: var(--surface2);
+  outline: 1px solid var(--hairline);
+}
+.termBody { display: flex; flex-direction: column; gap: 8px; }
+.termSources { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.termSources a { color: var(--ink-mid); }
+
+/* ---------------------------------------------------------------- hover */
 @media (hover: hover) {
   .chip:hover:not(:disabled), .pill:hover:not(:disabled), .secondary:hover:not(:disabled), .iconWell:hover:not(:disabled) { filter: brightness(1.06); }
   .quiet:hover:not(:disabled) { color: var(--ink-high); }
+  .menuItem:hover:not(:disabled) { background: var(--surface3); }
 }
+
+/* ---------------------------------------------------------------- forced colors (A1) */
+@media (forced-colors: active) {
+  .primary, .chip, .pill, .secondary, .quiet, .iconWell, .confirmBtn, .sideCancel, .sideSave, .segOption, .menuItem, .term[data-chip="true"] { border: 1px solid ButtonBorder; }
+  .chip[aria-pressed="true"], .chip[aria-checked="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  .segIndicator { display: none; }
+  .segOption[aria-checked="true"], .segOption[aria-selected="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border: 2px solid Highlight;
+  }
+  .dot::before { border: 1px solid CanvasText; background: Canvas; }
+  .dot[data-on="true"]::before { forced-color-adjust: none; background: Highlight; border-color: Highlight; }
+  .switch { border: 1px solid ButtonBorder; }
+  .switch::after { forced-color-adjust: none; background: ButtonText; }
+  .switch:checked { forced-color-adjust: none; background: Highlight; }
+  .switch:checked::after { background: HighlightText; }
+  .radio::before { forced-color-adjust: none; background: Highlight; }
+  .sheetInner, .menu, .termPop, .tooltip { border: 1px solid CanvasText; }
+  .fieldWell { border: 1px solid ButtonBorder; }
+  .menuItem[data-active="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}
+
+/* Chrome makes a scrolling body focusable; when a dialog has nothing else to focus the ring lands
+   here, so it follows the panel's radius, inset. */
+.sheetBody:focus-visible { outline-offset: -3px; }
+.sheetBody[data-present="dialog"]:focus-visible, .sheetBody[data-present="popover"]:focus-visible { border-radius: var(--r-sheet); }
+.sheetBody[data-present="bottom"]:focus-visible, .sheetBody[data-present="full"]:focus-visible { border-radius: var(--r-sheet) var(--r-sheet) 0 0; }
