@@ -108,9 +108,17 @@ const LEGACY_SHORT: Readonly<Record<string, string>> = {
   "cold-brew-jar": "Cold brew",
 };
 
+/**
+ * Catalog brewers whose label would be cut mid-word at 14 characters ("Automatic dri…" on a
+ * phone's chip): a short name that fits instead. Kotlin twin: Brewer.shortName.
+ */
+const SHORT: Readonly<Record<string, string>> = {
+  "drip-machine": "Drip machine",
+};
+
 /** "V60", "Kalita", "French press"…: legacy short names, else the label minus a leading brand, ≤ 14 chars. */
 export function brewerShortName(b: Brewer): string {
-  const legacy = LEGACY_SHORT[b.id];
+  const legacy = LEGACY_SHORT[b.id] ?? SHORT[b.id];
   if (legacy) return legacy;
   let s = b.label.trim();
   if (b.brand && s.toLowerCase().startsWith(b.brand.toLowerCase() + " ")) s = s.slice(b.brand.length + 1).trim();
@@ -176,6 +184,15 @@ export function brewStyle(b: Brewer | null): BrewStyle {
     case "moka":
       return "percolation";
   }
+}
+
+/**
+ * The machine pours, not the person: an automatic drip machine (its own family, §4.13). Its
+ * brew shows no pour readout or scale target, only "The machine is brewing". Kotlin twin:
+ * BrewerFamilies.machinePours.
+ */
+export function machinePours(b: Brewer | null): boolean {
+  return b != null && brewerFamily(b) === "drip-machine";
 }
 
 /** Which Review sections a brew gets (v4 §4.4). TDS and extraction always sit under "Advanced". */

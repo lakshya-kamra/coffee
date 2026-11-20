@@ -6,7 +6,8 @@
  */
 import { settings } from "@/data/settings";
 import type { Snapshot } from "@/data/store";
-import { grams, screenDate } from "@/domain/core/format";
+import { screenDate } from "@/domain/core/format";
+import { routeText } from "@/domain/core/noScale";
 import { openInTab } from "../panes";
 import { nav } from "../router";
 import { TAB_LABELS, TABS, type GearTab } from "../routes";
@@ -87,7 +88,7 @@ export function dataCommands(s: Snapshot): Command[] {
     out.push({
       id: `recipe:${r.id}`,
       title: r.name,
-      subtitle: `${r.author} · ${r.brewer.label} · ${grams(r.doseG)} g → ${grams(r.waterG)} g`,
+      subtitle: `${r.author} · ${r.brewer.label} · ${routeText(r.doseG, r.waterG, r.brewer.method, s.settings.hasScale)}`,
       group: "Recipes",
       icon: "MenuBook",
       keywords: [r.author, r.brewer.label, r.brewer.brand],

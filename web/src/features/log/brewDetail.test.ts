@@ -9,7 +9,7 @@ import { totalSec } from "@/domain/core/recipe";
 import { BAND_WORDS, bandStatus, judgeTime, shotBand, timeTarget } from "@/domain/core/shotTarget";
 import { timeStatus } from "@/domain/core/status";
 import { unitsOf } from "@/domain/core/units";
-import { brewTimeline, passCells } from "./BrewDetailScreen";
+import { brewTimeline, passCells, passOutG } from "./BrewDetailScreen";
 
 beforeAll(async () => {
   await catalog.load(["brewers", "recipes", "grinders"]);
@@ -76,6 +76,23 @@ describe("cells and timeline follow the method and the scale", () => {
     const log = brew({ brewerId: "clever-dripper", waterG: 250, doseG: 15 });
     const labels = passCells(log, null, null, ["neutral", ""], new Set(), units, null, "TIME", sections).map((c) => c.label);
     expect(labels).toEqual(["GRIND", "TIME", "TEMP", "DRAWDOWN", "IN CUP", "OFF ROAST"]);
+  });
+
+  it("a shot's YIELD is what came out, and espresso has no IN CUP cell (Android 6564550)", () => {
+    const log = brew({ brewerId: "espresso-machine", doseG: 18, waterG: 36, beverageG: 42 });
+    expect(passOutG(log, "espresso")).toBe(42);
+    expect(passOutG({ ...log, beverageG: null }, "espresso")).toBe(36);
+    expect(passOutG(log, "pourover")).toBe(36);
+    const labels = passCells(log, null, null, ["neutral", ""], new Set(), units, null, "SHOT TIME", reviewSections(Brewers.byId("espresso-machine"))).map((c) => c.label);
+    expect(labels).not.toContain("IN CUP");
+  });
+
+  it("without a scale IN CUP reads in ml", () => {
+    const log = brew({ brewerId: "clever-dripper", waterG: 250, doseG: 15, beverageG: 212.4 });
+    const sections = reviewSections(Brewers.byId("clever-dripper"));
+    const cup = (hasScale: boolean) => passCells(log, null, null, ["neutral", ""], new Set(), units, null, "TIME", sections, null, hasScale).find((c) => c.label === "IN CUP");
+    expect(cup(true)).toMatchObject({ value: "212.4", unit: "g" });
+    expect(cup(false)).toMatchObject({ value: "212", unit: "ml" });
   });
 
   it("without a scale the planned steps read in ml", () => {

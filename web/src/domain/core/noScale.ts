@@ -120,6 +120,26 @@ export function waterAmount(g: number, hasScale: boolean): { value: string; unit
   return hasScale ? { value: grams(g), unit: "g" } : { value: String(Math.max(0, roundToInt(g))), unit: "ml" };
 }
 
+/**
+ * A route's coffee as the person reads it (A1): grams with a scale; without one, level
+ * tablespoons in halves, except espresso and moka, whose dose is the basket's and keeps grams.
+ * Kotlin twin: NoScale.coffee.
+ */
+export function coffeeAmount(doseG: number, method: BrewMethod, hasScale: boolean): { value: string; unit: "g" | "tbsp" } {
+  const tbsp = hasScale ? null : noScaleAmounts(doseG, 0, method).coffeeTbsp;
+  return tbsp != null ? { value: halves(tbsp), unit: "tbsp" } : { value: grams(doseG), unit: "g" };
+}
+
+/**
+ * "30 g → 500 g" with a scale; "6 tbsp → 500 ml" (an espresso "18 g → 36 ml") without one: the
+ * recipe cards', the list rows' and the palette's short route, the same numbers the brew reads.
+ */
+export function routeText(doseG: number, waterG: number, method: BrewMethod, hasScale: boolean): string {
+  const c = coffeeAmount(doseG, method, hasScale);
+  const w = waterAmount(waterG, hasScale);
+  return `${c.value} ${c.unit} → ${w.value} ${w.unit}`;
+}
+
 /** "1 mug", "2 mugs", "3 mugs": 250 ml of water each, the dose from the recipe's ratio. */
 export function servingsPreset(recipe: Recipe, mugs: number): Recipe {
   return scaledToWater(recipe, ML_PER_MUG * mugs);

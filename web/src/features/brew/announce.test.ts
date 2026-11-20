@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RecipeStep } from "@/domain/core/recipe";
-import { Announcer, doneAnnouncement, stepAnnouncement, stepLead, TEN_LEFT, tenLeftDue, TIME_FOR_NEXT } from "./announce";
+import { Announcer, doneAnnouncement, MACHINE_BREWING, stepAnnouncement, stepLead, TEN_LEFT, tenLeftDue, TIME_FOR_NEXT } from "./announce";
 
 const steps: RecipeStep[] = [
   { kind: "Bloom", title: "Bloom", detail: "Wet all the coffee", startSec: 0, endSec: 45, targetWaterG: 60 },
@@ -43,6 +43,16 @@ describe("A4 announcement strings", () => {
     expect(stepLead(steps[0]!)).toBe("Bloom to 60 g");
     expect(stepLead(steps[3]!)).toBe("Swirl");
     expect(stepLead({ kind: "Pour", title: "Top up", targetWaterG: null })).toBe("Top up");
+  });
+
+  it("when the machine pours there is no target: the step reads in its own words", () => {
+    const brew = { kind: "Pour" as const, title: "Let it brew", targetWaterG: 1250 };
+    expect(stepLead(brew, true, true)).toBe("Let it brew");
+    expect(stepLead(brew, false, true)).toBe("Let it brew");
+    expect(stepLead(brew, false)).toBe("Pour to 1250 ml");
+    expect(stepLead({ kind: "Drawdown", title: "Wait", targetWaterG: null }, true, true)).toBe("Drawdown");
+    expect(stepAnnouncement([{ kind: "Pour", title: "Let it brew", detail: "", startSec: 30, endSec: 330, targetWaterG: 1250 }], 0, true, true)).toBe("Step 1 of 1, Let it brew.");
+    expect(MACHINE_BREWING).toBe("The machine is brewing");
   });
 
   it("'10 seconds left' only in steps longer than 30 s, in their last 10 seconds", () => {

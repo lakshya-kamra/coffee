@@ -21,14 +21,14 @@ import { db } from "@/data/db";
 import type { BrewRow, GrinderRow } from "@/data/schema";
 import { useBrew, useStore } from "@/data/store";
 import { DetailTopBar, EyebrowLabel, HairLine, IconWell, MenuButton, NumberWithUnit, PerforatedDivider, PillButton, QuietPanel, SecondaryButton, SectionLabel, SoftCard, StatusChip, StatusLine, beanShortName, useContextMenu } from "@/design/components";
-import { methodLabels, reviewSections, type BrewMethod, type ReviewSections } from "@/domain/core/brewer";
+import { methodLabels, reviewSections, type BrewMethod, type BrewStyle, type ReviewSections } from "@/domain/core/brewer";
 import { bedShapeInfo, bedShapeLabel, channelingLabel, sludgeLabel } from "@/domain/core/evaluation";
-import { clock, grams, halves, oneDp, ratio } from "@/domain/core/format";
+import { clock, oneDp, ratio } from "@/domain/core/format";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
 import { BAND_WORDS, bandStatus, shotBand, shotOffBy, type ShotBand } from "@/domain/core/shotTarget";
 import { bedStatus, channelingStatus, cupLabel, roastStatus, roastWord, scoreStatus, signedClock, sludgeStatus, statusColorVar, timeStatus, type Status } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf } from "@/domain/core/units";
-import { noScaleAmounts, waterAmount } from "@/domain/core/noScale";
+import { coffeeAmount, waterAmount } from "@/domain/core/noScale";
 import { checkBrew, distrustedFields, Fields, lastPourEndSec } from "@/domain/ai";
 import { reading, scaleFor, showsDialNumber, type GrindScale } from "@/domain/grind";
 import { brewMarkdown } from "@/domain/report";
@@ -59,9 +59,11 @@ export function passCells(
   timeLabel = "TIME",
   // The review's rule for which cells the method has (A3): a drip machine or a press has no
   // drawdown to time, so an empty DRAWDOWN / IN CUP is left out rather than drawn as a dash.
-  sections: Pick<ReviewSections, "drawdown" | "retained"> = { drawdown: true, retained: true },
+  sections: Pick<ReviewSections, "drawdown" | "retained"> & { style?: BrewStyle } = { drawdown: true, retained: true },
   // Espresso: shot mode's target, the one the shot was pulled against (A4).
   band: ShotBand | null = null,
+  // Without a scale the cup reads in ml, as the water does (A1).
+  hasScale = true,
 ): GridCell[] {
   const clicks = log.grindClicks;
   // The way the dial reads it: "dial 7.5" on a numbered ring, "6 turns + 6" on a plain one.
@@ -76,7 +78,8 @@ export function passCells(
   const time = ignoredIf({ label: timeLabel, value: log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null, sub: plan, status: ts[0] }, distrusted.has(Fields.TIME));
   const tempCell = ignoredIf({ label: "TEMP", value: log.tempC > 0 ? temp(units, log.tempC) : null, unit: tempUnit(units) }, distrusted.has(Fields.TEMP));
   const drawdown = ignoredIf({ label: "DRAWDOWN", value: log.drawdownSec != null ? clock(log.drawdownSec) : null }, distrusted.has(Fields.DRAWDOWN));
-  const inCup = ignoredIf({ label: "IN CUP", value: log.beverageG != null ? grams(log.beverageG) : null, unit: "g" }, distrusted.has(Fields.BEVERAGE));
+  const cup = log.beverageG != null ? waterAmount(log.beverageG, hasScale) : null;
+  const inCup = ignoredIf({ label: "IN CUP", value: cup?.value ?? null, unit: cup?.unit ?? (hasScale ? "g" : "ml") }, distrusted.has(Fields.BEVERAGE));
   const sixth =
     log.extractionYield != null
       ? ignoredIf({ label: "EXTRACTION", value: oneDp(log.extractionYield), unit: "%" }, distrusted.has(Fields.EY))
@@ -85,8 +88,15 @@ export function passCells(
   // DRAWDOWN, as Review asks for them side by side (a Clever has no retained-water section but
   // still has a cup to weigh).
   const keepDrawdown = sections.drawdown || log.drawdownSec != null;
-  const keepInCup = sections.drawdown || log.beverageG != null;
+  // A shot's cup is already the YIELD on the route row; a second "45 g" beside "45 ml" reads as
+  // two numbers, so espresso has no IN CUP cell (Android's passCells does the same).
+  const keepInCup = (sections.drawdown || log.beverageG != null) && sections.style !== "espresso";
   return [grind, time, tempCell, ...(keepDrawdown ? [drawdown] : []), ...(keepInCup ? [inCup] : []), sixth];
+}
+
+/** The route row's far end: a shot's yield is what came out, else the recipe's target; filter brews read their water. */
+export function passOutG(log: Pick<BrewRow, "waterG" | "beverageG">, method: BrewMethod): number {
+  return method === "espresso" ? (log.beverageG ?? log.waterG) : log.waterG;
 }
 
 /** Columns for the pass grid: four cells read as two rows of two, not three and a stray one. */
@@ -385,14 +395,16 @@ function BoardingPass({
 }) {
   const nodes = useMemo(() => (recipe ? pourNodes(recipe) : []), [recipe]);
   const scale = useGrindScale(grinder);
-  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel, sections, band);
+  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel, sections, band, hasScale);
   const rated = log.overall > 0;
-  const r = ratio(log.doseG, log.waterG);
+  // A shot's YIELD is what came out (shot mode's "How much came out?"), as Review reads it; the
+  // recipe's target is only the fallback. The ratio follows it. Android's pass does the same.
+  const outG = passOutG(log, method);
+  const r = ratio(log.doseG, outG);
   // Without a scale the amounts read as the brew and Review said them (A1): water in ml, the
   // coffee in level tablespoons (espresso's and moka's dose is the basket's, so it keeps grams).
-  const water = waterAmount(log.waterG, hasScale);
-  const tbsp = hasScale ? null : noScaleAmounts(log.doseG, log.waterG, method).coffeeTbsp;
-  const coffee = tbsp != null ? { value: halves(tbsp), unit: "tbsp" } : { value: grams(log.doseG), unit: "g" };
+  const water = waterAmount(outG, hasScale);
+  const coffee = coffeeAmount(log.doseG, method, hasScale);
   return (
     <SoftCard padding={0}>
       <div className={l.passTop}>

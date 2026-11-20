@@ -13,8 +13,9 @@ import { SettledContext } from "@/app/transitionState";
 import { BrewerIcon } from "@/art/BrewerIcon";
 import { toCaps } from "@/design/components";
 import { brewerShortName } from "@/domain/core/brewer";
-import { clock, grams } from "@/domain/core/format";
+import { clock } from "@/domain/core/format";
 import { grindWord } from "@/domain/core/grindWord";
+import { coffeeAmount, waterAmount } from "@/domain/core/noScale";
 import { accentCss, recipeRatioLabel, totalSec, type Recipe } from "@/domain/core/recipe";
 import { temp, tempLabel, tempUnit, unitsOf, type Units } from "@/domain/core/units";
 import { useSettings } from "@/data/store";
@@ -87,16 +88,21 @@ export const RecipeHeader = memo(function RecipeHeader({
   );
 });
 
-/** "30 g ─○─○─ 500 g · RATIO 1:16.7": the route row every recipe surface shows. */
-export function RecipeRoute({ recipe, numeral = "num-large" }: { recipe: Recipe; numeral?: "num-large" | "num-medium" | "num-small" }) {
+/**
+ * "30 g ─○─○─ 500 g · RATIO 1:16.7": the route row every recipe surface shows. Without a scale
+ * it reads "6 tbsp ─○─○─ 500 ml" (A1); espresso and moka keep the basket's grams of coffee.
+ */
+export function RecipeRoute({ recipe, numeral = "num-large", hasScale = true }: { recipe: Recipe; numeral?: "num-large" | "num-medium" | "num-small"; hasScale?: boolean }) {
+  const coffee = coffeeAmount(recipe.doseG, recipe.brewer.method, hasScale);
+  const water = waterAmount(recipe.waterG, hasScale);
   return (
     <RouteRow
       mode="planned"
-      from={grams(recipe.doseG)}
-      fromUnit="g"
+      from={coffee.value}
+      fromUnit={coffee.unit}
       fromLabel="COFFEE"
-      to={grams(recipe.waterG)}
-      toUnit="g"
+      to={water.value}
+      toUnit={water.unit}
       toLabel="WATER"
       nodes={pourNodes(recipe)}
       midLabel={recipeRatioLabel(recipe)}
@@ -105,10 +111,10 @@ export function RecipeRoute({ recipe, numeral = "num-large" }: { recipe: Recipe;
   );
 }
 
-function CardBody({ recipe, compact, units }: { recipe: Recipe; compact: boolean; units: Units }) {
+function CardBody({ recipe, compact, units, hasScale }: { recipe: Recipe; compact: boolean; units: Units; hasScale: boolean }) {
   return (
     <span className={v.cardBody}>
-      <RecipeRoute recipe={recipe} numeral={compact ? "num-small" : "num-medium"} />
+      <RecipeRoute recipe={recipe} numeral={compact ? "num-small" : "num-medium"} hasScale={hasScale} />
       {compact ? (
         <span className={`t-body-s ink-mid ${v.ellipsis} ${v.cardMeta}`}>
           {clock(totalSec(recipe))} · {tempLabel(units, recipe.tempC)}
@@ -153,7 +159,7 @@ export const RecipeCard = memo(function RecipeCard({
   return (
     <button type="button" className={v.card} data-compact={compact || undefined} onClick={onOpen} onPointerDown={onPrefetch}>
       <RecipeHeader recipe={recipe} size="card" sharedPrefix={sharedPrefix} compact={compact} />
-      <CardBody recipe={recipe} compact={compact} units={units} />
+      <CardBody recipe={recipe} compact={compact} units={units} hasScale={settings.hasScale} />
     </button>
   );
 });

@@ -20,15 +20,21 @@ export const TIME_FOR_NEXT = "Time for the next step.";
  */
 export const targetMl = (g: number): number => Math.max(0, Math.round(g));
 
+/** A drip machine's readout in place of "0 ml / 1250": the machine pours, nobody weighs it. */
+export const MACHINE_BREWING = "The machine is brewing";
+
 /**
  * "Bloom to 50 g", "Pour to 300 g", "Drawdown", else the step's title. Without a scale the target
  * reads in ml, "Pour to 352 ml", and a title's grams read as ml (noScaleText), so the banner, the
- * status line and the screen reader never say a weight nobody can measure.
+ * status line and the screen reader never say a weight nobody can measure. When the machine
+ * pours (machinePours) there is no amount to pour to: the step reads in its own words ("Let it
+ * brew"). Android: BrewWords.lead(step, hasScale, machine).
  */
-export function stepLead(s: Pick<RecipeStep, "kind" | "title" | "targetWaterG">, hasScale = true): string {
+export function stepLead(s: Pick<RecipeStep, "kind" | "title" | "targetWaterG">, hasScale = true, machine = false): string {
   const amount = (t: number) => (hasScale ? `${t} g` : `${targetMl(t)} ml`);
-  if (s.kind === "Bloom" && s.targetWaterG != null) return `Bloom to ${amount(s.targetWaterG)}`;
-  if (s.kind === "Pour" && s.targetWaterG != null) return `Pour to ${amount(s.targetWaterG)}`;
+  const target = machine ? null : s.targetWaterG;
+  if (s.kind === "Bloom" && target != null) return `Bloom to ${amount(target)}`;
+  if (s.kind === "Pour" && target != null) return `Pour to ${amount(target)}`;
   if (s.kind === "Drawdown") return "Drawdown";
   return hasScale ? s.title : noScaleText(s.title);
 }
@@ -39,11 +45,11 @@ const sentence = (t: string): string => {
 };
 
 /** "Step 2 of 6, Pour to 300 g. Steady spiral from the centre outward. Next at 1:15." */
-export function stepAnnouncement(steps: readonly RecipeStep[], index: number, hasScale = true): string {
+export function stepAnnouncement(steps: readonly RecipeStep[], index: number, hasScale = true, machine = false): string {
   const s = steps[index];
   if (!s) return "";
   const next = steps[index + 1];
-  const parts = [`Step ${index + 1} of ${steps.length}, ${sentence(stepLead(s, hasScale))}`];
+  const parts = [`Step ${index + 1} of ${steps.length}, ${sentence(stepLead(s, hasScale, machine))}`];
   const detail = sentence(hasScale ? s.detail : noScaleText(s.detail));
   if (detail) parts.push(detail);
   if (next) parts.push(`Next at ${clock(next.startSec)}.`);

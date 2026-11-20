@@ -18,14 +18,14 @@ import { catalog } from "@/catalog/catalog";
 import { useCatalog } from "@/catalog/useCatalog";
 import { HairLine, Icon, IconWell, PrimaryButton, StatusLine, Term, toCaps, tooltipProps } from "@/design/components";
 import { decel, spatialDefault } from "@/design/motion";
-import { brewStyle } from "@/domain/core/brewer";
+import { brewStyle, machinePours } from "@/domain/core/brewer";
 import { clock, formatDuration } from "@/domain/core/format";
 import { findTerm, termForStepKind } from "@/domain/core/glossary";
 import { stepBoundaries, totalSec, waterAt, waterAtF, type Recipe, type RecipeStep } from "@/domain/core/recipe";
 import { renderTemps } from "@/domain/core/units";
 import { BrewRing, JourneyLine, journeyNodes, useFrame, writeText, type BrewEngineView, type JourneyNode } from "@/viz";
 import { noScaleText } from "@/domain/core/noScale";
-import { stepLead, targetMl } from "./announce";
+import { MACHINE_BREWING, stepLead, targetMl } from "./announce";
 import type { BrewEngine, EngineState } from "./engine";
 import type { RunLayout } from "./layout";
 import b from "./brew.module.css";
@@ -82,6 +82,8 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
   const trip = useMemo(() => () => (engine.elapsedMs() + seek.get()) / (Math.max(1, total) * 1000), [engine, seek, total]);
   const playRef = useRef<HTMLButtonElement>(null);
   const drawdown = step?.kind === "Drawdown";
+  // A drip machine pours by itself: no pour readout, scale target or jug line.
+  const machine = machinePours(recipe.brewer);
   const bedOpen = drawdown && st.bedExposedSec == null;
 
   // Start replaced the Start button under the focus: hand it to Pause, the control that matters now.
@@ -98,6 +100,7 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
       index={st.stepIndex}
       layout={layout}
       hasScale={p.hasScale}
+      machine={machine}
       fahrenheit={p.fahrenheit}
       firstBrew={p.firstBrew}
       experienceNew={p.experienceNew}
@@ -124,7 +127,7 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
     />
   );
   const finish = <FinishButton layout={layout} done={st.done} finishing={p.finishing} onFinish={p.onFinish} />;
-  const status = <BrewStatus st={st} step={step} engine={engine} finishing={p.finishing} hasScale={p.hasScale} />;
+  const status = <BrewStatus st={st} step={step} engine={engine} finishing={p.finishing} hasScale={p.hasScale} machine={machine} />;
   const bedMarked = st.bedExposedSec != null ? <StatusLine status="good" lead="Bed exposed" rest={`at ${clock(st.bedExposedSec)}`} /> : null;
 
   return (
@@ -168,7 +171,7 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
             {status}
             {card}
             {bedMarked}
-            <StepList recipe={recipe} index={st.stepIndex} hasScale={p.hasScale} />
+            <StepList recipe={recipe} index={st.stepIndex} hasScale={p.hasScale} machine={machine} />
             <div className={b.stageDock}>
               {transport}
               {finish}
@@ -184,7 +187,7 @@ export const RunningPane = memo(function RunningPane(p: RunningProps) {
             <div className={b.shortRight}>
               {top}
               {card}
-              <NextLine recipe={recipe} index={st.stepIndex} hasScale={p.hasScale} bedAt={st.bedExposedSec} />
+              <NextLine recipe={recipe} index={st.stepIndex} hasScale={p.hasScale} machine={machine} bedAt={st.bedExposedSec} />
               {transport}
             </div>
           </div>
@@ -238,7 +241,7 @@ function Ring(p: RunningProps & { view: BrewEngineView; total: number; step: Rec
           <span className={`micro ink-low ${b.ofLabel}`}>
             {paused}OF {longTimes ? formatDuration(total).toUpperCase() : clock(total)}
           </span>
-          <Readout engine={engine} recipe={recipe} step={step} hasScale={p.hasScale} />
+          <Readout engine={engine} recipe={recipe} step={step} hasScale={p.hasScale} done={st.done} />
         </div>
       </BrewRing>
     </div>
@@ -253,8 +256,19 @@ function Journey({ recipe, st, total, trip }: { recipe: Recipe; st: EngineState;
   return <JourneyLine nodes={nodes} style="live" progress={trip} startLabel="0:00" endLabel={clock(total)} label={`Brew progress, ${clock(total)} planned`} />;
 }
 
-/** Poured / target: grams with a scale; "60 ml / 500" or "Pour all 500 ml" without (§4.3), the same numbers the step says. */
-function Readout({ engine, recipe, step, hasScale }: { engine: BrewEngine; recipe: Recipe; step: RecipeStep | undefined; hasScale: boolean }) {
+/**
+ * Poured / target: grams with a scale; "60 ml / 500" or "Pour all 500 ml" without (§4.3), the same
+ * numbers the step says. A drip machine pours by itself, so it reads "The machine is brewing".
+ */
+function Readout({ engine, recipe, step, hasScale, done }: { engine: BrewEngine; recipe: Recipe; step: RecipeStep | undefined; hasScale: boolean; done: boolean }) {
+  if (machinePours(recipe.brewer)) {
+    if (done) return null;
+    return (
+      <span className={b.water}>
+        <span className={b.machineNow}>{MACHINE_BREWING}</span>
+      </span>
+    );
+  }
   const target = step?.targetWaterG ?? Math.round(recipe.waterG);
   if (!hasScale && step?.targetWaterG != null && step.targetWaterG >= recipe.waterG && brewStyle(recipe.brewer) === "immersion") {
     return (
@@ -277,6 +291,7 @@ function StepCard({
   index,
   layout,
   hasScale,
+  machine,
   fahrenheit,
   firstBrew,
   experienceNew,
@@ -288,6 +303,7 @@ function StepCard({
   index: number;
   layout: RunLayout;
   hasScale: boolean;
+  machine: boolean;
   fahrenheit: boolean;
   firstBrew: boolean;
   experienceNew: boolean;
@@ -304,7 +320,7 @@ function StepCard({
   const short = firstBrew && firstOfKind && termId && glossaryReady ? (findTerm(catalog.glossary, termId)?.short ?? null) : null;
   const before = recipe.steps.slice(0, index).reduce<number>((acc, x) => (x.targetWaterG != null ? x.targetWaterG : acc), 0);
   // Worked out from the targets themselves, so the jug pours add up to the recipe's water.
-  const jugMl = !hasScale && s.targetWaterG != null && s.targetWaterG > before ? targetMl(s.targetWaterG) - targetMl(before) : null;
+  const jugMl = !hasScale && !machine && s.targetWaterG != null && s.targetWaterG > before ? targetMl(s.targetWaterG) - targetMl(before) : null;
   return (
     <section className={b.stepCard} aria-label="Current step">
       <m.div
@@ -353,7 +369,7 @@ function StepCard({
 }
 
 /** Stage: every step as a vertical timeline; the current one lifted, the past ones marked Done. */
-function StepList({ recipe, index, hasScale }: { recipe: Recipe; index: number; hasScale: boolean }) {
+function StepList({ recipe, index, hasScale, machine }: { recipe: Recipe; index: number; hasScale: boolean; machine: boolean }) {
   const list = useRef<HTMLOListElement>(null);
   // Keep the current step in view inside the list only (scrollIntoView could move the page).
   useEffect(() => {
@@ -367,7 +383,7 @@ function StepList({ recipe, index, hasScale }: { recipe: Recipe; index: number; 
     <ol ref={list} className={b.stepList} aria-label="All steps">
       {recipe.steps.map((s, i) => {
         const state = i < index ? "done" : i === index ? "current" : "next";
-        const amount = s.targetWaterG == null ? "" : hasScale ? `${s.targetWaterG} g` : `${targetMl(s.targetWaterG)} ml`;
+        const amount = s.targetWaterG == null || machine ? "" : hasScale ? `${s.targetWaterG} g` : `${targetMl(s.targetWaterG)} ml`;
         return (
           <li key={i} className={b.listItem} data-state={state} aria-current={state === "current" ? "step" : undefined}>
             <span className={`num-inline ${b.listTime}`}>{clock(s.startSec)}</span>
@@ -381,12 +397,12 @@ function StepList({ recipe, index, hasScale }: { recipe: Recipe; index: number; 
 }
 
 /** Short: "NEXT · 0:45 · Up to 300 g" under the step card. */
-function NextLine({ recipe, index, hasScale, bedAt }: { recipe: Recipe; index: number; hasScale: boolean; bedAt: number | null }) {
+function NextLine({ recipe, index, hasScale, machine, bedAt }: { recipe: Recipe; index: number; hasScale: boolean; machine: boolean; bedAt: number | null }) {
   const next = recipe.steps[index + 1];
   if (!next) {
     return bedAt != null ? <p className={`micro ${b.nextLine}`}>BED EXPOSED · {clock(bedAt)}</p> : <p className={`micro ink-low ${b.nextLine}`}>LAST STEP</p>;
   }
-  const what = next.targetWaterG != null ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to ${targetMl(next.targetWaterG)} ml`) : prose(next.title, hasScale);
+  const what = next.targetWaterG != null && !machine ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to ${targetMl(next.targetWaterG)} ml`) : prose(next.title, hasScale);
   return (
     <p className={`micro ink-low ${b.nextLine}`}>
       NEXT · {clock(next.startSec)} · {toCaps(what)}
@@ -488,7 +504,7 @@ function PlayPause({ running, onClick, buttonRef }: { running: boolean; onClick:
   );
 }
 
-function BrewStatus({ st, step, engine, finishing, hasScale }: { st: EngineState; step: RecipeStep | undefined; engine: BrewEngine; finishing: boolean; hasScale: boolean }) {
+function BrewStatus({ st, step, engine, finishing, hasScale, machine }: { st: EngineState; step: RecipeStep | undefined; engine: BrewEngine; finishing: boolean; hasScale: boolean; machine: boolean }) {
   const pausedAt = clock(Math.floor(st.accumulatedMs / 1000));
   if (finishing) return <StatusLine status="neutral" lead="Saving" rest={`at ${pausedAt}`} />;
   if (st.done) return <StatusLine status="good" lead="Done" rest="rate this brew" />;
@@ -496,7 +512,7 @@ function BrewStatus({ st, step, engine, finishing, hasScale }: { st: EngineState
   if (!step) return <StatusLine status="live" lead="Brewing" />;
   return (
     <div className={b.statusRow}>
-      <StatusLine status="live" lead={stepLead(step, hasScale)} />
+      <StatusLine status="live" lead={stepLead(step, hasScale, machine)} />
       <CountdownLeaf engine={engine} endSec={step.endSec} />
     </div>
   );

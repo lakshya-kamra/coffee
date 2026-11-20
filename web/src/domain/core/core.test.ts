@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { makeBrewer } from "./brewer";
+import { brewerShortName, machinePours, makeBrewer } from "./brewer";
 import { BrewMath, DEFAULT_TASTE } from "./evaluation";
 import { clipWords, clock, dayLabel, daysOffRoastLabel, epochDayOf, epochDayToIso, grams, greeting, groupedInt, halves, isoToEpochDay, oneDp, plural, ratio, screenDate, screenDayLabel, screenTime, timeLabel, todayEyebrow } from "./format";
 import { EMPTY_LOG_FILTER, filterLog, isFilterActive, logCountLabel, type LogFilterable } from "./logQuery";
+import { coffeeAmount, routeText } from "./noScale";
 import { quickRead, type QuickReadInput } from "./quickRead";
 import type { Recipe } from "./recipe";
 import { cupLabel, roastStatus, roastWord, scoreStatus, signedClock, timeStatus } from "./status";
@@ -227,5 +228,26 @@ describe("v4 log filters", () => {
     expect(filterLog(brews, { ...EMPTY_LOG_FILTER, query: "cafe" }).map((x) => x.id)).toEqual([3]);
     expect(isFilterActive(EMPTY_LOG_FILTER)).toBe(false);
     expect([logCountLabel(1), logCountLabel(12)]).toEqual(["1 brew", "12 brews"]);
+  });
+});
+
+describe("drip machines and no-scale routes (V41)", () => {
+  const drip = makeBrewer({ id: "drip-machine", label: "Automatic drip machine", brand: "Moccamaster, Fellow, Breville and others", category: "other", method: "pourover" });
+  const v60 = makeBrewer({ id: "hario-v60-02", label: "V60 02", category: "cone" });
+  it("a drip machine's short name fits whole, never a mid-word cut", () => {
+    expect(brewerShortName(drip)).toBe("Drip machine");
+    expect(brewerShortName(makeBrewer({ id: "x", label: "A very long brewer name" }))).toBe("A very long b…");
+  });
+  it("only the drip machine pours by itself", () => {
+    expect(machinePours(drip)).toBe(true);
+    expect(machinePours(v60)).toBe(false);
+    expect(machinePours(null)).toBe(false);
+  });
+  it("routes read in tbsp and ml without a scale; espresso and moka keep the basket's grams", () => {
+    expect(routeText(30, 500, "pourover", true)).toBe("30 g → 500 g");
+    expect(routeText(30, 500, "pourover", false)).toBe("6 tbsp → 500 ml");
+    expect(routeText(18, 36, "espresso", false)).toBe("18 g → 36 ml");
+    expect(coffeeAmount(17, "frenchPress", false)).toEqual({ value: "3½", unit: "tbsp" });
+    expect(coffeeAmount(15, "moka", false)).toEqual({ value: "15", unit: "g" });
   });
 });

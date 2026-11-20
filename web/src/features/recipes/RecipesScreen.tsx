@@ -25,6 +25,7 @@ import { ConfirmSheet, Icon, IconWell, QuietButton, ScreenHeader, SecondaryButto
 import { brewerShortName } from "@/domain/core/brewer";
 import { firstBrew } from "@/domain/core/firstBrew";
 import { formatDuration, grams } from "@/domain/core/format";
+import { routeText } from "@/domain/core/noScale";
 import { accentCss, totalSec, type Recipe } from "@/domain/core/recipe";
 import { brewRecipe, useBrewNext } from "@/features/today/brewNext";
 import { noRecipeLine } from "@/features/today/firstBrewCard";
@@ -368,6 +369,7 @@ function RecipeList({ next }: { next: Recipe | null }) {
             <RecipeRow
               key={recipe.id}
               recipe={recipe}
+              hasScale={settings.hasScale}
               current={i === shownIndex}
               itemProps={roving.itemProps(i)}
               onOpen={() => open(recipe)}
@@ -408,6 +410,7 @@ function RecipeList({ next }: { next: Recipe | null }) {
 /** One compact row (~76 px): who, which brewer, the numbers; the "..." menu on hover. */
 function RecipeRow({
   recipe,
+  hasScale,
   current,
   itemProps,
   onOpen,
@@ -415,6 +418,7 @@ function RecipeRow({
   onMore,
 }: {
   recipe: Recipe;
+  hasScale: boolean;
   current: boolean;
   itemProps: RovingItemProps;
   onOpen: () => void;
@@ -454,7 +458,8 @@ function RecipeRow({
         </span>
         <span className={r.rowNums}>
           <span className="num-inline">
-            {grams(recipe.doseG)} → {grams(recipe.waterG)} g
+            {/* Without a scale the coffee in level tbsp and the water in ml, as the cards (A1). */}
+            {hasScale ? `${grams(recipe.doseG)} → ${grams(recipe.waterG)} g` : routeText(recipe.doseG, recipe.waterG, recipe.brewer.method, false)}
           </span>
           <span className="t-body-s ink-low">{formatDuration(totalSec(recipe))}</span>
         </span>

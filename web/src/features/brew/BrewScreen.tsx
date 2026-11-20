@@ -25,6 +25,7 @@ import { persistOnce } from "@/data/storage";
 import { getSnapshot, store, useBrew, useRecipe, useSettings } from "@/data/store";
 import { ConfirmSheet, DetailTopBar, QuietButton, SecondaryButton } from "@/design/components";
 import { decel, settle } from "@/design/motion";
+import { machinePours } from "@/domain/core/brewer";
 import { timeLabel } from "@/domain/core/format";
 import type { Recipe } from "@/domain/core/recipe";
 import { stepsInUnit, unitsOf } from "@/domain/core/units";
@@ -261,9 +262,9 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
       engine.onStep((i) => {
         if (hapticsOn) vibrateStep();
         const steps = stepsInUnit(engine.getRecipe().steps, unitRef.current);
-        announcer.say(stepAnnouncement(steps, i, scaleRef.current));
+        announcer.say(stepAnnouncement(steps, i, scaleRef.current, machinePours(engine.getRecipe().brewer)));
         const s = steps[i];
-        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current)}` }));
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current, machinePours(engine.getRecipe().brewer))}` }));
       }),
     [engine, hapticsOn, announcer],
   );
@@ -280,7 +281,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
         if (hapticsOn) vibrateStep();
         announcer.say(TIME_FOR_NEXT);
         const s = engine.getRecipe().steps[next.stepIndex + 1];
-        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current)}` }));
+        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current, machinePours(engine.getRecipe().brewer))}` }));
       }
       if (next.done && !was.done) announcer.say(doneAnnouncement(engine.elapsedMs() / 1000));
     });
@@ -344,7 +345,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
     }
     if (soundOn) (cues.current ??= new CuePlayer()).unlock();
     engine.start();
-    announcer.say(stepAnnouncement(engine.getRecipe().steps, engine.state.stepIndex, settings.hasScale));
+    announcer.say(stepAnnouncement(engine.getRecipe().steps, engine.state.stepIndex, settings.hasScale, machinePours(engine.getRecipe().brewer)));
   };
   const toggle = () => {
     if (!st.running && soundOn) (cues.current ??= new CuePlayer()).unlock();

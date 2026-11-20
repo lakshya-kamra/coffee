@@ -8,8 +8,9 @@ import { registerCommands } from "@/app/palette/commands";
 import { prefetchers } from "@/app/registry";
 import { nav } from "@/app/router";
 import { useShortcuts, type Binding } from "@/app/shortcuts";
+import { useSettings } from "@/data/store";
 import { brewerShortName } from "@/domain/core/brewer";
-import { grams } from "@/domain/core/format";
+import { routeText } from "@/domain/core/noScale";
 import type { Recipe } from "@/domain/core/recipe";
 
 export function brewRecipe(id: string): void {
@@ -18,13 +19,14 @@ export function brewRecipe(id: string): void {
 }
 
 export function useBrewNext(next: Recipe | null, scope: string, keysEnabled: boolean): void {
+  const hasScale = useSettings().hasScale;
   useEffect(() => {
     if (!next) return undefined;
     return registerCommands(() => [
       {
         id: "brew.next",
         title: `Brew ${next.name}`,
-        subtitle: `${next.author} · ${brewerShortName(next.brewer)} · ${grams(next.doseG)} g → ${grams(next.waterG)} g`,
+        subtitle: `${next.author} · ${brewerShortName(next.brewer)} · ${routeText(next.doseG, next.waterG, next.brewer.method, hasScale)}`,
         group: "Actions",
         icon: "Play",
         keys: "b",
@@ -33,7 +35,7 @@ export function useBrewNext(next: Recipe | null, scope: string, keysEnabled: boo
         run: () => brewRecipe(next.id),
       },
     ]);
-  }, [next]);
+  }, [next, hasScale]);
   const bindings = useMemo<Binding[]>(() => (next ? [{ keys: "b", label: `Brew ${next.name}`, group: "General", run: () => brewRecipe(next.id) }] : []), [next]);
   useShortcuts(scope, bindings, keysEnabled && next != null);
 }
