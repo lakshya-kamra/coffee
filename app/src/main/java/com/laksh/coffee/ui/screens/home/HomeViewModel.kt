@@ -13,7 +13,12 @@ import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.data.prefs.SettingsStore
 import com.laksh.coffee.data.repo.CoffeeRepository
 import com.laksh.coffee.domain.Brewers
+import com.laksh.coffee.domain.FirstBrew
+import com.laksh.coffee.domain.FirstBrewPick
+import com.laksh.coffee.domain.FirstBrewSettings
 import com.laksh.coffee.domain.Recipe
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import com.laksh.coffee.ui.components.Status
 import com.laksh.coffee.ui.screens.gear.BeanWords
 import kotlinx.coroutines.Dispatchers
@@ -44,15 +49,28 @@ data class HomeUiState(
     val settings: Settings = Settings(),
     /** Part of the state, so a new day rebuilds "today", the week and the streak. */
     val today: LocalDate = LocalDate.now(),
+    /** Grinders that are not archived: a recipe that needs one is harder without (§4.6). */
+    val grinderCount: Int = 0,
 ) {
     val lastRecipe: Recipe? = recipes.firstOrNull { it.id == settings.lastRecipeId }
         ?: recentLogs.firstOrNull()?.let { l -> recipes.firstOrNull { it.id == l.recipeId } }
 
     /**
-     * The recipe the NEXT BREW pass offers. With nothing brewed yet it is the first recipe for a
-     * brewer you own (V60 01, 02 and 03 count as one family), else the first expert recipe.
+     * The guided first brew (v4 §4.6): a recipe for a brewer you own, never another family's,
+     * with the fewest needs you cannot meet, easiest first. [FirstBrewPick.noRecipeFor] names the
+     * owned brewers nothing is written for yet.
      */
-    val nextRecipe: Recipe? = lastRecipe ?: firstForOwnedBrewer(recipes, settings.ownedBrewerIds) ?: recipes.firstOrNull()
+    val firstPick: FirstBrewPick = FirstBrew.pick(
+        recipes,
+        FirstBrewSettings(settings.ownedBrewerIds, settings.hasScale, settings.buysGround, settings.experience),
+        grinderCount,
+    )
+
+    /**
+     * The recipe the NEXT BREW pass offers: what you brewed last, else the guided first brew. Null
+     * when every brewer you own lacks a recipe: Today says so rather than offering a V60's.
+     */
+    val nextRecipe: Recipe? = lastRecipe ?: firstPick.recipe
 
     /** Existing users skipped onboarding automatically; Home offers it once, until dismissed. */
     val showPersonalise: Boolean = settings.onboardingAuto && !settings.personaliseDismissed
@@ -173,9 +191,9 @@ class HomeViewModel(
         repo.recipes,
         repo.activeBeans,
         settings.filterNotNull(),
-        today,
-    ) { logs, recipes, beans, s, day ->
-        HomeUiState(logs, recipes, beans, s, day)
+        combine(today, repo.activeGrinders.map { it.size }.distinctUntilChanged()) { day, n -> day to n },
+    ) { logs, recipes, beans, s, (day, grinders) ->
+        HomeUiState(logs, recipes, beans, s, day, grinders)
     }.flowOn(Dispatchers.Default).stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
@@ -185,6 +203,7 @@ class HomeViewModel(
             beans = repo.activeBeansNow.orEmpty(),
             settings = settings.value ?: Settings(),
             today = today.value,
+            grinderCount = repo.activeGrindersNow?.size ?: 0,
         ),
     )
 

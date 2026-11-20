@@ -10,11 +10,44 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import com.laksh.coffee.core.formatDuration
+import com.laksh.coffee.core.ratio
+import com.laksh.coffee.domain.BrewStyle
+import com.laksh.coffee.ui.components.Term
+import com.laksh.coffee.ui.components.asHeading
+import com.laksh.coffee.ui.components.focusRing
+import com.laksh.coffee.ui.components.hoverTint
+import com.laksh.coffee.ui.theme.Eyebrow
+import com.laksh.coffee.ui.theme.LocalWindowClass
+import com.laksh.coffee.ui.theme.WidthClass
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -171,108 +204,294 @@ private fun ReviewForm(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val scroll = rememberScrollState()
     val warnings = state.fieldWarnings
     // Both exits navigate; a double tap must not pop or push twice.
     var leaving by remember { mutableStateOf(false) }
+    // Quick review keeps the detailed sections behind "More detail" until asked.
+    var moreDetail by rememberSaveable { mutableStateOf(false) }
+    val detailed = !state.quick || moreDetail
+    val sections = state.sections
+    val two = LocalWindowClass.current.width.atLeast(WidthClass.Expanded)
+    val save: () -> Unit = {
+        if (!leaving) {
+            leaving = true
+            vm.save(onDone)
+        }
+    }
+
+    // Ctrl+Enter saves from anywhere (v4 §2.7); 1-9 and 0 set the score when no field took them.
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    val keys = Modifier
+        .onPreviewKeyEvent { e ->
+            val enter = e.key == Key.Enter || e.key == Key.NumPadEnter
+            (e.type == KeyEventType.KeyDown && enter && (e.isCtrlPressed || e.isMetaPressed)).also { if (it) save() }
+        }
+        .onKeyEvent { e ->
+            if (e.type != KeyEventType.KeyDown || e.isCtrlPressed || e.isMetaPressed || e.isAltPressed) return@onKeyEvent false
+            val score = scoreForKey(e.key) ?: return@onKeyEvent false
+            vm.setOverall(score)
+            true
+        }
+        .focusRequester(focus)
+        .focusable()
+
+    val what: @Composable ColumnScope.() -> Unit = {
+        NumbersHeader(log, state, warnings, vm)
+        ReviewPhotos(log.id)
+        FirstReadSection(state.quickRead, aiReady)
+        ReportRow(
+            onShare = {
+                scope.launch {
+                    vm.save()
+                    shareText(context, vm.buildReport(), "Brew log — ${log.recipeName}")
+                }
+            },
+            onCopy = {
+                scope.launch {
+                    vm.save()
+                    copyText(context, vm.buildReport())
+                }
+            },
+            onAsk = onAsk,
+        )
+    }
+    val verdict: @Composable ColumnScope.() -> Unit = {
+        OverallSection(log, vm)
+        AnythingOffSection(log, vm)
+        if (state.quick) {
+            MoreDetailToggle(open = moreDetail, onToggle = { moreDetail = !moreDetail })
+        }
+        AnimatedVisibility(
+            visible = detailed,
+            enter = fadeIn(Motion.decel()) + expandVertically(Motion.size()),
+            exit = fadeOut(Motion.decel(140)) + shrinkVertically(Motion.size()),
+        ) {
+            Column {
+                TasteSection(log, warnings, vm)
+                if (sections.drawdown) DrawdownSection(log, state, warnings, vm, retained = sections.retained)
+                if (sections.bed) BedSection(log, vm)
+            }
+        }
+        NotesSection(log, vm)
+        AdvancedSection(log, state, warnings, vm, withBeverage = !sections.drawdown, startOpen = !state.quick && log.tdsPercent != null)
+    }
 
     // imePadding shrinks the scroll viewport so a focused field is scrolled above the keyboard.
-    Box(Modifier.fillMaxSize().imePadding()) {
-        // The status bar inset sits outside the scroll, so content never slides under the clock.
-        Column(
-            Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(scroll)
-                .padding(horizontal = 16.dp),
-        ) {
-            NumbersHeader(log, state, warnings, vm)
-            OverallSection(log, vm)
-            TasteSection(log, warnings, vm)
-            DrawdownSection(log, state, warnings, vm)
-            BedSection(log, vm)
-            ReviewPhotos(log.id)
-            NotesSection(log, state, warnings, vm)
-            FirstReadSection(state.quickRead, aiReady)
-
-            Spacer(Modifier.height(16.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconWell(
-                    icon = Icons.Rounded.Share,
-                    contentDescription = "Share report",
-                    onClick = {
-                        scope.launch {
-                            vm.save()
-                            shareText(context, vm.buildReport(), "Brew log — ${log.recipeName}")
+    Box(
+        Modifier
+            .fillMaxSize()
+            .imePadding()
+            .semantics { paneTitle = "Rate this brew" }
+            .then(keys),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        if (two) {
+            // Expanded and up: what happened on the left, the verdict on the right with its
+            // own sticky actions (§3.6).
+            Row(
+                Modifier
+                    .widthIn(max = 1200.dp)
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                Column(Modifier.weight(0.42f).fillMaxHeight().verticalScroll(rememberScrollState())) {
+                    what()
+                    Spacer(Modifier.height(24.dp))
+                }
+                Box(Modifier.weight(0.58f).fillMaxHeight()) {
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        Spacer(Modifier.height(12.dp))
+                        verdict()
+                        Spacer(Modifier.height(120.dp))
+                    }
+                    SaveBar(aiReady, Modifier.align(Alignment.BottomCenter), onSave = save, onAnalyse = {
+                        if (!leaving) {
+                            leaving = true
+                            vm.saveAndAnalyse(onOpenDetail)
                         }
-                    },
-                )
-                Spacer(Modifier.width(8.dp))
-                IconWell(
-                    icon = Icons.Rounded.ContentCopy,
-                    contentDescription = "Copy report",
-                    onClick = {
-                        scope.launch {
-                            vm.save()
-                            copyText(context, vm.buildReport())
-                        }
-                    },
-                )
-                Spacer(Modifier.weight(1f))
-                QuietButton(text = "Open Insights", onClick = onAsk, icon = Icons.Rounded.Insights)
-            }
-
-            // Clears the sticky bar (40 dp fade + 56 dp button + 12 dp) so the last row scrolls fully into view.
-            Spacer(Modifier.height(120.dp))
-            Spacer(Modifier.navigationBarsPadding())
-        }
-
-        // Hidden while typing: the keyboard already takes half the screen.
-        AnimatedVisibility(
-            visible = !WindowInsets.isImeVisible,
-            enter = fadeIn(Motion.decel(200)),
-            exit = fadeOut(Motion.decel(120)),
-            modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            StickyCtaBar {
-                if (aiReady) {
-                    SecondaryButton(
-                        text = "Save",
-                        onClick = {
-                            if (!leaving) {
-                                leaving = true
-                                vm.save(onDone)
-                            }
-                        },
-                        modifier = Modifier.weight(0.36f),
-                        height = 56.dp,
-                        onCanvas = true,
-                    )
-                    PrimaryButton(
-                        text = "Save & analyse",
-                        onClick = {
-                            if (!leaving) {
-                                leaving = true
-                                vm.saveAndAnalyse(onOpenDetail)
-                            }
-                        },
-                        modifier = Modifier.weight(0.64f),
-                        icon = Icons.Rounded.AutoAwesome,
-                    )
-                } else {
-                    PrimaryButton(
-                        text = "Save brew",
-                        onClick = {
-                            if (!leaving) {
-                                leaving = true
-                                vm.save(onDone)
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
+                    })
                 }
             }
+        } else {
+            OneColumn(state, log, aiReady, vm, warnings, verdict, save, onAsk, onAnalyse = {
+                if (!leaving) {
+                    leaving = true
+                    vm.saveAndAnalyse(onOpenDetail)
+                }
+            })
         }
+    }
+}
+
+@Composable
+private fun androidx.compose.foundation.layout.BoxScope.OneColumn(
+    state: ReviewUiState,
+    log: BrewLogEntity,
+    aiReady: Boolean,
+    vm: ReviewViewModel,
+    warnings: Map<String, String>,
+    verdict: @Composable ColumnScope.() -> Unit,
+    save: () -> Unit,
+    onAsk: () -> Unit,
+    onAnalyse: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    // The status bar inset sits outside the scroll, so content never slides under the clock.
+    Column(
+        Modifier
+            .align(Alignment.TopCenter)
+            .widthIn(max = 720.dp)
+            .fillMaxSize()
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+    ) {
+        NumbersHeader(log, state, warnings, vm)
+        verdict()
+        ReviewPhotos(log.id)
+        FirstReadSection(state.quickRead, aiReady)
+        ReportRow(
+            onShare = {
+                scope.launch {
+                    vm.save()
+                    shareText(context, vm.buildReport(), "Brew log — ${log.recipeName}")
+                }
+            },
+            onCopy = {
+                scope.launch {
+                    vm.save()
+                    copyText(context, vm.buildReport())
+                }
+            },
+            onAsk = onAsk,
+        )
+
+        // Clears the sticky bar (40 dp fade + 56 dp button + 12 dp) so the last row scrolls fully into view.
+        Spacer(Modifier.height(120.dp))
+        Spacer(Modifier.navigationBarsPadding())
+    }
+
+    // Hidden while typing: the keyboard already takes half the screen.
+    AnimatedVisibility(
+        visible = !WindowInsets.isImeVisible,
+        enter = fadeIn(Motion.decel(200)),
+        exit = fadeOut(Motion.decel(120)),
+        modifier = Modifier.align(Alignment.BottomCenter),
+    ) {
+        SaveBar(aiReady, onSave = save, onAnalyse = onAnalyse)
+    }
+}
+
+/** 1-9 set that score, 0 sets 10. */
+private fun scoreForKey(key: Key): Int? = when (key) {
+    Key.One, Key.NumPad1 -> 1
+    Key.Two, Key.NumPad2 -> 2
+    Key.Three, Key.NumPad3 -> 3
+    Key.Four, Key.NumPad4 -> 4
+    Key.Five, Key.NumPad5 -> 5
+    Key.Six, Key.NumPad6 -> 6
+    Key.Seven, Key.NumPad7 -> 7
+    Key.Eight, Key.NumPad8 -> 8
+    Key.Nine, Key.NumPad9 -> 9
+    Key.Zero, Key.NumPad0 -> 10
+    else -> null
+}
+
+@Composable
+private fun ReportRow(onShare: () -> Unit, onCopy: () -> Unit, onAsk: () -> Unit) {
+    Spacer(Modifier.height(16.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconWell(icon = Icons.Rounded.Share, contentDescription = "Share report", onClick = onShare, size = 48.dp)
+        Spacer(Modifier.width(8.dp))
+        IconWell(icon = Icons.Rounded.ContentCopy, contentDescription = "Copy report", onClick = onCopy, size = 48.dp)
+        Spacer(Modifier.weight(1f))
+        QuietButton(text = "Open Insights", onClick = onAsk, icon = Icons.Rounded.Insights)
+    }
+}
+
+@Composable
+private fun SaveBar(aiReady: Boolean, modifier: Modifier = Modifier, onSave: () -> Unit, onAnalyse: () -> Unit) {
+    StickyCtaBar(modifier) {
+        if (aiReady) {
+            SecondaryButton(
+                text = "Save",
+                onClick = onSave,
+                modifier = Modifier.weight(0.36f),
+                height = 56.dp,
+                onCanvas = true,
+            )
+            PrimaryButton(
+                text = "Save and analyse",
+                onClick = onAnalyse,
+                modifier = Modifier.weight(0.64f),
+                icon = Icons.Rounded.AutoAwesome,
+            )
+        } else {
+            PrimaryButton(text = "Save brew", onClick = onSave, modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+/** The quick review's four toggles (v4 §4.4), mapped to the same faults the detailed one writes. */
+@Composable
+private fun AnythingOffSection(log: BrewLogEntity, vm: ReviewViewModel) {
+    SectionLabel("ANYTHING OFF?")
+    SoftCard(Modifier.fillMaxWidth()) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            QuickReview.TOGGLES.forEach { (toggle, _) ->
+                SelectableChip(
+                    text = toggle,
+                    selected = QuickReview.isOn(toggle, log.faults),
+                    onClick = { vm.toggleQuick(toggle) },
+                    status = Status.Fault,
+                )
+            }
+        }
+    }
+}
+
+/** "More detail": taste, flow, the coffee bed, opened in place. */
+@Composable
+private fun MoreDetailToggle(open: Boolean, onToggle: () -> Unit) {
+    val c = CoffeeTheme.colors
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .heightIn(min = 48.dp)
+            .clip(WellShape)
+            .focusRing(interaction, WellShape)
+            .hoverTint(interaction, c.inkHigh.copy(alpha = 0.04f), WellShape)
+            .toggleable(value = open, interactionSource = interaction, indication = null, role = Role.Button, onValueChange = { onToggle() })
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(if (open) "Less detail" else "More detail", style = MaterialTheme.typography.titleMedium, color = c.inkHigh)
+            Text("Taste, flow, the coffee bed", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
+        }
+        Icon(
+            if (open) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+            contentDescription = null,
+            tint = c.inkMid,
+        )
+    }
+}
+
+/** A section eyebrow whose word opens the glossary ("Drawdown", "The bed", "TDS"). */
+@Composable
+private fun TermLabel(key: String, text: String) {
+    Row(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 10.dp)) {
+        Term(key = key, text = text, style = Eyebrow, color = CoffeeTheme.colors.inkLow, modifier = Modifier.asHeading())
     }
 }
 
@@ -310,16 +529,34 @@ private fun NumbersHeader(
         log.recipeName.ifBlank { "That brew" },
         style = MaterialTheme.typography.headlineLarge,
         color = c.inkHigh,
-        maxLines = 3,
-        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.asHeading(),
     )
     Spacer(Modifier.height(12.dp))
 
+    val labels = state.labels
+    val espresso = state.sections.style == BrewStyle.Espresso
+    // Big text gets two columns instead of four squeezed ones (A7).
+    val columns = if (LocalDensity.current.fontScale > 1.3f) 2 else 4
     SoftCard(contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)) {
         DataGrid(
-            cells = listOf(
+            cells = if (espresso) {
+                val yieldG = log.beverageG ?: log.waterG
+                listOf(
+                    Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
+                    Cell(label = labels.water, value = grams(yieldG), unit = "g"),
+                    Cell(label = "RATIO", value = ratio(log.doseG, yieldG)),
+                    Cell(
+                        label = labels.time,
+                        value = log.totalTimeSec.takeIf { it > 0 }?.let { "$it" },
+                        unit = log.totalTimeSec.takeIf { it > 0 }?.let { "s" },
+                        status = timeFlag?.let { Status.Attention },
+                        sub = timeFlag?.let { "CHECK" },
+                        subStatus = timeFlag?.let { Status.Attention },
+                    ),
+                )
+            } else listOf(
                 Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
-                Cell(label = "WATER", value = grams(log.waterG), unit = "g"),
+                Cell(label = labels.water, value = grams(log.waterG), unit = "g"),
                 Cell(
                     label = "GRIND",
                     value = log.grindClicks?.toString() ?: log.grindSetting.trim().ifEmpty { null },
@@ -330,14 +567,14 @@ private fun NumbersHeader(
                     subStatus = grindFlag?.let { Status.Attention },
                 ),
                 Cell(
-                    label = "TIME",
-                    value = log.totalTimeSec.takeIf { it > 0 }?.let { clock(it) },
+                    label = labels.time,
+                    value = log.totalTimeSec.takeIf { it > 0 }?.let { formatDuration(it) },
                     status = if (timeFlag != null) Status.Attention else ts.first,
                     sub = timeFlag?.let { "CHECK" },
                     subStatus = timeFlag?.let { Status.Attention },
                 ),
             ),
-            columns = 4,
+            columns = columns,
             compact = true,
         )
 
@@ -534,11 +771,12 @@ private fun DrawdownSection(
     state: ReviewUiState,
     warnings: Map<String, String>,
     vm: ReviewViewModel,
+    retained: Boolean,
 ) {
     val c = CoffeeTheme.colors
     val drawdownFlag = warnings[Fields.DRAWDOWN]
     val beverageFlag = warnings[Fields.BEVERAGE]
-    SectionLabel("DRAWDOWN")
+    TermLabel("drawdown", "DRAWDOWN")
     SoftCard {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             // A blank warning outlines the well; the full reason sits full-width underneath.
@@ -585,8 +823,10 @@ private fun DrawdownSection(
         Spacer(Modifier.height(8.dp))
         val expected = BrewMath.expectedBeverageG(log.doseG, log.waterG)
         KeyValueRow("Expected in cup", "~${grams(expected)} g")
-        log.beverageG?.let { bev ->
-            KeyValueRow("Retained by the bed", "${grams(log.waterG - bev)} g")
+        if (retained) {
+            log.beverageG?.let { bev ->
+                KeyValueRow("Retained by the bed", "${grams(log.waterG - bev)} g")
+            }
         }
     }
 }
@@ -600,7 +840,7 @@ private fun BedSection(log: BrewLogEntity, vm: ReviewViewModel) {
     val lastShape = remember { arrayOf(log.bedShape) }
     if (log.bedShape != BedShape.Unset) lastShape[0] = log.bedShape
 
-    SectionLabel("THE BED")
+    TermLabel("bed", "THE BED")
     SoftCard {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BedShape.entries.filter { it != BedShape.Unset }.chunked(4).forEach { row ->
@@ -662,7 +902,7 @@ private fun BedSection(log: BrewLogEntity, vm: ReviewViewModel) {
         }
 
         Spacer(Modifier.height(16.dp))
-        Text("CHANNELLING", style = Micro, color = c.inkLow)
+        Term(key = "channelling", text = "CHANNELLING", style = Micro, color = c.inkLow)
         Spacer(Modifier.height(8.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -768,13 +1008,7 @@ private fun BedShapeTile(
 // ------------------------------------------------------------------------ notes
 
 @Composable
-private fun NotesSection(
-    log: BrewLogEntity,
-    state: ReviewUiState,
-    warnings: Map<String, String>,
-    vm: ReviewViewModel,
-) {
-    val eyFlag = warnings[Fields.EY]
+private fun NotesSection(log: BrewLogEntity, vm: ReviewViewModel) {
     SectionLabel("NOTES")
     SoftCard {
         FieldWell(
@@ -794,27 +1028,88 @@ private fun NotesSection(
             modifier = Modifier.fillMaxWidth(),
             placeholder = "The one thing to change",
         )
-        Spacer(Modifier.height(12.dp))
-        FieldWell(
-            label = "TDS",
-            value = state.tdsText,
-            onChange = vm::setTdsText,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = "optional",
-            suffix = "%",
-            numeric = true,
-            warning = eyFlag?.let { "" },
-            helper = "Only if you have a refractometer.",
+    }
+}
+
+/**
+ * TDS and extraction, always behind "Advanced" (v4 §4.4). Methods without a drawdown section keep
+ * the cup's weight here too.
+ */
+@Composable
+private fun AdvancedSection(
+    log: BrewLogEntity,
+    state: ReviewUiState,
+    warnings: Map<String, String>,
+    vm: ReviewViewModel,
+    withBeverage: Boolean,
+    startOpen: Boolean,
+) {
+    val c = CoffeeTheme.colors
+    val eyFlag = warnings[Fields.EY]
+    val beverageFlag = warnings[Fields.BEVERAGE]
+    var open by rememberSaveable { mutableStateOf(startOpen) }
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .heightIn(min = 48.dp)
+            .clip(WellShape)
+            .focusRing(interaction, WellShape)
+            .hoverTint(interaction, c.inkHigh.copy(alpha = 0.04f), WellShape)
+            .toggleable(value = open, interactionSource = interaction, indication = null, role = Role.Button, onValueChange = { open = it })
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Advanced", style = MaterialTheme.typography.titleMedium, color = c.inkHigh, modifier = Modifier.asHeading())
+            Text("TDS and extraction, if you have a refractometer", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
+        }
+        Icon(
+            if (open) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+            contentDescription = null,
+            tint = c.inkMid,
         )
-        val ey = log.extractionYield
-        AnimatedVisibility(
-            visible = ey != null,
-            enter = fadeIn(Motion.decel()) + expandVertically(Motion.size()),
-            exit = fadeOut(Motion.decel(140)) + shrinkVertically(Motion.size()),
-        ) {
-            Column {
+    }
+    AnimatedVisibility(
+        visible = open,
+        enter = fadeIn(Motion.decel()) + expandVertically(Motion.size()),
+        exit = fadeOut(Motion.decel(140)) + shrinkVertically(Motion.size()),
+    ) {
+        SoftCard(Modifier.padding(top = 8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                FieldWell(
+                    label = "TDS",
+                    value = state.tdsText,
+                    onChange = vm::setTdsText,
+                    modifier = Modifier.weight(1f),
+                    placeholder = "optional",
+                    suffix = "%",
+                    numeric = true,
+                    warning = eyFlag?.let { "" },
+                )
+                if (withBeverage) {
+                    FieldWell(
+                        label = if (state.sections.style == BrewStyle.Espresso) "IN THE CUP" else "BEVERAGE",
+                        value = state.beverageText,
+                        onChange = vm::setBeverageText,
+                        modifier = Modifier.weight(1f),
+                        suffix = "g",
+                        numeric = true,
+                        warning = beverageFlag?.let { "" },
+                    )
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Term(key = "tds", text = "What is TDS?", style = MaterialTheme.typography.bodySmall, color = c.inkMid)
+            if (withBeverage) beverageFlag?.let { WarningNote(it) }
+            val ey = log.extractionYield
+            if (ey != null) {
                 Spacer(Modifier.height(8.dp))
-                KeyValueRow("Extraction yield", ey?.let { "${oneDp(it)} %" } ?: "")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Term(key = "extraction", text = "Extraction yield", style = MaterialTheme.typography.bodyMedium, color = c.inkMid, modifier = Modifier.weight(1f))
+                    Text("${oneDp(ey)} %", style = MaterialTheme.typography.bodyMedium, color = c.inkHigh)
+                }
                 eyFlag?.let { WarningNote(it) }
             }
         }

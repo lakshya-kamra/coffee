@@ -148,7 +148,8 @@ object Routes {
     const val RECIPES = "recipes"
     // The origin list rides along so the detail header can fly back to the card it came from.
     const val RECIPE = "recipe/{id}?from={from}"
-    const val BREW = "brew/{id}"
+    // "again" is a logged brew to repeat (v4 §4.10); 0, the default, is a plain brew.
+    const val BREW = "brew/{id}?again={again}"
     const val REVIEW = "review/{logId}"
     const val HISTORY = "history"
     const val BREW_DETAIL = "brewDetail/{logId}"
@@ -163,7 +164,8 @@ object Routes {
     const val RECIPE_EDIT = "recipeEdit?id={id}&mode={mode}&from={from}"
 
     fun recipe(id: String, from: String = SharedKeys.FROM_HOME) = "recipe/${segment(id)}?from=$from"
-    fun brew(id: String) = "brew/${segment(id)}"
+    fun brew(id: String, againLogId: Long = 0L) =
+        "brew/${segment(id)}" + (if (againLogId > 0L) "?again=$againLogId" else "")
     fun review(logId: Long) = "review/$logId"
     fun brewDetail(logId: Long) = "brewDetail/$logId"
 
@@ -572,6 +574,7 @@ private fun TabContent(
         AppTab.Today -> HomeScreen(
             onOpenRecipe = { id, from -> go(Routes.recipe(id, from)) },
             onBrew = { nav.navigate(Routes.brew(it)) },
+            onBrewAgain = { recipeId, logId -> nav.navigate(Routes.brew(recipeId, logId)) },
             onOpenLog = { go(Routes.brewDetail(it)) },
             onSeeAllRecipes = { go(Routes.RECIPES) },
             onSeeHistory = { go(Routes.HISTORY) },
@@ -879,11 +882,18 @@ private fun DetailNavHost(
 
         composable(
             Routes.BREW,
-            arguments = listOf(navArgument("id") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("id") { type = NavType.StringType },
+                navArgument("again") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                },
+            ),
         ) { entry ->
             DetailPage {
                 BrewScreen(
                     recipeId = entry.arguments?.getString("id").orEmpty(),
+                    againLogId = entry.arguments?.getLong("again") ?: 0L,
                     onExit = { nav.popBackStack() },
                     onFinished = { logId ->
                         // A finished brew lands on Today once Review is done, as it always has.

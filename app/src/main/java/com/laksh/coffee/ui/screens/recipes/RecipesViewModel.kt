@@ -10,7 +10,7 @@ import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.data.repo.CoffeeRepository
 import com.laksh.coffee.domain.Brewer
-import com.laksh.coffee.domain.Brewers
+import com.laksh.coffee.domain.BrewerFamilies
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.domain.grind.GrindScale
 import com.laksh.coffee.domain.recipes.ExpertRecipes
@@ -32,6 +32,14 @@ import kotlinx.coroutines.launch
  * Filters stack: "Mine" (recipes you wrote, copied or edited), "My brewers" (recipes for a brewer
  * in the same family as one you own), one brewer, one author, and the search text.
  */
+/** The list pane's sort control (v4 §3.2). */
+enum class RecipeSort(val label: String) {
+    Suggested("Suggested"), AZ("A-Z"), MostBrewed("Most brewed"), BestRated("Best rated");
+}
+
+/** Your brews of one recipe: how many, and the best score. */
+data class RecipeStats(val count: Int, val best: Int)
+
 data class RecipeListState(
     val all: List<Recipe> = emptyList(),
     val query: String = "",
@@ -41,9 +49,14 @@ data class RecipeListState(
     /** Null = not chosen yet: on when you own brewers, off when you own none. */
     val myBrewersChoice: Boolean? = null,
     val ownedBrewerIds: Set<String> = emptySet(),
+    val sort: RecipeSort = RecipeSort.Suggested,
+    /** Recipe id to your brews of it, for "Most brewed" and "Best rated". */
+    val stats: Map<String, RecipeStats> = emptyMap(),
 ) {
+    // CORE's families: a drip machine, phin or drip bag never borrows a V60 recipe, and an owned
+    // Melodrip (an accessory) matches nothing rather than everything.
     private val ownedFamilies: Set<String> =
-        if (ownedBrewerIds.isEmpty()) emptySet() else ownedBrewerIds.mapNotNull { Brewers.byId(it)?.family }.toSet()
+        if (ownedBrewerIds.isEmpty()) emptySet() else BrewerFamilies.owned(ownedBrewerIds)
 
     /** The "Mine" chip is only offered once there is something of yours to show. */
     val hasMine: Boolean = all.any(::isMine)
@@ -74,13 +87,20 @@ data class RecipeListState(
     val people: Int = all.map { it.author }.distinct().size
 
     val filtered: List<Recipe> = query.trim().let { q ->
-        scoped.filter { r ->
+        val hits = scoped.filter { r ->
             (activeBrewer == null || r.brewer == activeBrewer) &&
                 (activeAuthor == null || r.author == activeAuthor) &&
                 (q.isEmpty() || r.name.contains(q, ignoreCase = true) ||
                     r.author.contains(q, ignoreCase = true) ||
                     r.blurb.contains(q, ignoreCase = true) ||
                     r.brewer.label.contains(q, ignoreCase = true))
+        }
+        // Stable sorts, so equal recipes keep the library's own order.
+        when (sort) {
+            RecipeSort.Suggested -> hits
+            RecipeSort.AZ -> hits.sortedBy { it.name.lowercase() }
+            RecipeSort.MostBrewed -> hits.sortedByDescending { stats[it.id]?.count ?: 0 }
+            RecipeSort.BestRated -> hits.sortedByDescending { stats[it.id]?.best ?: 0 }
         }
     }
 
@@ -101,9 +121,15 @@ class RecipesViewModel(repo: CoffeeRepository, settings: StateFlow<Settings?>) :
         val author: String? = null,
         val mine: Boolean = false,
         val myBrewers: Boolean? = null,
+        val sort: RecipeSort = RecipeSort.Suggested,
     )
 
     private val filters = MutableStateFlow(Filters())
+
+    /** Brew counts and best scores per recipe, off the main thread. */
+    private val stats = repo.allLogs.map { logs ->
+        logs.groupBy { it.recipeId }.mapValues { (_, l) -> RecipeStats(l.size, l.maxOf { it.overall }) }
+    }.flowOn(Dispatchers.Default).distinctUntilChanged()
 
     // Eager and seeded from the hot cache, so the tab's first frame already has its cards. The
     // filtering stays on the main dispatcher: 50 recipes is trivial, and the search field's
@@ -113,8 +139,9 @@ class RecipesViewModel(repo: CoffeeRepository, settings: StateFlow<Settings?>) :
             repo.recipes,
             filters,
             settings.map { it?.ownedBrewerIds.orEmpty() }.distinctUntilChanged(),
-        ) { recipes, f, owned ->
-            RecipeListState(recipes, f.query, f.brewer, f.author, f.mine, f.myBrewers, owned)
+            stats,
+        ) { recipes, f, owned, st ->
+            RecipeListState(recipes, f.query, f.brewer, f.author, f.mine, f.myBrewers, owned, f.sort, st)
         }.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
@@ -125,6 +152,7 @@ class RecipesViewModel(repo: CoffeeRepository, settings: StateFlow<Settings?>) :
     fun setBrewer(v: Brewer?) = filters.update { it.copy(brewer = if (it.brewer == v) null else v) }
     fun setAuthor(v: String?) = filters.update { it.copy(author = if (it.author == v) null else v) }
     fun toggleMine() = filters.update { it.copy(mine = !it.mine) }
+    fun setSort(v: RecipeSort) = filters.update { it.copy(sort = v) }
 
     /** [shown] is what the chip shows now, so the first tap turns the default off. */
     fun toggleMyBrewers(shown: Boolean) = filters.update { it.copy(myBrewers = !shown) }
@@ -151,6 +179,15 @@ data class RecipeDetailState(
     /** Your default grinder's name and scale, when the catalog has starting points for it. */
     val grinderName: String = "",
     val grindScale: GrindScale? = null,
+    /** false: amounts in spoons and ml, and the no-scale prep lines (v4 §4.3). */
+    val hasScale: Boolean = true,
+    /** "c" | "f", for temperatures in the recipe's own words. */
+    val tempUnit: String = "c",
+    /** With [experience], which of the recipe's needs to flag in "What you'll need". */
+    val buysGround: Boolean = false,
+    val experience: String = "",
+    /** Grinders that are not archived; a recipe that needs one is fine with any of them. */
+    val grinderCount: Int = 0,
 ) {
     val brewedCount: Int get() = logs.size
 
@@ -171,14 +208,20 @@ class RecipeDetailViewModel(
     // the very first frame.
     private val _state = MutableStateFlow(
         (repo.recipesNow?.firstOrNull { it.id == recipeId } ?: published).let { r ->
-            RecipeDetailState(loading = false, recipe = r, isOverride = isOverride(r))
+            RecipeDetailState(loading = false, recipe = r, isOverride = isOverride(r)).withSettings(settings.value)
         },
     )
     val state: StateFlow<RecipeDetailState> = _state
 
     private fun isOverride(r: Recipe?): Boolean = published != null && r != null && !r.isBuiltIn
 
+    private fun RecipeDetailState.withSettings(s: Settings?): RecipeDetailState =
+        if (s == null) this else copy(hasScale = s.hasScale, tempUnit = s.tempUnit, buysGround = s.buysGround, experience = s.experience)
+
     init {
+        viewModelScope.launch {
+            settings.collect { s -> _state.update { it.withSettings(s) } }
+        }
         viewModelScope.launch {
             // Observed, so an edit or a reset made in the builder shows when you come back. A
             // recipe that was deleted keeps its last version on screen while the page leaves.
@@ -194,11 +237,11 @@ class RecipeDetailViewModel(
             combine(repo.activeGrinders, settings.map { it?.defaultGrinderId }.distinctUntilChanged()) { all, id ->
                 val g = all.firstOrNull { it.id == id } ?: all.firstOrNull { it.isDefault } ?: all.firstOrNull()
                 // Only a scale the catalog has ranges for is worth a card.
-                g?.let { it.display to it.scale() }?.takeIf { it.second.ranges.isNotEmpty() }
+                g?.let { it.display to it.scale() }?.takeIf { it.second.ranges.isNotEmpty() } to all.size
             }
                 .flowOn(Dispatchers.Default)
-                .collect { found ->
-                    _state.update { it.copy(grinderName = found?.first.orEmpty(), grindScale = found?.second) }
+                .collect { (found, count) ->
+                    _state.update { it.copy(grinderName = found?.first.orEmpty(), grindScale = found?.second, grinderCount = count) }
                 }
         }
         viewModelScope.launch {

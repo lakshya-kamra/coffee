@@ -15,15 +15,24 @@ import com.laksh.coffee.data.db.entity.BeanEntity
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.data.db.entity.GrinderEntity
 import com.laksh.coffee.data.repo.CoffeeRepository
+import com.laksh.coffee.data.prefs.Settings
 import com.laksh.coffee.domain.BedShape
 import com.laksh.coffee.domain.BrewMath
+import com.laksh.coffee.domain.BrewMethod
 import com.laksh.coffee.domain.BrewReport
+import com.laksh.coffee.domain.Brewer
+import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.Channeling
 import com.laksh.coffee.domain.FlowFeel
+import com.laksh.coffee.domain.MethodLabels
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.ReviewSections
 import com.laksh.coffee.domain.Sludge
 import com.laksh.coffee.domain.ai.DataQuality
+import com.laksh.coffee.domain.ai.Fields
 import com.laksh.coffee.domain.ai.FlagSeverity
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,9 +59,34 @@ data class ReviewUiState(
     val grindText: String = "",
     /** Total brew time as typed: "3:28", "3.28" and "328" all mean 3 min 28 s. */
     val timeText: String = "",
+    /** The person's settings: quick or detailed review, scale, temperature unit. */
+    val settings: Settings = Settings(),
 ) {
+    /** The brewer this brew used, for the sections and the advice (§4.4). */
+    val brewer: Brewer?
+        get() = recipe?.brewer ?: log?.let { l -> Brewers.resolveOrNull(l.brewerId ?: l.brewer) }
+
+    val sections: ReviewSections get() = ReviewSections.of(brewer)
+
+    val labels: MethodLabels get() = MethodLabels.of(brewer?.method ?: BrewMethod.PourOver)
+
+    val quick: Boolean get() = QuickReview.isQuick(settings.reviewMode)
+
+    /** The first read, v2: by method, by whether the grind can change, in the person's units. */
     val quickRead: List<String>
-        get() = log?.let { BrewReport.quickRead(it, recipe) } ?: emptyList()
+        get() = log?.let {
+            BrewReport.quickRead(
+                it,
+                recipe,
+                BrewReport.QuickReadOptions(
+                    brewer = brewer,
+                    hasScale = settings.hasScale,
+                    fahrenheit = settings.tempUnit == "f",
+                    // Data quality already distrusts the time: no advice built on it.
+                    timeIgnored = Fields.TIME in fieldWarnings,
+                ),
+            )
+        } ?: emptyList()
 
     /**
      * Field name (a `Fields` constant, e.g. Fields.DRAWDOWN, Fields.BEVERAGE, Fields.TASTE,
@@ -89,6 +123,7 @@ class ReviewViewModel(
     private val analysis: AnalysisRepository,
     ai: AiSettingsStore,
     private val logId: Long,
+    settings: StateFlow<Settings?> = kotlinx.coroutines.flow.MutableStateFlow(null),
 ) : ViewModel() {
 
     // Seeded from the hot caches when the brew is already there (Edit, Fix in log), so the form
@@ -114,14 +149,19 @@ class ReviewViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
+        // Settings ride along in the state, so quick/detailed and the units never lag a frame.
+        settings.value?.let { s -> _state.update { it.copy(settings = s) } }
+        viewModelScope.launch {
+            settings.filterNotNull().collect { s -> _state.update { it.copy(settings = s) } }
+        }
         viewModelScope.launch {
             val log = repo.log(logId)
             val recipe = log?.recipeId?.let { repo.recipeById(it) }
             val bean = log?.beanId?.let { repo.bean(it) }
             val grinder = log?.grinderId?.let { repo.grinder(it) }
-            val fresh = loaded(log, recipe, bean, grinder)
-            // Never overwrite edits made since the seed; only fill in what the cache lacked.
             val cur = _state.value
+            val fresh = loaded(log, recipe, bean, grinder).copy(settings = cur.settings)
+            // Never overwrite edits made since the seed; only fill in what the cache lacked.
             _state.value = if (cur.log == null) fresh else cur.copy(recipe = recipe, bean = bean, grinder = grinder)
         }
     }
@@ -161,6 +201,9 @@ class ReviewViewModel(
     fun toggleFault(v: String) = edit {
         it.copy(faults = it.faults.toggle(v))
     }
+
+    /** One of the quick review's four "ANYTHING OFF?" toggles. */
+    fun toggleQuick(toggle: String) = edit { it.copy(faults = QuickReview.toggle(it.faults, toggle)) }
 
     fun setDrawdownText(v: String) {
         val digits = v.filter { c -> c.isDigit() }.take(4)
@@ -266,7 +309,10 @@ class ReviewViewModel(
 
     companion object {
         fun factory(logId: Long): ViewModelProvider.Factory = viewModelFactory {
-            initializer { ReviewViewModel(this.app.repository, this.app.analysis, this.app.aiSettings, logId) }
+            initializer {
+                val a = this.app
+                ReviewViewModel(a.repository, a.analysis, a.aiSettings, logId, a.settingsState)
+            }
         }
     }
 }

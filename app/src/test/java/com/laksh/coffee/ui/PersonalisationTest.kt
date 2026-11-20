@@ -319,10 +319,14 @@ class PersonalisationTest {
         assertNotNull(forAeropress)
         assertEquals("aeropress", forAeropress!!.brewer.id)
 
+        // v4: a fresh install gets the guided first brew (FirstBrew.pick), still for a brewer it owns.
         val fresh = HomeUiState(recipes = library, settings = Settings(ownedBrewerIds = setOf("aeropress")))
-        assertEquals(forAeropress, fresh.nextRecipe)
-        // Nothing owned: the first expert recipe, as before.
-        assertEquals(library.first(), HomeUiState(recipes = library).nextRecipe)
+        assertEquals("aeropress", fresh.nextRecipe?.brewer?.family)
+        // Nothing owned: the easiest recipe that needs least, not simply the first in the list.
+        assertEquals(
+            com.laksh.coffee.domain.FirstBrew.pick(library, com.laksh.coffee.domain.FirstBrewSettings(emptySet(), true, false, ""), 0).recipe,
+            HomeUiState(recipes = library).nextRecipe,
+        )
         // What you brewed last still wins over what you own.
         val last = HomeUiState(recipes = library, settings = Settings(lastRecipeId = "kasuya-46", ownedBrewerIds = setOf("aeropress")))
         assertEquals("kasuya-46", last.nextRecipe?.id)

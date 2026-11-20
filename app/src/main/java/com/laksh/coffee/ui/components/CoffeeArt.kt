@@ -584,7 +584,8 @@ fun BedShapeIcon(
 /**
  * A small line drawing of the brewer: a cone (V60, Kalita, Switch), an hourglass (Chemex),
  * a cylinder with a plunger (French Press, AeroPress, each with its own cap), a faceted pot
- * (Moka), a cup (Espresso) or a jar (Cold Brew). Replaces the Unicode glyphs, which rendered
+ * (Moka), a cup (Espresso), a jar (Cold Brew), a drip machine, a cezve, a siphon or a phin on its
+ * glass (v4). One ink, so it reads in both themes. Replaces the Unicode glyphs, which rendered
  * at mismatched sizes and one of which came out as a glossy colour-emoji tile.
  * [tint] defaults to the surrounding content colour, so it follows a chip's ink.
  */
@@ -620,10 +621,49 @@ fun BrewerIcon(
                     ),
                 )
 
-                // v4: Drip, Siphon, Phin and Cezve are placeholders that reuse the drawing each
-                // brewer showed before it had its own art, until A2 draws them.
+                fun Path.oval(l: Float, t: Float, r: Float, b: Float) =
+                    addOval(Rect(ox + l * s, oy + t * s, ox + r * s, oy + b * s))
+
                 when (brewer.art) {
-                    BrewerArt.V60, BrewerArt.Drip -> {
+                    BrewerArt.Drip -> {
+                        // An auto-drip machine: the hood over a carafe, the tank tower behind it,
+                        // the warming plate under, and the coffee in the carafe.
+                        line.box(0.12f, 0.10f, 0.86f, 0.26f, corner = 0.04f)
+                        line.m(0.70f, 0.26f); line.l(0.70f, 0.88f)
+                        line.m(0.10f, 0.90f); line.l(0.88f, 0.90f)
+                        line.m(0.24f, 0.46f); line.l(0.54f, 0.46f); line.l(0.58f, 0.84f); line.l(0.20f, 0.84f); line.close()
+                        line.m(0.39f, 0.26f); line.l(0.39f, 0.36f)
+                        solid.m(0.225f, 0.68f); solid.l(0.565f, 0.68f); solid.l(0.58f, 0.84f); solid.l(0.20f, 0.84f); solid.close()
+                    }
+                    BrewerArt.Cezve -> {
+                        // A cezve: wide at the base, pinched at the neck, a flared lip and a long
+                        // handle reaching up and away; the foam sits in the neck.
+                        line.m(0.16f, 0.30f); line.l(0.26f, 0.42f); line.l(0.14f, 0.86f); line.l(0.58f, 0.86f)
+                        line.l(0.46f, 0.42f); line.l(0.56f, 0.30f)
+                        line.m(0.50f, 0.52f); line.l(0.92f, 0.32f)
+                        solid.m(0.26f, 0.44f); solid.l(0.46f, 0.44f); solid.l(0.48f, 0.52f); solid.l(0.24f, 0.52f); solid.close()
+                    }
+                    BrewerArt.Siphon -> {
+                        // A siphon: the upper bowl and its tube into the round lower bulb, held
+                        // by a stand, with the burner beneath.
+                        line.box(0.36f, 0.06f, 0.64f, 0.38f, corner = 0.08f)
+                        line.m(0.50f, 0.38f); line.l(0.50f, 0.50f)
+                        line.oval(0.30f, 0.48f, 0.70f, 0.82f)
+                        line.m(0.70f, 0.64f); line.l(0.84f, 0.64f); line.l(0.84f, 0.92f)
+                        line.m(0.20f, 0.92f); line.l(0.88f, 0.92f)
+                        solid.box(0.44f, 0.84f, 0.56f, 0.92f, corner = 0.02f)
+                    }
+                    BrewerArt.Phin -> {
+                        // A phin on its glass: the lid and knob, the small chamber on its wide
+                        // plate, and the coffee dripping into the glass below.
+                        solid.box(0.44f, 0.06f, 0.56f, 0.13f, corner = 0.02f)
+                        line.m(0.30f, 0.16f); line.l(0.70f, 0.16f)
+                        line.box(0.33f, 0.20f, 0.67f, 0.44f, corner = 0.03f)
+                        line.m(0.14f, 0.47f); line.l(0.86f, 0.47f)
+                        line.m(0.28f, 0.52f); line.l(0.33f, 0.92f); line.l(0.67f, 0.92f); line.l(0.72f, 0.52f)
+                        solid.m(0.31f, 0.74f); solid.l(0.69f, 0.74f); solid.l(0.67f, 0.92f); solid.l(0.33f, 0.92f); solid.close()
+                    }
+                    BrewerArt.V60 -> {
                         // A pointed cone on a base plate.
                         line.m(0.14f, 0.22f); line.l(0.86f, 0.22f); line.l(0.54f, 0.70f); line.l(0.46f, 0.70f); line.close()
                         line.m(0.26f, 0.82f); line.l(0.74f, 0.82f)
@@ -642,7 +682,7 @@ fun BrewerIcon(
                         line.box(0.28f, 0.66f, 0.72f, 0.84f, corner = 0.06f)
                         line.m(0.72f, 0.75f); line.l(0.88f, 0.70f)
                     }
-                    BrewerArt.Chemex, BrewerArt.Siphon -> {
+                    BrewerArt.Chemex -> {
                         // An hourglass flask with a solid collar at the waist.
                         line.m(0.22f, 0.10f); line.l(0.78f, 0.10f); line.l(0.56f, 0.46f)
                         line.l(0.80f, 0.90f); line.l(0.20f, 0.90f); line.l(0.44f, 0.46f); line.close()
@@ -656,7 +696,7 @@ fun BrewerIcon(
                         line.m(0.68f, 0.42f); line.l(0.84f, 0.42f); line.l(0.84f, 0.76f); line.l(0.68f, 0.76f)
                         solid.addOval(Rect(ox + 0.37f * s, oy + 0.04f * s, ox + 0.51f * s, oy + 0.16f * s))
                     }
-                    BrewerArt.AeroPress, BrewerArt.Phin -> {
+                    BrewerArt.AeroPress -> {
                         // A narrow chamber, the plunger in its top, a wide flat plunger cap and
                         // the flanged filter cap at the bottom.
                         line.box(0.30f, 0.36f, 0.70f, 0.84f)
@@ -664,7 +704,7 @@ fun BrewerIcon(
                         line.m(0.24f, 0.12f); line.l(0.76f, 0.12f)
                         line.m(0.22f, 0.90f); line.l(0.78f, 0.90f)
                     }
-                    BrewerArt.Moka, BrewerArt.Cezve -> {
+                    BrewerArt.Moka -> {
                         // Two faceted chambers pinched at the waist, a spout, a lid knob, a handle.
                         line.m(0.28f, 0.90f); line.l(0.72f, 0.90f); line.l(0.64f, 0.56f); line.l(0.36f, 0.56f); line.close()
                         line.m(0.36f, 0.52f); line.l(0.64f, 0.52f); line.l(0.72f, 0.20f); line.l(0.28f, 0.20f); line.close()

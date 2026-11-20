@@ -48,7 +48,22 @@ import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.ratio
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.RecipeLevels
+import com.laksh.coffee.domain.RecipeNeeds
 import com.laksh.coffee.domain.RecipeValidation
+import com.laksh.coffee.ui.components.SegmentedControl
+import com.laksh.coffee.ui.theme.LocalWindowClass
+import com.laksh.coffee.ui.theme.WidthClass
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import com.laksh.coffee.domain.StepKind
 import com.laksh.coffee.domain.catalog.CatalogDocs
 import com.laksh.coffee.domain.catalog.CatalogKind
@@ -110,7 +125,15 @@ fun RecipeEditorScreen(
     var startingFrom by remember { mutableStateOf(false) }
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    Box(Modifier.fillMaxSize().background(colors.bg).imePadding()) {
+    val two = LocalWindowClass.current.width.atLeast(WidthClass.Expanded)
+    // Ctrl+S saves (v4 §3.12), from any field.
+    val keys = Modifier.onPreviewKeyEvent { e ->
+        val save = e.type == KeyEventType.KeyDown && e.key == Key.S && (e.isCtrlPressed || e.isMetaPressed)
+        if (save && state.canSave) vm.save(onDone)
+        save
+    }
+
+    Box(Modifier.fillMaxSize().background(colors.bg).imePadding().semantics { paneTitle = state.title }.then(keys)) {
         if (draft == null) {
             if (state.missing) {
                 Text(
@@ -119,6 +142,90 @@ fun RecipeEditorScreen(
                     color = colors.inkMid,
                     modifier = Modifier.align(Alignment.Center).padding(Dimens.Gutter),
                 )
+            }
+        } else if (two) {
+            // Expanded and up: the recipe on the left, its steps and how it will run on the right.
+            Row(
+                Modifier.align(Alignment.TopCenter).widthIn(max = 1200.dp).fillMaxSize().padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                LazyColumn(
+                    Modifier.weight(0.45f).fillMaxHeight(),
+                    contentPadding = PaddingValues(top = topInset + 56.dp, bottom = 48.dp),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.CardGap),
+                ) {
+                    item(key = "head", contentType = "head") {
+                        EditorHead(
+                            title = state.title,
+                            note = state.builtIn?.let { RecipeDraft.overrideNote(it) } ?: draft.sourceNote,
+                            offerStartFrom = state.mode == EditorMode.New,
+                            onStartFrom = { startingFrom = true },
+                        )
+                    }
+                    item(key = "basics", contentType = "basics") {
+                        Basics(
+                            name = draft.name,
+                            author = draft.author,
+                            brewerTitle = CatalogDocs.brewerTitle(draft.brewer),
+                            dose = draft.dose,
+                            water = draft.water,
+                            tempC = draft.tempC,
+                            grind = draft.grind,
+                            blurb = draft.blurb,
+                            issues = state.issues,
+                            edit = edit,
+                            onPickBrewer = { pickingBrewer = true },
+                        )
+                    }
+                    item(key = "level", contentType = "level") { LevelAndNeeds(draft.level, draft.needs, edit) }
+                    item(key = "prep", contentType = "list") {
+                        TextList(label = "BEFORE YOU START", items = draft.prep, addLabel = "Add a prep step", onChange = { v -> edit { it.copy(prep = v) } })
+                    }
+                    item(key = "tips", contentType = "list") {
+                        TextList(label = "TIPS", items = draft.tips, addLabel = "Add a tip", onChange = { v -> edit { it.copy(tips = v) } })
+                    }
+                    if (state.builtIn != null || state.canDelete) {
+                        item(key = "danger", contentType = "danger") {
+                            Danger(
+                                canReset = state.builtIn != null && state.hasOverride,
+                                isBuiltIn = state.builtIn != null,
+                                canDelete = state.canDelete,
+                                onReset = { vm.resetToOriginal(onDone) },
+                                onDelete = { vm.delete(onDone) },
+                            )
+                        }
+                    }
+                }
+                LazyColumn(
+                    Modifier.weight(0.55f).fillMaxHeight(),
+                    contentPadding = PaddingValues(top = topInset + 56.dp, bottom = 48.dp),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.CardGap),
+                ) {
+                    item(key = "preview", contentType = "preview") { Preview(draft) }
+                    item(key = "steps-label", contentType = "label") {
+                        SectionLabel("STEPS", trailing = clock(draft.totalSec), topGap = 12.dp)
+                    }
+                    itemsIndexed(draft.steps, key = { _, s -> s.key }, contentType = { _, _ -> "step" }) { i, step ->
+                        StepCard(
+                            index = i,
+                            count = draft.steps.size,
+                            step = step,
+                            startSec = draft.steps.take(i).sumOf { it.durationSec.coerceAtLeast(0) },
+                            delta = draft.pourDelta(i),
+                            issue = state.issues.firstOrNull { it.stepIndex == i && it.fix == null }?.message,
+                            edit = edit,
+                            modifier = Modifier.animateItem(fadeInSpec = Motion.settle(), placementSpec = Motion.offset(), fadeOutSpec = Motion.quick()),
+                        )
+                    }
+                    item(key = "add-step", contentType = "add-step") {
+                        AddStep(enabled = draft.steps.size < RecipeValidation.STEPS_MAX, onAdd = vm::addStep, modifier = Modifier.animateItem(placementSpec = Motion.offset()))
+                    }
+                    if (state.issues.isNotEmpty()) {
+                        item(key = "issues", contentType = "issues") {
+                            Issues(issues = state.issues, onFix = vm::applyFix, modifier = Modifier.animateItem(placementSpec = Motion.offset()))
+                        }
+                    }
+                }
             }
         } else {
             LazyColumn(
@@ -155,6 +262,7 @@ fun RecipeEditorScreen(
                         onPickBrewer = { pickingBrewer = true },
                     )
                 }
+                item(key = "level", contentType = "level") { LevelAndNeeds(draft.level, draft.needs, edit) }
 
                 item(key = "steps-label", contentType = "label") {
                     SectionLabel("STEPS", trailing = clock(draft.totalSec), topGap = 12.dp)
@@ -238,7 +346,18 @@ fun RecipeEditorScreen(
 
         // Opaque behind the bar, so fields scroll under it and not through it.
         Box(Modifier.fillMaxWidth().height(topInset + 56.dp).background(colors.bg))
-        DetailTopBar(onBack = onBack)
+        DetailTopBar(onBack = onBack) {
+            // Wide windows keep Save top right, where Ctrl+S is.
+            if (two && draft != null) {
+                PrimaryButton(
+                    text = if (state.saving) "Saving" else "Save recipe",
+                    onClick = { vm.save(onDone) },
+                    modifier = Modifier.widthIn(max = 240.dp),
+                    height = 44.dp,
+                    enabled = state.canSave,
+                )
+            }
+        }
     }
 
     if (pickingBrewer && draft != null) {
@@ -279,6 +398,45 @@ private fun EditorHead(title: String, note: String, offerStartFrom: Boolean, onS
             PillButton(text = "Start from a recipe…", onClick = onStartFrom, onCanvas = true)
         }
     }
+}
+
+/**
+ * How much the recipe asks (v4 §6.4): its level and the kit it depends on. Today's first-brew pick
+ * and "What you'll need" read these.
+ */
+@Composable
+private fun LevelAndNeeds(level: String, needs: List<String>, edit: DraftEdit) {
+    val levels = listOf("" to "Not said") + RecipeLevels.ALL.map { it to it.replaceFirstChar { c -> c.uppercase() } }
+    SoftCard(Modifier.fillMaxWidth()) {
+        EyebrowLabel("HOW HARD IS IT?")
+        Spacer(Modifier.height(8.dp))
+        SegmentedControl(
+            options = levels.map { it.second },
+            selectedIndex = levels.indexOfFirst { it.first == level }.coerceAtLeast(0),
+            onSelect = { i -> edit { it.copy(level = levels[i].first) } },
+            onCard = true,
+        )
+        Spacer(Modifier.height(16.dp))
+        EyebrowLabel("IT NEEDS")
+        Spacer(Modifier.height(8.dp))
+        ChipGroup(label = null) {
+            RecipeNeeds.ALL.forEach { n ->
+                SelectableChip(needLabel(n), n in needs, {
+                    edit { d -> d.copy(needs = if (n in d.needs) d.needs - n else RecipeNeeds.ALL.filter { it in d.needs || it == n }) }
+                })
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        SheetNote("Pick only what the recipe can't be made without.")
+    }
+}
+
+private fun needLabel(n: String): String = when (n) {
+    RecipeNeeds.SCALE -> "Scale"
+    RecipeNeeds.GOOSENECK -> "Gooseneck kettle"
+    RecipeNeeds.GRINDER -> "Grinder"
+    RecipeNeeds.THERMOMETER -> "Thermometer"
+    else -> n
 }
 
 /** The brew as the timer will draw it, rebuilt as steps change. */
