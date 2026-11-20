@@ -74,7 +74,7 @@
 .scoreLine { display: flex; align-items: baseline; gap: 8px; }
 .rowScore { font-size: 1.375rem; line-height: 1.625rem; font-weight: 700; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
 .marks { display: flex; align-items: center; gap: 4px; min-height: 16px; color: var(--ink-low); }
-.faultDot { width: 6px; height: 6px; border-radius: 50%; background: var(--fault); }
+.faultWord { color: var(--fault); white-space: nowrap; }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .num { font-variant-numeric: tabular-nums; }
 
@@ -99,6 +99,22 @@
 :global([data-panes]) .dayHead { padding: 10px 0 5px; }
 :global([data-panes]) .rowWrap { contain-intrinsic-size: auto 54px; }
 :global([data-panes]) .filters { gap: 8px; }
+/* The list column is ~380 wide: the chips keep one row and scroll sideways instead of wrapping
+   to three, so the first brews stay near the top. */
+:global([data-panes]) .chips {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 2px 20px 2px 0;
+  /* A soft end says the row goes on when a chip is cut by the pane edge. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+}
+:global([data-panes]) .chips > * { flex: none; }
+:global([data-panes]) .menuChip { white-space: nowrap; }
+/* Short landscape: chips and sort share a row; the result line stays for screen readers only. */
+@media (max-height: 479.98px) {
+  :global([data-panes]) .filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
+  :global([data-panes]) .filters > .search { grid-column: 1 / -1; min-height: 44px; }
+  :global([data-panes]) .resultRow { min-height: 0; }
+  :global([data-panes]) .resultRow > p { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 
 /* Medium: a wide row spreads out (§3.7 M): time, recipe, coffee, grind, ratio, score as a word + colour.
    Fixed tracks so the columns line up from row to row; */
@@ -219,6 +235,8 @@
   .mainCol, .sideCol { display: flex; flex-direction: column; min-width: 0; }
   .mainCol > *, .sideCol > * { order: 0; }
   .sideCol > :first-child > :first-child { margin-top: 0; }
+  /* The toolbar's Brew again is on screen beside the supporting column: one is enough. */
+  .againSlot { display: none; }
 }
 
 /* ---------------------------------------------------------------- compare */

@@ -9,6 +9,9 @@
 }
 /* The wrappers only exist for the dashboard's two columns; elsewhere their children flow. */
 .head, .left, .right { display: contents; }
+/* Today's header is tall (title, status line, mug): pinned, it took a third of a landscape phone
+   for the whole scroll. It scrolls away with the page instead; the nav is always one tap away. */
+.head > header { position: relative; }
 .lead { display: flex; flex-direction: column; }
 .tiles, .stats, .recentBlock, .start, .nudge { min-width: 0; }
 .today[data-mode="column"] .tiles { display: none; }

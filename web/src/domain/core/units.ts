@@ -62,6 +62,15 @@ export function defaultTempUnit(locale: string): "c" | "f" {
  */
 export const PROSE_TEMP = String.raw`(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*°C`;
 
+/**
+ * Steps with their prose in the user's unit: titles too ("CLOSE, 160 g at 70 °C"), not just the
+ * details, so a °F person never sees °C beside °F everywhere else (v4 §4.15). Same array for "c".
+ */
+export function stepsInUnit<S extends { readonly title: string; readonly detail: string }>(steps: readonly S[], unit: "c" | "f"): readonly S[] {
+  if (unit !== "f") return steps;
+  return steps.map((s) => ({ ...s, title: renderTemps(s.title, unit), detail: renderTemps(s.detail, unit) }));
+}
+
 /** Recipe prose in the user's unit: "70 °C" → "158 °F" when unit is "f"; unchanged for "c". */
 export function renderTemps(text: string, unit: "c" | "f"): string {
   if (unit !== "f") return text;

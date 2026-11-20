@@ -28,6 +28,7 @@ import {
   FieldWell,
   HairLine,
   Icon,
+  IconWell,
   KeyValueRow,
   PrimaryButton,
   QuietButton,
@@ -234,6 +235,7 @@ function ReviewForm({ initial }: { initial: BrewRow }) {
               grindFlag={grindFlag}
               labels={labels}
               espresso={espresso}
+              onLeave={askDiscard}
             />
           </div>
           {recipe && !espresso && (
@@ -397,6 +399,7 @@ function NumbersHeader({
   grindFlag,
   labels,
   espresso,
+  onLeave,
 }: {
   log: BrewRow;
   text: TextState;
@@ -407,6 +410,7 @@ function NumbersHeader({
   grindFlag: string | null;
   labels: ReturnType<typeof methodLabels>;
   espresso: boolean;
+  onLeave: () => void;
 }) {
   // Opens by itself when the brew arrived with a grind the analysis would ignore, which is the
   // only place it can be corrected.
@@ -448,6 +452,12 @@ function NumbersHeader({
   return (
     <>
       <div className={v.headTop}>
+        {/* Review covers the nav, so it needs its own way out. The brew is saved already; this
+            only asks when the review itself changed (same path as Escape). */}
+        <div className={v.leaveRow}>
+          <IconWell icon="Close" label="Leave review, the brew is already saved" keys="escape" tooltipSide="bottom" onClick={onLeave} />
+          <span className="t-body-s ink-low">Saved to your log</span>
+        </div>
         <EyebrowLabel text="HOW WAS IT?" />
         <h1 className={`t-headline-l ${v.title}`}>{log.recipeName.trim() || "That brew"}</h1>
       </div>

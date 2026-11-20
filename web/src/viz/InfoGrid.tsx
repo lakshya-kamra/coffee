@@ -19,6 +19,8 @@ export interface GridCell {
   subStatus?: Status | null;
   /** A status sub renders as a chip unless this is false. */
   subChip?: boolean;
+  /** The full text behind a shortened value (a recipe's grind sentence), as a native tooltip. */
+  title?: string;
 }
 
 const tinted = (s: Status | null | undefined) => (s === "good" || s === "attention" || s === "fault" ? statusColorVar(s) : undefined);
@@ -37,7 +39,10 @@ export const InfoGrid = memo(function InfoGrid({ cells, columns = 3, compact = f
               {c.value == null ? (
                 <span className={`${compact ? v.compactNum : numeral} ink-low`}>—</span>
               ) : c.textValue ? (
-                <span className={`t-title-m ${compact ? v.ellipsis : v.clamp2}`}>{c.value}</span>
+                // Words wrap to a second line rather than end in "…" (A7); "Medium-fine" breaks at its hyphen.
+                <span className={`t-title-m ${v.clamp2}`} title={c.title}>
+                  {c.value}
+                </span>
               ) : compact ? (
                 <span className={v.nwuCompact} style={{ color: tinted(c.status) }}>
                   <span className={v.compactNum}>{c.value}</span>

@@ -10,7 +10,7 @@
  */
 import { animate } from "motion";
 import { AnimatePresence, m, useMotionValue } from "motion/react";
-import { useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
 import { nav } from "@/app/router";
 import { useShortcuts, type Binding } from "@/app/shortcuts";
 import { showToast } from "@/app/toast";
@@ -27,7 +27,7 @@ import { ConfirmSheet, DetailTopBar, QuietButton, SecondaryButton } from "@/desi
 import { decel, settle } from "@/design/motion";
 import { timeLabel } from "@/domain/core/format";
 import type { Recipe } from "@/domain/core/recipe";
-import { unitsOf } from "@/domain/core/units";
+import { stepsInUnit, unitsOf } from "@/domain/core/units";
 import { MeshGradient, stepMood, useFrame, type BrewMood } from "@/viz";
 import { AGAIN_TITLE, againSetup, oneOffRecipe } from "./again";
 import { Announcer, doneAnnouncement, stepAnnouncement, stepLead, TEN_LEFT, tenLeftDue, TIME_FOR_NEXT } from "./announce";
@@ -175,6 +175,14 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
     return initialSetup(base, data.beans, data.grinders, settings, data.brews);
   });
   const recipe = useMemo(() => setupRecipe(base, setup), [base, setup]);
+  // What the running screen shows: step titles and details in the person's unit (§4.15). The
+  // engine keeps the stored recipe; only words differ.
+  const unit: "c" | "f" = units.fahrenheit ? "f" : "c";
+  const shownRecipe = useMemo(() => (unit === "c" ? recipe : { ...recipe, steps: stepsInUnit(recipe.steps, unit) }), [recipe, unit]);
+  const unitRef = useRef(unit);
+  useLayoutEffect(() => {
+    unitRef.current = unit;
+  });
   const [engine] = useState(() => {
     const e = new BrewEngine(setupRecipe(base, setup), { autoAdvance: settings.autoAdvanceSteps });
     if (resume) e.restore(resume);
@@ -249,7 +257,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
     () =>
       engine.onStep((i) => {
         if (hapticsOn) vibrateStep();
-        const steps = engine.getRecipe().steps;
+        const steps = stepsInUnit(engine.getRecipe().steps, unitRef.current);
         announcer.say(stepAnnouncement(steps, i));
         const s = steps[i];
         if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s)}` }));
@@ -388,10 +396,11 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
   const running = st.started && !shotOpen;
   const runKeys: Binding[] = [
     { keys: "space", label: "Play or pause", group: "Brewing", run: toggle },
-    { keys: "left", label: "Back 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(-5)) },
-    { keys: "right", label: "Forward 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(5)) },
+    // Arrows stay with a focused control (a slider, a radio); Space on a button presses it.
+    { keys: "left", label: "Back 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(-5)), skipOnControls: true },
+    { keys: "right", label: "Forward 5 seconds", group: "Brewing", run: () => seekBy(() => engine.addSeconds(5)), skipOnControls: true },
     { keys: "n", label: "Next step", group: "Brewing", run: skip },
-    { keys: "down", label: "Next step", group: "Brewing", run: skip, hidden: true },
+    { keys: "down", label: "Next step", group: "Brewing", run: skip, hidden: true, skipOnControls: true },
     { keys: "x", label: "Bed exposed (during the drawdown)", group: "Brewing", run: () => drawdownNow && engine.markBedExposed() },
     { keys: "f", label: "Finish", group: "Brewing", run: askFinish },
     { keys: "m", label: soundOn ? "Chime off" : "Chime on", group: "Brewing", run: toggleChime },
@@ -417,7 +426,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
         <m.div key={pane} className={b.pane} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={decel(320)}>
           {pane === "run" ? (
             <RunningPane
-              recipe={recipe}
+              recipe={shownRecipe}
               engine={engine}
               st={st}
               seek={seek}

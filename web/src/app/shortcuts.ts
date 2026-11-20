@@ -27,6 +27,11 @@ export interface Binding {
   readonly hidden?: boolean;
   /** What the dialog prints instead of `keys` ("1-5"). */
   readonly display?: string;
+  /**
+   * Not while focus is on a button, link or other control (the brew's arrows): the key then
+   * belongs to that control. Plain Space and Enter always skip controls, since they press them.
+   */
+  readonly skipOnControls?: boolean;
 }
 
 export interface KeyStep {
@@ -104,6 +109,12 @@ export function matchesStep(s: KeyStep, e: KeyEventLike): boolean {
   return true;
 }
 
+/** Plain Space or Enter: on a focused control these press it, so no shortcut may take them. */
+export function pressesControl(steps: readonly KeyStep[]): boolean {
+  const s = steps[0];
+  return steps.length === 1 && s != null && (s.key === " " || s.key === "enter") && !s.mod && !s.ctrl && !s.meta && !s.alt;
+}
+
 /** Combos that may run while typing: anything with Ctrl/Cmd, and Escape. */
 export function allowedWhileTyping(steps: readonly KeyStep[]): boolean {
   const first = steps[0];
@@ -122,6 +133,8 @@ interface Entry {
 
 export interface KeyContext {
   readonly typing: boolean;
+  /** Focus is on a control that Space/Enter would press (isControlTarget). */
+  readonly onControl?: boolean;
   readonly dialogOpen: boolean;
   readonly now: number;
 }
@@ -184,6 +197,7 @@ export class ShortcutEngine {
   private permitted(b: Binding, steps: readonly KeyStep[], ctx: KeyContext): boolean {
     if (ctx.dialogOpen && !b.inDialog) return false;
     if (ctx.typing && !b.whileTyping && !allowedWhileTyping(steps)) return false;
+    if (ctx.onControl && (b.skipOnControls || pressesControl(steps))) return false;
     return true;
   }
 
@@ -255,6 +269,16 @@ export function isTypingTarget(t: EventTarget | null): boolean {
   return !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "image"].includes(type);
 }
 
+const CONTROL_SELECTOR =
+  'button, a[href], summary, input, [role="button"], [role="link"], [role="radio"], [role="switch"], [role="slider"], [role="checkbox"], [role="tab"], [role="option"], [role="menuitem"], [role="spinbutton"]';
+
+/** Focus on something Space or Enter presses (or arrows move), as opposed to a page or a pane. */
+export function isControlTarget(t: EventTarget | null): boolean {
+  const el = t as Element | null;
+  if (!el || typeof el.matches !== "function") return false;
+  return el.matches(CONTROL_SELECTOR);
+}
+
 function inOwnKeyHandler(t: EventTarget | null): boolean {
   const el = t as Element | null;
   return !!el?.closest?.('[role="menu"], [data-popover]');
@@ -270,7 +294,7 @@ export function startShortcuts(): () => void {
     // Held keys repeat on purpose: holding Down walks a list.
     if (e.defaultPrevented || e.isComposing) return;
     if (inOwnKeyHandler(e.target)) return;
-    const res = shortcuts.handle(e, { typing: isTypingTarget(e.target), dialogOpen: document.querySelector("dialog[open]") != null, now: performance.now() });
+    const res = shortcuts.handle(e, { typing: isTypingTarget(e.target), onControl: isControlTarget(e.target), dialogOpen: document.querySelector("dialog[open]") != null, now: performance.now() });
     if (res) e.preventDefault();
   };
   window.addEventListener("keydown", onKey);

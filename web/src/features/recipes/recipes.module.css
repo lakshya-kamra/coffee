@@ -69,7 +69,36 @@
 @media (pointer: fine) {
   .chips { flex-wrap: wrap; overflow: visible; margin: 12px 0 4px; padding: 6px 0; }
 }
-.listScreen[data-panes] .chips { flex-wrap: wrap; overflow: visible; margin: 8px 0 4px; padding: 0; }
+/* Beside a pane: one row that never wraps (brewers sit behind the menu chip); it scrolls sideways
+   if a long translation still does not fit. */
+.listScreen[data-panes] .chips {
+  flex-wrap: nowrap; overflow-x: auto; margin: 8px 0 4px; padding: 2px 20px 2px 0;
+  /* A soft end says the row goes on when a chip is cut by the pane edge. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+}
+.filterBar { display: contents; }
+/* Short landscape: chips, sort and nothing else on one row, so more of the list shows. */
+@media (max-height: 479.98px) {
+  .listScreen[data-panes] .filterBar { display: flex; align-items: center; gap: 8px; }
+  .listScreen[data-panes] .filterBar .chips { flex: 1; min-width: 0; margin: 4px 0; }
+  .listScreen[data-panes] .filterBar .toolbar { margin: 0; flex: none; }
+  .listScreen[data-panes] .filterBar .count { display: none; }
+  .listScreen[data-panes] .filterBar .sortWord { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+.menuChip {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: var(--chip-h);
+  padding: 0 14px; border-radius: var(--r-pill); background: var(--surface2); color: var(--ink-high);
+  border: 1px solid transparent; cursor: pointer; transition: background-color 160ms var(--ease-emphasized);
+  white-space: nowrap;
+}
+.menuChip[data-on="true"] { background: var(--inverse); color: var(--on-inverse); }
+@media (hover: hover) and (pointer: fine) {
+  .menuChip:hover { filter: brightness(1.06); }
+}
+@media (forced-colors: active) {
+  .menuChip { border: 1px solid ButtonBorder; }
+  .menuChip[data-on="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}
 .moreChip { color: var(--ink-mid); }
 
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
@@ -142,6 +171,10 @@
 @media (hover: hover) and (pointer: fine) {
   .rowMore:hover { background: var(--surface2); color: var(--ink-high); }
 }
+/* Touch: the full 44 (A12); the row gives back the extra 8 px from its end margin. */
+@media (pointer: coarse) {
+  .rowMore { width: 44px; height: 44px; margin-right: calc(var(--gutter) - 16px); }
+}
 
 .empty { padding: 16px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .emptyMine { display: flex; align-items: center; gap: 16px; padding: 18px; margin-top: 8px; border-radius: var(--r-card); background: var(--surface1); }
@@ -155,7 +188,7 @@
 .detail[data-in-pane] { padding-bottom: 48px; }
 .gone { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 24px; }
 .placeholder { height: 900px; flex: none; }
-.paneTop { display: flex; justify-content: flex-end; padding-top: 12px; margin-bottom: -8px; }
+.paneTop { display: flex; align-items: center; min-height: 60px; padding: 8px 0; }
 
 /* One column: head, numbers, method. Two columns at 880: numbers left (sticky), method right. */
 .layout { display: flex; flex-direction: column; }

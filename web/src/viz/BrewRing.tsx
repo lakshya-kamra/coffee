@@ -102,6 +102,11 @@ export const BrewRing = memo(function BrewRing({
     let visible = true;
     let colours: Colours = { accent: "#000", track: "#000", liquid: "#000", tick: "#000", core: "#000" };
     let glow: CanvasGradient | null = null;
+    // The canvas overhangs the box by the glow's reach, so the head's glow at 12 o'clock is not
+    // cut flat at the box's top edge. Drawing coordinates are offset by the same amount.
+    let pad = 0;
+    // Light theme: the crema glow on a pale page reads as a smudge, so it is fainter there.
+    let glowScale = 1;
     let geo = { size: 0, stroke: 0, radius: 0, cx: 0, cy: 0, innerR: 0, amp: 0, glowR: 0, headR: 0, coreR: 0, tickIn: 0, tickOut: 0, tickW: 0 };
     let discPath = new Path2D();
 
@@ -114,8 +119,8 @@ export const BrewRing = memo(function BrewRing({
         size,
         stroke,
         radius,
-        cx: w / 2,
-        cy: h / 2,
+        cx: w / 2 + pad,
+        cy: h / 2 + pad,
         innerR,
         amp: innerR * 0.035,
         glowR: stroke * 3.2,
@@ -142,6 +147,7 @@ export const BrewRing = memo(function BrewRing({
         tick: resolveColor(el, c.tickColor),
         core: resolveColor(el, c.headCore),
       };
+      glowScale = Number.parseFloat(getComputedStyle(el).getPropertyValue("--ring-glow-scale")) || 1;
       rebuild();
     };
     recolour.current = resolve;
@@ -150,8 +156,13 @@ export const BrewRing = memo(function BrewRing({
       w = width;
       h = height;
       dpr = Math.min(3, window.devicePixelRatio || 1);
-      cv.width = Math.max(1, Math.round(w * dpr));
-      cv.height = Math.max(1, Math.round(h * dpr));
+      // glowR (3.2 strokes) at the pulse's widest, less the 1.2 strokes the ring already keeps clear.
+      pad = Math.ceil(Math.min(w, h) * props.current.strokeFraction * 2.4);
+      cv.style.inset = `${-pad}px`;
+      cv.style.width = `${w + pad * 2}px`;
+      cv.style.height = `${h + pad * 2}px`;
+      cv.width = Math.max(1, Math.round((w + pad * 2) * dpr));
+      cv.height = Math.max(1, Math.round((h + pad * 2) * dpr));
       resolve();
     });
     const stopTheme = onThemeChange(resolve);
@@ -178,7 +189,7 @@ export const BrewRing = memo(function BrewRing({
       const g = geo;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w + pad * 2, h + pad * 2);
 
       // Inner liquid disc.
       if (wp > 0.005 && g.innerR > 0) {
@@ -249,7 +260,7 @@ export const BrewRing = memo(function BrewRing({
           ctx.save();
           ctx.translate(hx, hy);
           ctx.scale(hs, hs);
-          ctx.globalAlpha = gr[0] + (gr[1] - gr[0]) * amt;
+          ctx.globalAlpha = (gr[0] + (gr[1] - gr[0]) * amt) * glowScale;
           ctx.fillStyle = glow;
           ctx.beginPath();
           ctx.arc(0, 0, g.glowR, 0, Math.PI * 2);

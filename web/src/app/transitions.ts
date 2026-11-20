@@ -7,6 +7,7 @@
  */
 import { animate, type AnimationPlaybackControlsWithThen } from "motion";
 import { delayed, effectsDefault, effectsFast, spatialDefault, spatialFast } from "@/design/motion";
+import { flushDeferredSizes } from "@/viz/measure";
 import { beginTransition, prefersReducedMotion } from "./transitionState";
 
 export type LayerState = "active" | "leaving" | "hidden";
@@ -29,6 +30,7 @@ export function setLayerState(el: HTMLElement, state: LayerState): void {
   } else if (el.dataset.hidden != null) {
     delete el.dataset.hidden;
     el.inert = false;
+    flushDeferredSizes(el);
   }
   if (state !== "active") el.setAttribute("aria-hidden", "true");
   else el.removeAttribute("aria-hidden");

@@ -1296,6 +1296,87 @@ function V4_FLOWS() {
         await settle(page);
         if (!path_(page).startsWith("/brew/")) fail(`B on Today: ${path_(page)}`);
         else ok(`B on Today runs brew.next (${path_(page)})`);
+        // Short windows (phone landscape): the field, not the scrolling sheet body, takes focus.
+        for (const [w, h] of [[844, 390], [640, 360]]) {
+          await page.setViewportSize({ width: w, height: h });
+          await page.goto(BASE + "/");
+          await settle(page, 1000);
+          await page.keyboard.press("Control+k");
+          await settle(page, 600);
+          await page.keyboard.type("aero");
+          await settle(page, 600);
+          const st = await page.evaluate(() => ({ value: document.activeElement?.value ?? null, status: document.querySelector("dialog[open] [role=status]")?.textContent ?? "" }));
+          if (st.value !== "aero") fail(`palette at ${w}x${h}: typing landed in ${JSON.stringify(st.value)}`);
+          else if (!/results?$/.test(st.status)) fail(`palette at ${w}x${h}: status "${st.status}"`);
+          else ok(`palette at ${w}x${h} focuses its field and says "${st.status}"`);
+          await page.keyboard.press("Escape");
+          await settle(page, 400);
+        }
+        await page.setViewportSize({ width: 1440, height: 900 });
+      },
+    },
+    {
+      name: "v4 fixes: short-window a11y, Space on brew controls, review way out, pane focus",
+      async run({ page }) {
+        await seed(page);
+        // A11 at the short rail: phone landscape and a 1440 laptop at 200% zoom.
+        for (const [w, h, dpr] of [[844, 390, 1], [720, 450, 2]]) {
+          await page.setViewportSize({ width: w, height: h });
+          for (const url of ["/", "/recipes", "/log"]) {
+            await page.goto(BASE + url);
+            await settle(page, 800);
+            await axe(page, `${w}x${h}${dpr > 1 ? " (200% zoom)" : ""} ${url}`);
+          }
+        }
+        // Space on a focused brew control presses it; it must not toggle play/pause instead.
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(BASE + "/brew/hoffmann-v60");
+        await settle(page, 1000);
+        await page.getByRole("button", { name: "Start brew" }).last().click();
+        await settle(page, 1200);
+        const stepOf = () => page.evaluate(() => document.body.innerText.match(/Step (\d+) of \d+/)?.[1] ?? "");
+        const before = await stepOf();
+        await page.getByRole("button", { name: /Next step/ }).first().focus();
+        await page.keyboard.press(" ");
+        await settle(page, 500);
+        const after = await stepOf();
+        if (after === before || (await page.getByRole("button", { name: /^Pause/ }).count()) === 0) fail(`Space on Next step: step ${before} → ${after}, timer paused?`);
+        else ok(`Space on a focused Next step presses it (step ${before} → ${after}) and the timer keeps running`);
+        // Review has its own way out (it covers the nav).
+        await page.keyboard.press("f");
+        await settle(page, 600);
+        const finish = page.getByRole("button", { name: "Finish" });
+        if (await finish.count()) await finish.last().click();
+        await settle(page, 1400);
+        const leave = page.getByRole("button", { name: /^Leave review/ });
+        if (!path_(page).startsWith("/review/") || (await leave.count()) === 0) fail(`review at ${path_(page)} has no Leave control`);
+        else {
+          await leave.click();
+          await settle(page, 1000);
+          if (path_(page).startsWith("/review/")) fail("Leave review did not leave");
+          else ok(`review's close leaves to ${path_(page)}`);
+        }
+        // Closing a pane selection from inside the pane puts focus back on its row.
+        await page.goto(BASE + "/recipes");
+        await settle(page, 1000);
+        await page.keyboard.press("j");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+        await settle(page, 700);
+        await page.getByRole("button", { name: "Close recipe" }).focus();
+        await page.keyboard.press("Enter");
+        await settle(page, 700);
+        const f = await page.evaluate(() => (document.activeElement === document.body ? "body" : document.activeElement?.closest("[data-list-pane]") ? "list" : "elsewhere"));
+        if (path_(page) !== "/recipes" || f !== "list") fail(`close recipe from the pane: ${path_(page)}, focus in ${f}`);
+        else ok("closing a recipe from its pane returns focus to the list row");
+        // Gear's inline editor takes focus when N opens it.
+        await page.goto(BASE + "/gear");
+        await settle(page, 1000);
+        await page.keyboard.press("n");
+        await settle(page, 700);
+        const tag = await page.evaluate(() => document.activeElement?.tagName ?? "");
+        if (tag !== "INPUT") fail(`Gear N at 1440: focus on ${tag}`);
+        else ok("Gear N at 1440 focuses the new coffee's name");
       },
     },
     {

@@ -132,6 +132,13 @@ function DateTicks({ fracs, ats, max = 5 }: { fracs: readonly number[]; ats: rea
   );
 }
 
+const SCORE_KEY = [
+  { word: "Great", range: "8–10", score: 9 },
+  { word: "Good", range: "6–7", score: 6 },
+  { word: "Off", range: "4–5", score: 4 },
+  { word: "Faulty", range: "1–3", score: 2 },
+] as const;
+
 export function ScoreBars({ points, textOf, onOpen }: { points: readonly ScorePoint[]; textOf: (p: ScorePoint) => string; onOpen: (p: ScorePoint) => void }) {
   const animate = useOncePerSession("score");
   const fracs = slotCentres(points.length);
@@ -166,6 +173,15 @@ export function ScoreBars({ points, textOf, onOpen }: { points: readonly ScorePo
       <div className={i.ticksRow}>
         <DateTicks fracs={fracs} ats={points.map((p) => p.at)} max={4} />
       </div>
+      {/* Status colour always with a word: what each bar colour means. */}
+      <p className={`t-label-m ${i.scoreKey}`} aria-hidden="true">
+        {SCORE_KEY.map((k) => (
+          <span key={k.word} className={i.scoreKeyItem}>
+            <span className={i.scoreKeySwatch} style={{ background: chartInk(k.score) }} />
+            {k.word} {k.range}
+          </span>
+        ))}
+      </p>
       <ul className="visually-hidden">
         {points.map((p) => (
           <li key={p.uid}>
@@ -189,6 +205,8 @@ export function GrindJourneyChart({ series, textOf, onOpen }: { series: GrindSer
   const summary = `Grind on ${series.grinderLabel} for ${series.recipeName}: from ${series.first ?? "—"} to ${series.latest ?? "—"} clicks over ${plural(series.points.length, "brew")}${series.bestZone ? `, best scores between ${series.bestZone.first} and ${series.bestZone.last}` : ""}.`;
   const latest = m.points.length ? m.points.length - 1 : -1;
   const latestF = latest >= 0 ? fracs[latest]! : 0;
+  // The label's right edge in model px left of the point (the model draws x in its own 320 box).
+  const labelGap = m.latestLabel && latest >= 0 ? m.points[latest]!.x - m.latestLabel.x : 0;
   return (
     <figure className={i.grind} aria-label={summary}>
       <div className={i.grindArea} style={{ height: m.height }}>
@@ -235,7 +253,7 @@ export function GrindJourneyChart({ series, textOf, onOpen }: { series: GrindSer
             )}
           </svg>
           {m.latestLabel && latest >= 0 && (
-            <span className={`t-label-m ${i.latestLabel}`} style={{ left: pct(latestF), top: m.latestLabel.y }} aria-hidden="true">
+            <span className={`t-label-m ${i.latestLabel}`} style={{ left: `calc(${pct(latestF)} - ${labelGap}px)`, top: m.latestLabel.y }} aria-hidden="true">
               {m.latestLabel.text}
             </span>
           )}

@@ -7,6 +7,12 @@ import { useEffect, useState, type RefObject } from "react";
 type Cb = (width: number, height: number) => void;
 const callbacks = new WeakMap<Element, Cb>();
 let shared: ResizeObserver | null = null;
+/**
+ * Sizes that arrived while their keep-alive tab was hidden. A window resize used to re-render
+ * every journey line in all five tabs (§2.9.2: the only resize work is the matchMedia
+ * callbacks); now a hidden tab keeps just the last size and applies it once when it is shown.
+ */
+const deferred = new Map<Element, readonly [number, number]>();
 
 function observer(): ResizeObserver | null {
   if (shared) return shared;
@@ -16,10 +22,24 @@ function observer(): ResizeObserver | null {
       const box = e.contentBoxSize?.[0];
       const w = box ? box.inlineSize : e.contentRect.width;
       const h = box ? box.blockSize : e.contentRect.height;
-      callbacks.get(e.target)?.(w, h);
+      if (e.target.closest("[data-hidden]")) deferred.set(e.target, [w, h]);
+      else {
+        deferred.delete(e.target);
+        callbacks.get(e.target)?.(w, h);
+      }
     }
   });
   return shared;
+}
+
+/** A hidden layer is being shown: hand its drawings the sizes they missed while it was hidden. */
+export function flushDeferredSizes(layer: Element): void {
+  if (deferred.size === 0) return;
+  for (const [el, [w, h]] of deferred) {
+    if (!layer.contains(el)) continue;
+    deferred.delete(el);
+    callbacks.get(el)?.(w, h);
+  }
 }
 
 export function observeSize(el: Element, cb: Cb): () => void {
@@ -30,6 +50,7 @@ export function observeSize(el: Element, cb: Cb): () => void {
   return () => {
     ro.unobserve(el);
     callbacks.delete(el);
+    deferred.delete(el);
   };
 }
 

@@ -6,7 +6,7 @@
  * over 1,500 brews the list is paged by month ("Show earlier months").
  */
 import { useLiveQuery } from "dexie-react-hooks";
-import { memo, startTransition, useDeferredValue, useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent } from "react";
+import { memo, startTransition, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent } from "react";
 import { ListDetail, openInTab, usePaneMode, useSelectedPath, useSelectInPane } from "@/app/panes";
 import { registerCommands } from "@/app/palette/commands";
 import { prefetchers } from "@/app/registry";
@@ -220,7 +220,19 @@ function LogList({ table, view, onView }: { table: boolean; view: LogView; onVie
     else if (el) menu.openFrom(el);
   };
 
-  useLogShortcuts(logs, paneMode, select, del.ask);
+  // J/K move focus with the selection, as Recipes does, so a screen reader hears the row and
+  // Enter acts on it.
+  const flatRef = useRef(flat);
+  const focusRef = useRef(roving.focusIndex);
+  useLayoutEffect(() => {
+    flatRef.current = flat;
+    focusRef.current = roving.focusIndex;
+  });
+  const focusRow = useCallback((uid: string) => {
+    const i = flatRef.current.findIndex((b) => b.uid === uid);
+    if (i >= 0) focusRef.current(i);
+  }, []);
+  useLogShortcuts(logs, paneMode, select, del.ask, focusRow);
   useEffect(
     () =>
       registerCommands(() =>
@@ -331,7 +343,7 @@ function LogList({ table, view, onView }: { table: boolean; view: LogView; onVie
 }
 
 /** Log-wide keys while the Log tab is in front (§2.7): J/K walk the brews beside the pane; B and Delete act on the brew shown. */
-function useLogShortcuts(logs: readonly BrewRow[], paneMode: boolean, select: (path: string) => void, askDelete: (b: BrewRow) => void) {
+function useLogShortcuts(logs: readonly BrewRow[], paneMode: boolean, select: (path: string) => void, askDelete: (b: BrewRow) => void, focusRow: (uid: string) => void) {
   const state = useRouter((s) => {
     if (s.tab !== "log" || s.depth > 1) return null;
     const top = s.top;
@@ -351,13 +363,16 @@ function useLogShortcuts(logs: readonly BrewRow[], paneMode: boolean, select: (p
     if (paneMode && logs.length > 0) {
       const step = (d: number) => {
         const next = logs[Math.min(logs.length - 1, Math.max(0, (at < 0 ? 0 : at) + d))];
-        if (next) select(brewPath(next.uid));
+        if (next) {
+          select(brewPath(next.uid));
+          focusRow(next.uid);
+        }
       };
       out.push({ keys: "j", label: "Next brew", group: "Lists", run: () => step(1) });
       out.push({ keys: "k", label: "Previous brew", group: "Lists", run: () => step(-1) });
     }
     return out;
-  }, [currentUid, logs, paneMode, select, askDelete]);
+  }, [currentUid, logs, paneMode, select, askDelete, focusRow]);
   useShortcuts("log", bindings, state != null && bindings.length > 0);
 }
 
@@ -532,7 +547,13 @@ const LogEntryRow = memo(function LogEntryRow({
               {log.isFavourite && <Icon name="Star" size={12} label="Favourite" />}
               {analysed && <Glyph name="spark" size={12} />}
               {log.bedShape && <BedShapeIcon shape={log.bedShape} size={16} tint="var(--ink-low)" decorative />}
-              {log.faults.length > 0 && <span className={l.faultDot} />}
+              {/* Status colour always with a word: the first fault, the rest in the name. */}
+              {log.faults.length > 0 && (
+                <span className={`micro ${l.faultWord}`} title={log.faults.join(", ")}>
+                  {log.faults[0]}
+                  {log.faults.length > 1 && <span className="visually-hidden">, {log.faults.slice(1).join(", ")}</span>}
+                </span>
+              )}
             </span>
           </span>
         </span>

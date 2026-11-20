@@ -130,7 +130,7 @@ export function InsightsScreen() {
           <EmptyCard brews={logs.length} />
         </div>
       )}
-      <div className={i.dash} data-bests={showBests || undefined} data-scores={showScores || undefined} data-grind={showGrind || undefined} data-most={topRecipes.length > 0 || undefined} data-coffees={topBeans.length > 0 || undefined}>
+      <div className={i.dash} data-bests={showBests || undefined} data-scores={showScores || undefined} data-grind={showGrind || undefined} data-most={topRecipes.length > 0 || undefined} data-coffees={topBeans.length > 0 || undefined} data-ai={ai.ready || undefined}>
         <div className={i.tPass}>
           <PassportCard p={p} totalRecipes={recipes.length} units={units} />
         </div>

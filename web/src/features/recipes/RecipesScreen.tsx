@@ -241,6 +241,16 @@ function RecipeList({ next }: { next: Recipe | null }) {
     );
   };
 
+  // Beside a detail pane the list column is ~380 wide: brewers go behind one menu chip so the
+  // filters stay one row and the list starts near the top (as Log's Coffee/Recipe/Brewer chips).
+  const brewerChosen = brewers.find((b) => b.id === chips.brewerId) ?? null;
+  const brewerMenu = useContextMenu(
+    (): MenuItem[] => [
+      { label: "Any brewer", icon: chips.brewerId == null ? "Check" : undefined, onSelect: () => setChip({ brewerId: null }) },
+      ...brewers.map((b): MenuItem => ({ label: b.label, icon: chips.brewerId === b.id ? "Check" : undefined, onSelect: () => setChip({ brewerId: b.id }) })),
+    ],
+    "Brewer",
+  );
   const shownBrewers = wrapChips && !allBrewers ? brewers.filter((b, i) => i < BREWER_CHIPS || b.id === chips.brewerId) : brewers;
   const hiddenBrewers = brewers.length - shownBrewers.length;
   const mineEmpty = chips.mine && list.length === 0 && !all.some(isMine);
@@ -296,11 +306,17 @@ function RecipeList({ next }: { next: Recipe | null }) {
       )}
       {search}
       {/* These chips sit on the bare canvas, where a surface2 pill would disappear. */}
+      <div className={r.filterBar}>
       <div className={r.chips} role="group" aria-label="Filter recipes">
         <SelectableChip text="All" selected={!anyChip} onClick={() => setChip({ mine: false, brewerId: null, myChoice: false })} onCanvas />
         <SelectableChip text="Mine" selected={chips.mine} onClick={() => setChip({ mine: !chips.mine })} onCanvas />
         {families.size > 0 && <SelectableChip text="My brewers" selected={myBrewers} onClick={() => setChip({ myChoice: !myBrewers })} onCanvas />}
-        {shownBrewers.map((b) => (
+        {paneMode && brewers.length > 0 && (
+          <button type="button" className={`t-label-l ${r.menuChip}`} aria-haspopup="menu" data-on={brewerChosen != null} onClick={(e) => brewerMenu.openFrom(e.currentTarget)}>
+            {brewerChosen ? brewerChosen.label : "Brewer"} ▾
+          </button>
+        )}
+        {!paneMode && shownBrewers.map((b) => (
           <SelectableChip
             key={b.id}
             text={b.label}
@@ -310,14 +326,14 @@ function RecipeList({ next }: { next: Recipe | null }) {
             onCanvas
           />
         ))}
-        {hiddenBrewers > 0 && <SelectableChip text={`${hiddenBrewers} more`} selected={false} onClick={() => setAllBrewers(true)} onCanvas />}
+        {!paneMode && hiddenBrewers > 0 && <SelectableChip text={`${hiddenBrewers} more`} selected={false} onClick={() => setAllBrewers(true)} onCanvas />}
       </div>
       <div className={r.toolbar}>
         <span className={`t-body-s ${r.count}`} aria-live="polite">
           {list.length === 1 ? "1 recipe" : `${list.length} recipes`}
         </span>
         <label className={`t-label-m ${r.sortLabel}`}>
-          Sort
+          <span className={r.sortWord}>Sort</span>
           <select className={`t-label-l ${r.sort}`} value={sort} onChange={(e) => startTransition(() => setSort(e.currentTarget.value as RecipeSort))}>
             {RECIPE_SORTS.map((o) => (
               <option key={o.id} value={o.id}>
@@ -326,6 +342,7 @@ function RecipeList({ next }: { next: Recipe | null }) {
             ))}
           </select>
         </label>
+      </div>
       </div>
       {missing.length > 0 && <p className={`t-body-s ink-mid ${r.missing}`}>{noRecipeLine(missing)}</p>}
 
@@ -372,6 +389,7 @@ function RecipeList({ next }: { next: Recipe | null }) {
         </ul>
       )}
       {menu.element}
+      {brewerMenu.element}
       {deleting && (
         <ConfirmSheet
           title="Delete this recipe?"

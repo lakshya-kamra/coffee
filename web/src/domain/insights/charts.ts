@@ -86,13 +86,11 @@ export function grindChartModel(series: GrindSeries, width = 320, height = 176):
   const rLatest = 6;
   const ring = 2;
   const gap = 2;
-  const latestLabel = last ? { x: Math.min(Math.max(last.x, 8), plotRight - 8), y: last.y - rLatest - ring - gap - 2, text: String(last.clicks) } : null;
-  const labelMid = last ? last.y - rLatest - ring - gap - LABEL_H / 2 : null;
-  // An axis number right beside the latest point's own number makes it ambiguous, so it steps aside.
-  const grid = gridSteps(lo, hi).map((v) => {
-    const y = yOf(v);
-    return { y, value: v, showLabel: labelMid == null || Math.abs(y - labelMid) >= 12 };
-  });
+  // The latest point's own number sits inside the plot, just left of its ring and level with it
+  // (x is its right edge). Above the ring, at the right end, it read as one more axis tick, and
+  // hiding the axis number beside it left the ticks unevenly spaced (80, 70, 65).
+  const latestLabel = last ? { x: last.x - rLatest - ring - gap, y: last.y, text: String(last.clicks) } : null;
+  const grid = gridSteps(lo, hi).map((v) => ({ y: yOf(v), value: v, showLabel: true }));
   const band = series.bestZone
     ? (() => {
         const a = yOf(series.bestZone.first - 0.5);

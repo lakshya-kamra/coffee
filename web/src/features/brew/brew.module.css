@@ -81,7 +81,8 @@ button.inverse { background: var(--inverse); color: var(--on-inverse); }
 .setupTwo[data-layout="short"] .setupRight { padding-top: 8px; }
 .setupTwo[data-layout="short"] .hero { margin-bottom: 0; }
 /* Primary buttons never span a wide window (§2.5). */
-.setupRight .startBtn { max-width: var(--primary-max); }
+/* Every layout, not only the two-column one: at medium the setup is one 672 column (§2.5). */
+.startBtn { max-width: var(--primary-max); }
 
 .stepRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .stepMid { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -243,6 +244,11 @@ button.finishDone { background: var(--crema); color: var(--on-crema); transition
 }
 /* Never smaller than the phone ring (240), up to 360 where there is room (§3.5). */
 .portrait .ringBox { width: max(min(240px, 100%), min(100%, 100dvh - 520px, 360px)); margin: 12px 0 16px; }
+/* A portrait tablet (820 x 1180) left ~320 px empty under the step card with the 360 cap: tall
+   portrait windows let the ring grow into it. */
+@media (min-width: 600px) and (min-height: 900px) {
+  .portrait .ringBox { width: max(min(240px, 100%), min(100%, 100dvh - 560px, 500px)); }
+}
 .portrait .stepCard { margin-top: 8px; max-height: max(220px, 52dvh); }
 /* The transport stays reachable when the pane has to scroll (200% text, short phones). */
 .dock {

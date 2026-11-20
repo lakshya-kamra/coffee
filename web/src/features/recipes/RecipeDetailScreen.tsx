@@ -16,7 +16,6 @@ import { usePane, useSelectedPath } from "@/app/panes";
 import { nav } from "@/app/router";
 import type { SharedFrom } from "@/app/routes";
 import { useTransitionSettled } from "@/app/transitionState";
-import { atLeast, useWindowClass } from "@/app/windowClass";
 import { BrewerIcon } from "@/art";
 import { catalog } from "@/catalog/catalog";
 import { repo } from "@/data/repo";
@@ -47,7 +46,7 @@ import { grindReference } from "@/domain/core/glossary";
 import { noScaleAmounts, noScalePrep, servingsPreset } from "@/domain/core/noScale";
 import { fidelityWord, scaledToDose, totalSec, type Recipe } from "@/domain/core/recipe";
 import { scoreStatus } from "@/domain/core/status";
-import { renderTemps, temp, tempUnit, unitsOf } from "@/domain/core/units";
+import { renderTemps, stepsInUnit, temp, tempUnit, unitsOf } from "@/domain/core/units";
 import { GrindRangeCard, useGrindScale } from "@/features/grind";
 import { brewRecipe } from "@/features/today/brewNext";
 import { ConfirmSheet, JourneyLine, RecipeHeader, RecipeRoute, TimelineCard, journeyNodes, plannedTimelineRows } from "@/viz";
@@ -85,7 +84,6 @@ function RecipeDetail({ recipe, from }: { recipe: Recipe; from: SharedFrom }) {
   const settled = useTransitionSettled();
   const { inPane, close } = usePane();
   const selected = useSelectedPath("recipes");
-  const large = atLeast(useWindowClass().width, "large");
   const [amount, setAmount] = useState<Amount>({ dose: recipe.doseG });
   const shown = useMemo(() => ("mugs" in amount ? servingsPreset(recipe, amount.mugs) : amount.dose === recipe.doseG ? recipe : scaledToDose(recipe, amount.dose)), [recipe, amount]);
   const brew = () => brewRecipe(recipe.id);
@@ -99,13 +97,9 @@ function RecipeDetail({ recipe, from }: { recipe: Recipe; from: SharedFrom }) {
       {!inPane ? (
         <DetailTopBar onBack={nav.back} />
       ) : (
-        // A selection in the pane gets a quiet close at large and up; Escape does the same.
-        selected != null &&
-        large && (
-          <div className={r.paneTop}>
-            <IconWell icon="Close" label="Close recipe" keys="escape" onClick={close} />
-          </div>
-        )
+        // One pane header slot, as Log's: a quiet close at the far left when something is selected
+        // (Escape does the same), the same height without one, so the title never jumps.
+        <div className={r.paneTop}>{selected != null && <IconWell icon="Close" label="Close recipe" keys="escape" onClick={close} size={44} />}</div>
       )}
       <div className={r.layout}>
         <div className={r.head}>
@@ -181,7 +175,7 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
   const method = recipe.brewer.method;
   const labels = methodLabels(method);
   // Temperatures in prose follow the person's unit (v4 §4.15), steps included.
-  const forUnits = useMemo(() => (unit === "c" ? shown : { ...shown, steps: shown.steps.map((s) => ({ ...s, detail: renderTemps(s.detail, unit) })) }), [shown, unit]);
+  const forUnits = useMemo(() => (unit === "c" ? shown : { ...shown, steps: [...stepsInUnit(shown.steps, unit)] }), [shown, unit]);
   const logs = useMemo(() => brews.filter((l) => l.recipeId === recipe.id), [brews, recipe.id]);
   // Highest rated; on a tie the newest wins, since its grind is the one to trust today.
   const best = useMemo(() => logs.reduce<(typeof logs)[number] | null>((acc, l) => (l.overall > 0 && (acc == null || l.overall > acc.overall) ? l : acc), null), [logs]);

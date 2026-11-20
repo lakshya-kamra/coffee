@@ -14,6 +14,7 @@ import { BrewerIcon } from "@/art/BrewerIcon";
 import { toCaps } from "@/design/components";
 import { brewerShortName } from "@/domain/core/brewer";
 import { clock, grams } from "@/domain/core/format";
+import { grindWord } from "@/domain/core/grindWord";
 import { accentCss, recipeRatioLabel, totalSec, type Recipe } from "@/domain/core/recipe";
 import { temp, tempLabel, tempUnit, unitsOf, type Units } from "@/domain/core/units";
 import { useSettings } from "@/data/store";
@@ -119,7 +120,8 @@ function CardBody({ recipe, compact, units }: { recipe: Recipe; compact: boolean
             cells={[
               { label: "TIME", value: clock(totalSec(recipe)) },
               { label: "TEMP", value: temp(units, recipe.tempC), unit: tempUnit(units) },
-              { label: "GRIND", value: recipe.grind || null, textValue: true },
+              // A word, not a cut-off sentence; the whole sentence is on the detail.
+              { label: "GRIND", value: grindWord(recipe.grind) || null, textValue: true, title: recipe.grind || undefined },
             ]}
           />
         </span>

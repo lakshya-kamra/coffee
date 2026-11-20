@@ -118,8 +118,16 @@ export function PaneHost({ route }: { route: DetailRoute }) {
  * (a new key unmounts it), so two heavy trees never overlap. The first content after the pane
  * appears (a resize, a tab first shown) does not animate.
  */
-function PaneSwap({ contentKey, lastKey, children }: { contentKey: string; lastKey: RefObject<string | null>; children: ReactNode }) {
+function PaneSwap({ contentKey, lastKey, lostFocus, children }: { contentKey: string; lastKey: RefObject<string | null>; lostFocus: RefObject<boolean>; children: ReactNode }) {
   const box = useRef<HTMLDivElement>(null);
+  // Layout cleanup runs before React removes this node, so focus is still inside it here. When it
+  // is, the pane's owner puts it back on the list once the new content is in (A5).
+  useLayoutEffect(() => {
+    const el = box.current;
+    return () => {
+      if (el?.contains(document.activeElement)) lostFocus.current = true;
+    };
+  }, [lostFocus]);
   useLayoutEffect(() => {
     const el = box.current;
     // Runs before ListDetail's own layout effect records this key, so lastKey is still the old one.
@@ -166,6 +174,8 @@ export function ListDetail({ tab, list, listLabel, defaultDetail, detail, detail
   const listPane = useRef<HTMLDivElement>(null);
   const detailPane = useRef<HTMLDivElement>(null);
   const shownKey = useRef<string | null>(null);
+  const lostFocus = useRef(false);
+  const lastRow = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => registerPaneHost(tab), [tab]);
 
@@ -186,6 +196,18 @@ export function ListDetail({ tab, list, listLabel, defaultDetail, detail, detail
     if (!paneMode) return;
     if (shownKey.current != null && shownKey.current !== key) detailPane.current?.scrollTo?.({ top: 0 });
     shownKey.current = key;
+    // Closing a selection from inside the pane (its x, or Escape after tabbing in) unmounted the
+    // focused node: focus goes back to the row that was selected, else into the list.
+    const row = lastRow.current;
+    const list = listPane.current;
+    // The focusable row itself (Recipes marks its <li> too).
+    lastRow.current = list?.querySelector<HTMLElement>(':is(button, a, [tabindex])[aria-current="true"], :is(button, a, [tabindex])[aria-current="page"]') ?? null;
+    if (!lostFocus.current) return;
+    lostFocus.current = false;
+    if (document.activeElement != null && document.activeElement !== document.body) return;
+    const target = (row?.isConnected ? row : null) ?? lastRow.current ?? list?.querySelector<HTMLElement>("[data-roving-index], input, h1");
+    if (target && target.tagName === "H1" && !target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    target?.focus({ preventScroll: true });
   }, [paneMode, key]);
 
   let content: ReactNode;
@@ -195,12 +217,12 @@ export function ListDetail({ tab, list, listLabel, defaultDetail, detail, detail
 
   return (
     <div className={shell.listDetail} data-panes={paneMode || undefined}>
-      <div ref={listPane} className={shell.listPane} data-list-pane="" role={paneMode ? "region" : undefined} aria-label={paneMode ? listLabel : undefined}>
+      <div ref={listPane} className={shell.listPane} data-list-pane="" role={paneMode ? "region" : undefined} aria-label={paneMode ? `${listLabel} list` : undefined}>
         {list}
       </div>
       {paneMode && (
         <div ref={detailPane} className={shell.detailPane} data-detail-pane="" role="region" aria-label={detailLabel ?? `${listLabel} details`}>
-          <PaneSwap key={key} contentKey={key} lastKey={shownKey}>
+          <PaneSwap key={key} contentKey={key} lastKey={shownKey} lostFocus={lostFocus}>
             {content}
           </PaneSwap>
         </div>

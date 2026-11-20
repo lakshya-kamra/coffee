@@ -267,7 +267,11 @@ export function CoffeeSheet({ onClose, children, label, full = false, role = "co
     if (!d || !o || !sc) return;
     trigger.current = document.activeElement;
     if (!d.open) d.showModal();
-    initialFocus?.current?.focus({ preventScroll: true });
+    // A child's own autoFocus ran while the dialog was still closed, so showModal() picks the
+    // first focusable node, which in a short window is the scrolling body. [data-autofocus]
+    // lets content name its field without a ref.
+    const first = initialFocus?.current ?? body.current?.querySelector<HTMLElement>("[data-autofocus]");
+    first?.focus({ preventScroll: true });
     const reduced = prefersReducedMotion();
     const kind = presRef.current.kind;
     const a1 = animate(sc, { opacity: [0, 1] }, effectsDefault);

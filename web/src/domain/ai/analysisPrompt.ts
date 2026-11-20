@@ -461,7 +461,9 @@ function recipeBlock(log: BrewRow, recipe: Recipe | null): string {
     lastPourEndsAtSec: lastPour,
     targetTotalSec: target,
     expectedDrawdownSec: lastPour != null && target != null && target - lastPour >= 0 ? target - lastPour : null,
-    steps: recipe.steps.map((s) => `${clock(s.startSec)}-${clock(s.endSec)} ${s.title}`),
+    // Titles as 2.0 wrote them ("70 C"): 2.1 added the degree sign to three built-in titles, and
+    // this block is hashed, so analyses saved under 2.0 would read "edited since" for no edit.
+    steps: recipe.steps.map((s) => `${clock(s.startSec)}-${clock(s.endSec)} ${s.title.replace(/(\d+) °C/g, "$1 C")}`),
   };
   return `RECIPE (what was planned)\n${JSON.stringify(o)}`;
 }

@@ -29,7 +29,7 @@ import { brewerRowTag, ownedFamilies, type Brewer } from "@/domain/core/brewer";
 import { clipWords, formatDuration, grams, oneDp, screenDayLabel, screenTime, todayEyebrow } from "@/domain/core/format";
 import { noScaleAmounts } from "@/domain/core/noScale";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
-import { roastStatus, roastWord, scoreStatus, statusColorVar, timeStatus } from "@/domain/core/status";
+import { roastStatus, roastWord, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf, type Units } from "@/domain/core/units";
 import { StatGrid } from "@/features/recipes/StatGrid";
 import { ConfirmSheet, RecipeCard, RecipeHeader, RecipeRoute } from "@/viz";
@@ -510,6 +510,8 @@ function RecentRow({ log, targetSec, onContextMenu }: { log: BrewRow; targetSec:
                 {" · "}
                 <span className={t.nowrap} style={{ color: st && st !== "good" ? statusColorVar(st) : undefined }}>
                   {formatDuration(log.totalTimeSec)}
+                  {/* Colour never alone: a miss carries its signed delta, as in Log. */}
+                  {st && st !== "good" && targetSec != null && ` ${signedClock(log.totalTimeSec - targetSec)}`}
                 </span>
               </>
             )}

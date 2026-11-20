@@ -3,7 +3,7 @@
  * name as the pane's h1, Revert, Save with Ctrl/Cmd+S) that stays at the top of the detail pane,
  * so Save is always on screen however long the form is.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "@/app/router";
 import { useShortcuts } from "@/app/shortcuts";
 import { EyebrowLabel, Icon, Kbd } from "@/design/components";
@@ -36,8 +36,19 @@ export function PaneEditorHeader({
   const active = useGearActive();
   const keys = useMemo(() => [{ keys: "mod+s", label: "Save", group: "Editing", run: onSave, whileTyping: true }], [onSave]);
   useShortcuts("gear-editor", keys, active);
+  // A new item (Add or N) opens here instead of in a sheet, so focus has to follow it, or the
+  // next keystroke runs a shortcut instead of typing the name (A5). The form is the next sibling.
+  const head = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!isNew || !active) return;
+    const form = head.current?.nextElementSibling;
+    const first = form?.querySelector<HTMLElement>("input:not([type=hidden]), textarea, select, button");
+    first?.focus({ preventScroll: true });
+    // Once, when the new editor appears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <header className={s.paneHeader}>
+    <header ref={head} className={s.paneHeader}>
       <div className={s.paneHeaderText}>
         <EyebrowLabel text={eyebrow} />
         <h1 className={`t-headline-m ${s.paneTitle}`}>{title}</h1>

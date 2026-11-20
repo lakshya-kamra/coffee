@@ -4,7 +4,7 @@ import { formatKeys, ariaKeyShortcuts } from "@/design/keys";
 import { allowedWhileTyping, CHORD_WINDOW_MS, groupedLive, matchesStep, parseKeys, parseStep, ShortcutEngine, type Binding, type KeyEventLike } from "./shortcuts";
 
 const key = (k: string, mods: Partial<Omit<KeyEventLike, "key">> = {}): KeyEventLike => ({ key: k, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, ...mods });
-const ctx = (over: Partial<{ typing: boolean; dialogOpen: boolean; now: number }> = {}) => ({ typing: false, dialogOpen: false, now: 0, ...over });
+const ctx = (over: Partial<{ typing: boolean; onControl: boolean; dialogOpen: boolean; now: number }> = {}) => ({ typing: false, dialogOpen: false, now: 0, ...over });
 
 describe("parsing and matching", () => {
   it("parses steps, modifiers and aliases", () => {
@@ -88,6 +88,17 @@ describe("ShortcutEngine", () => {
     engine.handle(key("Escape"), ctx({ typing: true }));
     engine.handle(key("x"), ctx({ typing: true }));
     expect(ran).toEqual(["palette", "esc", "x"]);
+  });
+
+  it("leaves plain Space and Enter to a focused control, and skipOnControls keys too", () => {
+    engine.register("brew", [b("space", "toggle"), b("right", "seek", { skipOnControls: true }), b("n", "next"), b("mod+enter", "save")], true);
+    expect(engine.handle(key(" "), ctx({ onControl: true }))).toBeNull();
+    expect(engine.handle(key("ArrowRight"), ctx({ onControl: true }))).toBeNull();
+    engine.handle(key("n"), ctx({ onControl: true }));
+    engine.handle(key("Enter", { ctrlKey: true }), ctx({ onControl: true }));
+    engine.handle(key(" "), ctx());
+    engine.handle(key("ArrowRight"), ctx());
+    expect(ran).toEqual(["next", "save", "toggle", "seek"]);
   });
 
   it("is quiet while a dialog is open, except inDialog bindings", () => {

@@ -25,19 +25,28 @@
   .dash:not([data-coffees]) .tMost, .dash:not([data-most]) .tCoffees { grid-column: span 8; }
   .dash:not([data-most]):not([data-coffees]) .tAi { grid-column: 1 / -1; }
 }
-/* Large and up: patterns become a supporting column beside the charts and the rankings. */
-@container pane (min-width: 1100px) {
+/* Tiles in one row share its height (cards top-aligned, stretched to the row), so the dashboard
+   edges line up instead of leaving holes under the shorter tiles. */
+@container pane (min-width: 760px) {
+  .dash { align-items: stretch; }
+  .dash > * { display: flex; flex-direction: column; }
+  .dash > * > :last-child { flex: 1 0 auto; }
+}
+/* Large and up (a 1200+ window: the pane is the window less the sidebar): with analysis set up,
+   patterns become a supporting column beside the charts and the rankings. Without it the card is
+   a short "set up" note, so it stays in the last row and the charts keep their full width. */
+@container pane (min-width: 1150px) {
   .dash { gap: 24px; }
-  .tPass { grid-column: 1 / span 8; }
-  .tBests { grid-column: 9 / span 4; }
-  .tScore { grid-column: 1 / span 4; }
-  .tGrind { grid-column: 5 / span 4; }
-  .tMost { grid-column: 1 / span 4; }
-  .tCoffees { grid-column: 5 / span 4; }
-  .tAi { grid-column: 9 / span 4; grid-row: 2 / span 2; }
-  .dash:not([data-grind]) .tScore, .dash:not([data-scores]) .tGrind { grid-column: 1 / span 8; }
-  .dash:not([data-coffees]) .tMost, .dash:not([data-most]) .tCoffees { grid-column: 1 / span 8; }
-  .dash:not([data-most]):not([data-coffees]) .tAi { grid-column: 9 / span 4; }
+  .dash[data-ai] .tPass { grid-column: 1 / span 8; }
+  .dash[data-ai] .tBests { grid-column: 9 / span 4; }
+  .dash[data-ai] .tScore { grid-column: 1 / span 4; }
+  .dash[data-ai] .tGrind { grid-column: 5 / span 4; }
+  .dash[data-ai] .tMost { grid-column: 1 / span 4; }
+  .dash[data-ai] .tCoffees { grid-column: 5 / span 4; }
+  .dash[data-ai] .tAi { grid-column: 9 / span 4; grid-row: 2 / span 2; }
+  .dash[data-ai]:not([data-grind]) .tScore, .dash[data-ai]:not([data-scores]) .tGrind { grid-column: 1 / span 8; }
+  .dash[data-ai]:not([data-coffees]) .tMost, .dash[data-ai]:not([data-most]) .tCoffees { grid-column: 1 / span 8; }
+  .dash[data-ai]:not([data-most]):not([data-coffees]) .tAi { grid-column: 9 / span 4; }
 }
 @container pane (min-width: 1500px) {
   .page { max-width: 1440px; }
@@ -110,6 +119,12 @@
 @keyframes bar-grow { from { transform: scaleY(0); } }
 .stub { width: 10px; height: 3px; }
 .ticksRow { margin-right: 28px; }
+.scoreKey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; color: var(--ink-mid); }
+.scoreKeyItem { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.scoreKeySwatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+@media (forced-colors: active) {
+  .scoreKeySwatch { forced-color-adjust: none; }
+}
 
 /* ---------------------------------------------------------------- grind chart */
 .grind { margin: 28px 0 0; }
@@ -119,7 +134,7 @@
 .bandLabel { padding-left: 4px; color: var(--good); }
 .grindPlot { position: absolute; left: 8px; right: 36px; top: 0; bottom: 0; }
 .grindSvg { position: absolute; inset: 0; overflow: visible; }
-.latestLabel { position: absolute; transform: translate(-50%, -85%); color: var(--ink-high); font-weight: 700; white-space: nowrap; pointer-events: none; }
+.latestLabel { position: absolute; transform: translate(-100%, -50%); padding: 0 3px; border-radius: 4px; background: var(--surface1); color: var(--ink-high); font-weight: 700; white-space: nowrap; pointer-events: none; }
 .grindTicks { margin: 0 36px 0 8px; }
 .point[data-animate="true"] { animation: point-in 420ms var(--ease-decel) both; transform-box: fill-box; transform-origin: center; }
 @keyframes point-in { from { opacity: 0; transform: scale(0.3); } }

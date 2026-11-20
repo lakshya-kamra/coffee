@@ -166,6 +166,16 @@
   :global(html[data-short]) .why { display: flex; flex-direction: column; gap: 8px; padding: 24px 0; }
   :global(html[data-short]) .whyArt { display: none; }
   :global(html[data-short]) .top { min-height: 48px; }
+  /* Under 480 tall even step 1 scrolls: Next and Skip stay pinned in a 56 px footer. */
+  :global(html[data-short]) .footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    min-height: 56px;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    background: var(--surface0);
+    box-shadow: 0 -1px 0 var(--hairline);
+  }
 }
 
 /* 200% text (A7): side-by-side fields stack when the column is narrow for the type size. */

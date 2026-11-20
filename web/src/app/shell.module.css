@@ -233,7 +233,8 @@
 .rail[data-short] .railTop { gap: 8px; margin-bottom: 4px; }
 .rail[data-short] .railSearch, .rail[data-short] .railIconBtn, .rail[data-short] .railStart { width: 40px; height: 40px; }
 .rail[data-short] .railItem { min-height: 48px; padding: 4px 2px; }
-.rail[data-short] .railLabel { display: none; }
+/* Hidden visually only: the label is the link's accessible name. */
+.rail[data-short] .railLabel { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* The live-brew pill: the only crema outside the timer. */
 .livePill {
@@ -315,6 +316,9 @@
 .sideSub { min-height: 36px; padding-left: 44px; }
 .sideItem[aria-current="page"], .sideSub[aria-current="page"] { background: var(--surface2); color: var(--ink-high); }
 .sideItem[data-parent="true"] { color: var(--ink-high); }
+/* Light theme: surface2 on surface0 is nearly invisible, so the current row takes surface3 (the
+   same one-element background transition, just a darker fill). */
+:root[data-theme="light"] .sideItem[aria-current="page"], :root[data-theme="light"] .sideSub[aria-current="page"] { background: var(--surface3); }
 .sideItemLabel { flex: 1; min-width: 0; }
 .sideDigit { color: var(--ink-low); opacity: 0; }
 .sideItem:focus-visible .sideDigit { opacity: 1; }
@@ -352,6 +356,7 @@
   .railItem:hover { color: var(--ink-high); }
   .sideItem:hover, .sideSub:hover, .sideFootBtn:hover { background: var(--surface1); }
   .sideItem[aria-current="page"]:hover, .sideSub[aria-current="page"]:hover { background: var(--surface2); }
+  :root[data-theme="light"] .sideItem[aria-current="page"]:hover, :root[data-theme="light"] .sideSub[aria-current="page"]:hover { background: var(--surface3); }
   .sideItem:hover .sideDigit { opacity: 1; }
   .sideSearch:hover { background: var(--surface2); }
   .livePill:hover, .liveRow:hover { background: var(--surface3); }

@@ -390,16 +390,37 @@ export function RadioRow({
   noteStatus?: Status;
   detail?: string;
 }) {
+  // Named and described by reference, with the visible copy hidden from the tree: a wrapped
+  // label read its text twice in browse mode (once as the radio's name, once as plain text).
+  const id = useId();
+  const extra = [subtitle && `${id}-s`, note && `${id}-n`, detail && `${id}-d`].filter(Boolean).join(" ") || undefined;
   return (
     <label className={s.radioRow}>
-      <input type="radio" name={name} className={s.radio} checked={selected} onChange={onClick} />
-      <span className={s.rowText}>
-        <span className="t-body-l">
+      <input type="radio" name={name} className={s.radio} checked={selected} onChange={onClick} aria-labelledby={`${id}-t`} aria-describedby={extra} />
+      <span className={s.rowText} aria-hidden="true">
+        <span className="t-body-l" id={`${id}-t`}>
           {title} {badge && <span className={`${s.badge} micro`}>{badge}</span>}
         </span>
-        {subtitle && <span className={`t-body-s ${s.rowSub}`}>{subtitle}</span>}
-        {note && (noteStatus ? <StatusChip status={noteStatus} text={note} /> : <span className={`t-body-s ${s.rowSub}`}>{note}</span>)}
-        {detail && <span className={`t-body-s ${s.rowSub}`}>{detail}</span>}
+        {subtitle && (
+          <span className={`t-body-s ${s.rowSub}`} id={`${id}-s`}>
+            {subtitle}
+          </span>
+        )}
+        {note &&
+          (noteStatus ? (
+            <span id={`${id}-n`}>
+              <StatusChip status={noteStatus} text={note} />
+            </span>
+          ) : (
+            <span className={`t-body-s ${s.rowSub}`} id={`${id}-n`}>
+              {note}
+            </span>
+          ))}
+        {detail && (
+          <span className={`t-body-s ${s.rowSub}`} id={`${id}-d`}>
+            {detail}
+          </span>
+        )}
       </span>
     </label>
   );

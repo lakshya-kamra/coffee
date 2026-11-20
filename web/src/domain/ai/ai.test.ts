@@ -164,6 +164,15 @@ describe("prompt v2 (A§8.5)", () => {
     expect(block(user, "GRINDER")).toMatchObject({ currentSetting: 14, scale: { adjustsBy: "numbered dial" } });
   });
 
+  it("hashes step titles as 2.0 wrote them, so 70 °C and 70 C give the same hash", () => {
+    const base = v60();
+    const titled = (t: string): Recipe => ({ ...base, steps: base.steps.map((s, n) => (n === 0 ? { ...s, title: t } : s)) });
+    const a = buildBrewPrompt(input({ recipe: titled("Pour to 60 g at 70 °C") }));
+    const b = buildBrewPrompt(input({ recipe: titled("Pour to 60 g at 70 C") }));
+    expect(a.inputHash).toBe(b.inputHash);
+    expect((block(a.user, "RECIPE (what was planned)").steps as string[])[0]).toMatch(/at 70 C$/);
+  });
+
   it("adds the °F line, brewer, water and photos blocks", () => {
     const water = catalog.water[0]!;
     const p = buildBrewPrompt(input({ units: "f", log: brew({ waterId: water.id }), photos: [{ uid: "abcdef1234", kind: "bed", takenAt: Date.UTC(2026, 10, 17, 8, 14), bytes: 180_000 }] }));

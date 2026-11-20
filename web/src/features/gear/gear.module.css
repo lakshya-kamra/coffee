@@ -72,7 +72,8 @@
   background: var(--surface2);
   border: 1px solid transparent;
 }
-.dateWell:focus-within { border-color: var(--ink-high); }
+.dateWell:focus-within { outline: 2px solid var(--ink-high); outline-offset: 2px; }
+.dateWell input:focus-visible { outline: none; }
 .dateInput { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink-high); padding: 0; }
 .dateInput:focus { outline: none; }
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -158,7 +159,8 @@
   align-items: flex-end;
   gap: 16px;
   flex-wrap: wrap;
-  padding: calc(env(safe-area-inset-top) + 20px) var(--gutter) 12px;
+  /* Lines up with the centred 720 form below it. */
+  padding: calc(env(safe-area-inset-top) + 20px) max(var(--gutter), calc((100% - 720px) / 2 + var(--gutter))) 12px;
   background: var(--bg);
   border-bottom: 1px solid var(--hairline);
 }
@@ -182,7 +184,8 @@
 @media (hover: hover) and (pointer: fine) {
   .paneRevert:not(:disabled):hover { background: var(--surface2); }
 }
-.paneForm { display: flex; flex-direction: column; gap: 16px; max-width: 720px; padding: 20px var(--gutter) 48px; }
+/* Centred in the pane like recipe and brew details (at 1920 a left-aligned form left ~560 px empty). */
+.paneForm { display: flex; flex-direction: column; gap: 16px; max-width: 720px; margin-inline: auto; padding: 20px var(--gutter) 48px; }
 .paneDelete { padding-top: 8px; }
 .paneDeleteBtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--fault); }
 
@@ -225,7 +228,7 @@
 }
 .jump[aria-current="true"] { background: var(--ink-high); color: var(--bg); }
 .settingsSection { scroll-margin-top: var(--gear-head-h, 220px); }
-.settingsPane { max-width: 720px; padding: 0 var(--gutter) 48px; }
+.settingsPane { max-width: 720px; margin-inline: auto; padding: 0 var(--gutter) 48px; }
 .settingsPaneHead { padding: calc(env(safe-area-inset-top) + 20px) 0 8px; }
 .sectionRows { display: flex; flex-direction: column; gap: 2px; padding: 8px 0 var(--list-bottom-pad); }
 .sectionRow { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--r-well); text-align: left; color: var(--ink-high); }
@@ -236,4 +239,13 @@
    type (rem grows with the text size, so this only trips at large text on a phone). */
 @container (max-width: 21rem) {
   .row2 { grid-template-columns: 1fr; }
+}
+
+/* Short landscape: the editor's sticky header is one ~48 px row (title and actions); the eyebrow
+   and save state step aside so the form gets the height. The state stays for screen readers. */
+@media (max-height: 479.98px) {
+  .paneHeader { align-items: center; flex-wrap: nowrap; padding-top: calc(env(safe-area-inset-top) + 6px); padding-bottom: 6px; }
+  .paneHeaderText > :first-child { display: none; }
+  .paneTitle { margin-top: 0; font-size: 1.25rem; line-height: 1.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .paneState { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }

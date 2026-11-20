@@ -38,6 +38,7 @@
 .missingArt { display: inline-flex; }
 
 .headTop { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
+.leaveRow { display: flex; align-items: center; gap: 8px; margin: 0 0 8px -8px; }
 .title { overflow-wrap: anywhere; }
 .gridCard { margin-top: 12px; padding: 6px 18px; border-radius: var(--r-card); background: var(--surface1); }
 .editBox { display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px; }
@@ -127,6 +128,8 @@
 .sticky > * { pointer-events: auto; }
 /* ReviewScreen.kt's StickyCtaBar weights: Save 0.36, Save & analyse 0.64. */
 .stickyRow { display: flex; gap: 10px; }
+/* Primary buttons never span a wide column (§2.5): right-aligned at --primary-max (100% on a phone). */
+.sticky > .saveOne, .sticky > .stickyRow { width: 100%; max-width: var(--primary-max); align-self: flex-end; }
 .stickySave { flex: 36 1 0; width: auto; min-width: 0; border-radius: var(--r-primary); }
 .stickyAnalyse { flex: 64 1 0; width: auto; min-width: 0; }
 

@@ -107,6 +107,8 @@
     --detail-max: 1080px;
   }
 }
+/* The brew ring's crema glow is fainter on the light page (BrewRing reads it once per theme). */
+:root[data-theme="light"] { --ring-glow-scale: 0.5; }
 /* short (height < 480): the gutter tightens; the rail drops its labels (shell.module.css) */
 @media (max-height: 479.98px) {
   :root { --gutter: 16px; --pane-gap: 16px; }

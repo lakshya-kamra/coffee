@@ -5,7 +5,7 @@
  * Escape closes. The chosen command runs after the dialog has closed, so focus can land on the
  * screen it opens. Loaded lazily the first time it opens.
  */
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { getSnapshot } from "@/data/store";
 import { CoffeeSheet, useSheetClose } from "@/design/components/Sheet";
 import { Icon } from "@/design/components/Icon";
@@ -57,6 +57,14 @@ function PaletteBody({ initialQuery, onPick }: { initialQuery: string; onPick: (
   const listId = useId();
   const optId = (i: number) => `${listId}-o${i}`;
   const list = useRef<HTMLDivElement>(null);
+  // What the query returned, for screen readers (the listbox itself says nothing when empty).
+  // Debounced so each keystroke does not interrupt with a new count.
+  const said = query.trim() === "" ? "" : rows.length === 0 ? `Nothing matches ${query.trim()}` : `${rows.length} ${rows.length === 1 ? "result" : "results"}`;
+  const [status, setStatus] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => setStatus(said), 400);
+    return () => window.clearTimeout(t);
+  }, [said]);
 
   const run = (c: Command, secondary: boolean) => {
     rememberRun(c.id);
@@ -98,8 +106,8 @@ function PaletteBody({ initialQuery, onPick }: { initialQuery: string; onPick: (
           aria-autocomplete="list"
           aria-label="Search or type a command"
           placeholder={PLACEHOLDER}
-          // eslint-disable-next-line jsx-a11y/no-autofocus -- a palette opens to type into
-          autoFocus
+          // A palette opens to type into; CoffeeSheet focuses it once the dialog is open.
+          data-autofocus
           autoComplete="off"
           spellCheck={false}
           value={query}
@@ -147,6 +155,9 @@ function PaletteBody({ initialQuery, onPick }: { initialQuery: string; onPick: (
           </div>
         ))}
       </div>
+      <p role="status" className="visually-hidden">
+        {status}
+      </p>
       <p className={`t-body-s ink-low ${p.foot}`}>
         <Kbd keys="enter" /> open · <Kbd keys="mod+enter" /> brew a recipe · <Kbd keys="escape" /> close
       </p>

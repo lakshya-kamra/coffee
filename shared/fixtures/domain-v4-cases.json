@@ -46,7 +46,8 @@
     {"in": {"text": "about 90-92 °C for light roasts, 88 °C for medium", "unit": "f"}, "out": "about 194-198 °F for light roasts, 190 °F for medium"},
     {"in": {"text": "70 °C for the first pour, 95 °C for the rest.", "unit": "f"}, "out": "158 °F for the first pour, 203 °F for the rest."},
     {"in": {"text": "Cool to about 60 °C by stirring.", "unit": "f"}, "out": "Cool to about 140 °F by stirring."},
-    {"in": {"text": "No temperature here, just 100 g.", "unit": "f"}, "out": "No temperature here, just 100 g."}
+    {"in": {"text": "No temperature here, just 100 g.", "unit": "f"}, "out": "No temperature here, just 100 g."},
+    {"in": {"text": "CLOSE, 160 g at 70 °C", "unit": "f"}, "out": "CLOSE, 160 g at 158 °F"}
   ],
   "formatDuration": [
     {"in": 0, "out": "0:00"},

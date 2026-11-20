@@ -15,11 +15,11 @@ describe("Today layout (v4 §3.1)", () => {
   });
 
   it("expanded: the 12-column dashboard at 1200, 3-up, more recent rows", () => {
-    expect(at(1024, 768)).toMatchObject({ mode: "dashboard", startCols: 3, startCount: 6, recentCount: 6, yourCoffee: true, lastGrind: false, maxWidth: 1200 });
+    expect(at(1024, 768)).toMatchObject({ mode: "dashboard", startCols: 3, startCount: 6, recentCount: 5, yourCoffee: true, lastGrind: false, maxWidth: 1200 });
   });
 
   it("large and XL add Last grind, 4-up; XL is 1360 wide", () => {
-    expect(at(1440, 900)).toMatchObject({ mode: "dashboard", startCols: 4, recentCount: 8, lastGrind: true, maxWidth: 1200 });
+    expect(at(1440, 900)).toMatchObject({ mode: "dashboard", startCols: 4, recentCount: 5, lastGrind: true, maxWidth: 1200 });
     expect(at(1920, 1080)).toMatchObject({ mode: "dashboard", startCols: 4, lastGrind: true, maxWidth: 1360 });
   });
 

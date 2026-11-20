@@ -15,7 +15,7 @@ import { matchesLogQuery, type LogSearchable } from "./logQuery";
 import { noScaleAmounts, noScalePrep, servingsPreset, type BeanForm } from "./noScale";
 import { quickRead, type QuickReadInput, type QuickReadOptions } from "./quickRead";
 import type { Recipe, RecipeLevel, RecipeNeed } from "./recipe";
-import { defaultTempUnit, PROSE_TEMP, renderTemps } from "./units";
+import { defaultTempUnit, PROSE_TEMP, renderTemps, stepsInUnit } from "./units";
 
 type StubInput = { brewer?: string; totalSec?: number; doseG?: number; waterG?: number; id?: string; level?: RecipeLevel; needs?: RecipeNeed[]; prep?: string[]; prepNoScale?: string[]; method?: BrewMethod };
 type Pair<I, O> = { in: I; out: O };
@@ -93,6 +93,12 @@ describe("shared/fixtures/domain-v4-cases.json", () => {
 
   it("renderTemps", () => {
     for (const c of cases.renderTemps) expect(renderTemps(c.in.text, c.in.unit), c.in.text).toBe(c.out);
+  });
+
+  it("stepsInUnit converts step titles as well as details", () => {
+    const steps = [{ title: "CLOSE, 160 g at 70 °C", detail: "Pour to 160 g at 70 °C." }];
+    expect(stepsInUnit(steps, "f")).toEqual([{ title: "CLOSE, 160 g at 158 °F", detail: "Pour to 160 g at 158 °F." }]);
+    expect(stepsInUnit(steps, "c")).toBe(steps);
   });
 
   it("formatDuration, ratioPhrase, grindReference", () => {

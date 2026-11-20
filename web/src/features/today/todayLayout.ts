@@ -40,12 +40,14 @@ export function todayLayout(wc: WindowClass): TodayLayout {
     case "expanded":
       // A phone on its side (844 x 390) is "expanded" but has no height for a dashboard.
       if (wc.short) return { mode: "split", recentCount: 3, startCols: 3, startCount: 6, yourCoffee: true, lastGrind: false, startInline, maxWidth: null };
-      return { mode: "dashboard", recentCount: 6, startCols: 3, startCount: 6, yourCoffee: true, lastGrind: false, startInline, maxWidth: 1200 };
+      return { mode: "dashboard", recentCount: 5, startCols: 3, startCount: 6, yourCoffee: true, lastGrind: false, startInline, maxWidth: 1200 };
     case "large":
     case "xl": {
       const maxWidth = wc.width === "xl" ? 1360 : 1200;
       if (wc.short) return { mode: "split", recentCount: 3, startCols: 4, startCount: 8, yourCoffee: true, lastGrind: true, startInline, maxWidth: null };
-      return { mode: "dashboard", recentCount: 8, startCols: 4, startCount: 8, yourCoffee: true, lastGrind: true, startInline, maxWidth };
+      // Five recent rows: eight ran ~200 px past the Next brew column and left a dead block above
+      // "Start from" (the spec's E range is 5-8; the rest are one click away in Log).
+      return { mode: "dashboard", recentCount: 5, startCols: 4, startCount: 8, yourCoffee: true, lastGrind: true, startInline, maxWidth };
     }
   }
 }

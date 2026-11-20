@@ -12,6 +12,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { registerCommands } from "@/app/palette/commands";
 import { ListDetail, usePaneMode } from "@/app/panes";
 import { nav } from "@/app/router";
+import { useSidebarCollapsed } from "@/app/sidebar";
+import { atLeast, useWindowClass } from "@/app/windowClass";
 import type { GearTab } from "@/app/routes";
 import { useShortcuts, type Binding } from "@/app/shortcuts";
 import { showToast } from "@/app/toast";
@@ -70,6 +72,10 @@ function PaneEmpty({ title, children }: { title: string; children: ReactNode }) 
 
 export function GearScreen({ tab }: { tab: GearTab }) {
   const paneMode = usePaneMode();
+  // At large+ with the sidebar open, Beans, Grinders and Settings are already sidebar rows: the
+  // segmented control would be a second copy of the same navigation.
+  const sidebarCollapsed = useSidebarCollapsed();
+  const sidebarSubs = atLeast(useWindowClass().width, "large") && !sidebarCollapsed;
   const active = useGearActive();
   const beans = useBeans({ includeArchived: true });
   const grinders = useGrinders();
@@ -294,7 +300,7 @@ export function GearScreen({ tab }: { tab: GearTab }) {
       trailing={tab === "app" ? undefined : <IconWell icon="Add" label={tab === "grinders" ? "Add grinder" : "Add coffee"} keys="n" onClick={onAdd} />}
       status={
         <div className={s.tabs}>
-          <SegmentedControl options={LABELS} selectedIndex={TABS.indexOf(tab)} onSelect={(i) => nav.switchTab("gear", TABS[i])} label="Gear sections" panelIds={PANEL_IDS} />
+          {!sidebarSubs && <SegmentedControl options={LABELS} selectedIndex={TABS.indexOf(tab)} onSelect={(i) => nav.switchTab("gear", TABS[i])} label="Gear sections" panelIds={PANEL_IDS} />}
           {tab === "app" && !paneMode && <SettingsJumpRow />}
         </div>
       }
@@ -327,7 +333,7 @@ export function GearScreen({ tab }: { tab: GearTab }) {
           }}
           className={s.pane}
           hidden={t !== tab}
-          role="tabpanel"
+          role={sidebarSubs ? "region" : "tabpanel"}
           aria-label={LABELS[i]}
         >
           {visited.has(t) ? panelBody(t) : null}

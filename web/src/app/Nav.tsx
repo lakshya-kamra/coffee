@@ -85,9 +85,14 @@ function Rail({ covered, short, canExpand }: { covered: boolean; short: boolean;
       </div>
       <div className={shell.railBottom}>
         {live && (
-          <button type="button" className={shell.livePill} onClick={live.resume} aria-label={`Brewing, ${live.clock}. Back to the brew`} {...tooltipProps("Back to the brew", undefined, "right")}>
+          // Named by its text, not aria-label: the clock is hidden from the name so it does not
+          // change every second (and the visible text never contradicts the name).
+          <button type="button" className={shell.livePill} onClick={live.resume} {...tooltipProps("Back to the brew", undefined, "right")}>
             <span className={shell.liveDot} data-running={live.running} aria-hidden="true" />
-            <span className="num-inline">{live.clock}</span>
+            <span className="visually-hidden">Brewing. Back to the brew</span>
+            <span className="num-inline" aria-hidden="true">
+              {live.clock}
+            </span>
           </button>
         )}
         {canExpand && (
@@ -168,11 +173,15 @@ function Sidebar({ covered }: { covered: boolean }) {
         ))}
       </ul>
       {live && (
-        <button type="button" className={shell.liveRow} onClick={live.resume} aria-label={`Brewing, ${live.clock}, ${live.stepTitle}. Back to the brew`}>
+        <button type="button" className={shell.liveRow} onClick={live.resume}>
           <span className={shell.liveDot} data-running={live.running} aria-hidden="true" />
           <span className="t-title-m">Brewing</span>
-          <span className="num-inline">{live.clock}</span>
+          {/* Out of the name: a clock in it would re-announce every second. */}
+          <span className="num-inline" aria-hidden="true">
+            {live.clock}
+          </span>
           <span className={`t-body-s ${shell.liveRowStep}`}>{live.stepTitle}</span>
+          <span className="visually-hidden">. Back to the brew</span>
         </button>
       )}
       <div className={shell.sideFoot}>
