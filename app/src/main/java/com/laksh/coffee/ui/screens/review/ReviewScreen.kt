@@ -14,6 +14,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
@@ -238,7 +239,7 @@ private fun ReviewForm(
 
     val what: @Composable ColumnScope.() -> Unit = {
         NumbersHeader(log, state, warnings, vm)
-        ReviewPhotos(log.id)
+        ReviewPhotos(log.id, bed = state.sections.bed)
         FirstReadSection(state.quickRead, aiReady)
         ReportRow(
             onShare = {
@@ -260,7 +261,7 @@ private fun ReviewForm(
         OverallSection(log, vm)
         AnythingOffSection(log, vm)
         if (state.quick) {
-            MoreDetailToggle(open = moreDetail, onToggle = { moreDetail = !moreDetail })
+            MoreDetailToggle(open = moreDetail, onToggle = { moreDetail = !moreDetail }, bed = state.sections.bed)
         }
         AnimatedVisibility(
             visible = detailed,
@@ -353,7 +354,7 @@ private fun androidx.compose.foundation.layout.BoxScope.OneColumn(
     ) {
         NumbersHeader(log, state, warnings, vm)
         verdict()
-        ReviewPhotos(log.id)
+        ReviewPhotos(log.id, bed = state.sections.bed)
         FirstReadSection(state.quickRead, aiReady)
         ReportRow(
             onShare = {
@@ -460,7 +461,7 @@ private fun AnythingOffSection(log: BrewLogEntity, vm: ReviewViewModel) {
 
 /** "More detail": taste, flow, the coffee bed, opened in place. */
 @Composable
-private fun MoreDetailToggle(open: Boolean, onToggle: () -> Unit) {
+private fun MoreDetailToggle(open: Boolean, onToggle: () -> Unit, bed: Boolean) {
     val c = CoffeeTheme.colors
     val interaction = remember { MutableInteractionSource() }
     Row(
@@ -477,7 +478,8 @@ private fun MoreDetailToggle(open: Boolean, onToggle: () -> Unit) {
     ) {
         Column(Modifier.weight(1f)) {
             Text(if (open) "Less detail" else "More detail", style = MaterialTheme.typography.titleMedium, color = c.inkHigh)
-            Text("Taste, flow, the coffee bed", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
+            // A press or a machine has no bed to read, so the hint does not promise one.
+            Text(if (bed) "Taste, flow, the coffee bed" else "Taste, faults, notes", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
         }
         Icon(
             if (open) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
@@ -535,48 +537,48 @@ private fun NumbersHeader(
 
     val labels = state.labels
     val espresso = state.sections.style == BrewStyle.Espresso
-    // Big text gets two columns instead of four squeezed ones (A7).
-    val columns = if (LocalDensity.current.fontScale > 1.3f) 2 else 4
+    val bigText = LocalDensity.current.fontScale > 1.3f
     SoftCard(contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)) {
-        DataGrid(
-            cells = if (espresso) {
-                val yieldG = log.beverageG ?: log.waterG
-                listOf(
-                    Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
-                    Cell(label = labels.water, value = grams(yieldG), unit = "g"),
-                    Cell(label = "RATIO", value = ratio(log.doseG, yieldG)),
-                    Cell(
-                        label = labels.time,
-                        value = log.totalTimeSec.takeIf { it > 0 }?.let { "$it" },
-                        unit = log.totalTimeSec.takeIf { it > 0 }?.let { "s" },
-                        status = timeFlag?.let { Status.Attention },
-                        sub = timeFlag?.let { "CHECK" },
-                        subStatus = timeFlag?.let { Status.Attention },
-                    ),
-                )
-            } else listOf(
+        val cells = if (espresso) {
+            val yieldG = log.beverageG ?: log.waterG
+            listOf(
                 Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
-                Cell(label = labels.water, value = grams(log.waterG), unit = "g"),
-                Cell(
-                    label = "GRIND",
-                    value = log.grindClicks?.toString() ?: log.grindSetting.trim().ifEmpty { null },
-                    unit = log.grindClicks?.let { "clk" },
-                    textValue = log.grindClicks == null,
-                    status = grindFlag?.let { Status.Attention },
-                    sub = grindFlag?.let { "CHECK" },
-                    subStatus = grindFlag?.let { Status.Attention },
-                ),
+                Cell(label = labels.water, value = grams(yieldG), unit = "g"),
+                Cell(label = "RATIO", value = ratio(log.doseG, yieldG)),
                 Cell(
                     label = labels.time,
-                    value = log.totalTimeSec.takeIf { it > 0 }?.let { formatDuration(it) },
-                    status = if (timeFlag != null) Status.Attention else ts.first,
+                    value = log.totalTimeSec.takeIf { it > 0 }?.let { "$it" },
+                    unit = log.totalTimeSec.takeIf { it > 0 }?.let { "s" },
+                    status = timeFlag?.let { Status.Attention },
                     sub = timeFlag?.let { "CHECK" },
                     subStatus = timeFlag?.let { Status.Attention },
                 ),
+            )
+        } else listOf(
+            Cell(label = "DOSE", value = grams(log.doseG), unit = "g"),
+            Cell(label = labels.water, value = grams(log.waterG), unit = "g"),
+            Cell(
+                label = "GRIND",
+                value = log.grindClicks?.toString() ?: log.grindSetting.trim().ifEmpty { null },
+                unit = log.grindClicks?.let { "clk" },
+                textValue = log.grindClicks == null,
+                status = grindFlag?.let { Status.Attention },
+                sub = grindFlag?.let { "CHECK" },
+                subStatus = grindFlag?.let { Status.Attention },
             ),
-            columns = columns,
-            compact = true,
+            Cell(
+                label = labels.time,
+                value = log.totalTimeSec.takeIf { it > 0 }?.let { formatDuration(it) },
+                status = if (timeFlag != null) Status.Attention else ts.first,
+                sub = timeFlag?.let { "CHECK" },
+                subStatus = timeFlag?.let { Status.Attention },
+            ),
         )
+        BoxWithConstraints {
+            // Big text, or a narrow pane (the phone-landscape split clipped "CHECK" to "CHEC"),
+            // gets two columns instead of four squeezed ones (A7).
+            DataGrid(cells = cells, columns = if (bigText || maxWidth < 320.dp) 2 else 4, compact = true)
+        }
 
         AnimatedVisibility(
             visible = editing,
@@ -659,7 +661,7 @@ private fun NumbersHeader(
             lead = ts.second,
             modifier = Modifier.weight(1f),
             detail = if (target != null && log.totalTimeSec > 0) {
-                "${clock(log.totalTimeSec)} against ${clock(target)}"
+                "${formatDuration(log.totalTimeSec)} against ${formatDuration(target)}"
             } else {
                 null
             },

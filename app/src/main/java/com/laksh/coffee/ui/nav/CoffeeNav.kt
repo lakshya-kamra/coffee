@@ -625,6 +625,14 @@ private fun TabContent(
     windowClass: WindowClass,
     startBrew: () -> Unit,
 ) {
+    val gearPane = LocalGearPane.current
+    // Today's empty "Your coffee" card opens Gear on Beans, whichever section was last open.
+    val addCoffee: () -> Unit = remember(gearPane, go) {
+        {
+            gearPane.section = GearSection.Beans.ordinal
+            go(Routes.GEAR)
+        }
+    }
     when (tab) {
         // Home passes its own shared-key prefix: the carousel and the next-brew pass can show the
         // same recipe, so they must not share a key.
@@ -636,6 +644,7 @@ private fun TabContent(
             onSeeAllRecipes = { go(Routes.RECIPES) },
             onSeeHistory = { go(Routes.HISTORY) },
             onPersonalise = { nav.navigate(Routes.ONBOARDING) { launchSingleTop = true } },
+            onAddCoffee = addCoffee,
         )
         AppTab.Recipes -> RecipesTab(nav, go, panes, windowClass)
         AppTab.Log -> LogTab(nav, go, panes, windowClass, startBrew)

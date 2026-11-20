@@ -1,6 +1,6 @@
 package com.laksh.coffee.ui.screens.history
 
-import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.core.oneDp
 import com.laksh.coffee.core.ratio
@@ -194,7 +194,7 @@ object BrewCompare {
         fun text(l: BrewLogEntity): String {
             if (l.totalTimeSec <= 0) return "—"
             val plan = plannedSec(l)?.takeIf { it > 0 }
-            return if (plan == null) clock(l.totalTimeSec) else "${clock(l.totalTimeSec)} (plan ${clock(plan)})"
+            return if (plan == null) formatDuration(l.totalTimeSec) else "${formatDuration(l.totalTimeSec)} (plan ${formatDuration(plan)})"
         }
         val diff = if (a.totalTimeSec > 0 && b.totalTimeSec > 0 && a.totalTimeSec != b.totalTimeSec) {
             signedClock(b.totalTimeSec - a.totalTimeSec)

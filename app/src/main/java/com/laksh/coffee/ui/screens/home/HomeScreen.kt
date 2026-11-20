@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.laksh.coffee.core.clock
 import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.core.oneDp
@@ -135,11 +134,13 @@ fun HomeScreen(
     onPersonalise: () -> Unit = {},
     /** "Brew again" on a Recent row: setup prefilled from that brew (v4 §4.10). */
     onBrewAgain: (recipeId: String, logId: Long) -> Unit = { id, _ -> onBrew(id) },
+    /** The empty "Your coffee" card's way to Gear › Beans. */
+    onAddCoffee: () -> Unit = {},
     vm: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
-    val actions = remember(onOpenRecipe, onBrew, onOpenLog, onSeeAllRecipes, onSeeHistory, onPersonalise, onBrewAgain) {
-        TodayActions(onOpenRecipe, onBrew, onOpenLog, onSeeAllRecipes, onSeeHistory, onPersonalise, onBrewAgain, vm::dismissPersonalise)
+    val actions = remember(onOpenRecipe, onBrew, onOpenLog, onSeeAllRecipes, onSeeHistory, onPersonalise, onBrewAgain, onAddCoffee) {
+        TodayActions(onOpenRecipe, onBrew, onOpenLog, onSeeAllRecipes, onSeeHistory, onPersonalise, onBrewAgain, vm::dismissPersonalise, onAddCoffee)
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val layout = TodayLayouts.of(maxWidth.value)
@@ -157,6 +158,7 @@ internal class TodayActions(
     val personalise: () -> Unit,
     val brewAgain: (String, Long) -> Unit,
     val dismissPersonalise: () -> Unit,
+    val addCoffee: () -> Unit = {},
 )
 
 private fun Modifier.appear(scope: androidx.compose.foundation.lazy.LazyItemScope): Modifier = with(scope) {
@@ -268,7 +270,7 @@ private fun LazyListScope.columnBody(state: HomeUiState, a: TodayActions, max: D
                 Column(Modifier.weight(1f)) { RecentBlock(state, a, rows = 4) }
                 Column(Modifier.weight(1f)) {
                     SectionLabel("YOUR COFFEE")
-                    CoffeeOnDeck(state)
+                    CoffeeOnDeck(state, onAddCoffee = a.addCoffee)
                 }
             }
         }
@@ -293,7 +295,7 @@ private fun LazyListScope.dashboardBody(state: HomeUiState, a: TodayActions, max
                         Row(Modifier.fillMaxWidth().padding(top = 16.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             Column(Modifier.weight(1f).fillMaxHeight()) {
                                 EyebrowLabel("YOUR COFFEE", Modifier.padding(bottom = 8.dp).asHeading())
-                                CoffeeOnDeck(state, Modifier.fillMaxHeight())
+                                CoffeeOnDeck(state, Modifier.fillMaxHeight(), onAddCoffee = a.addCoffee)
                             }
                             Column(Modifier.weight(1f).fillMaxHeight()) {
                                 EyebrowLabel("LAST GRIND", Modifier.padding(bottom = 8.dp).asHeading())
@@ -302,7 +304,7 @@ private fun LazyListScope.dashboardBody(state: HomeUiState, a: TodayActions, max
                         }
                     } else {
                         SectionLabel("YOUR COFFEE", topGap = 16.dp)
-                        CoffeeOnDeck(state)
+                        CoffeeOnDeck(state, onAddCoffee = a.addCoffee)
                     }
                 }
             }
@@ -713,12 +715,14 @@ private fun EmptyRecent(onSeeRecipes: () -> Unit) {
 
 /** The coffee setup starts with: its name, roaster and days off roast as a word with its colour. */
 @Composable
-private fun CoffeeOnDeck(state: HomeUiState, modifier: Modifier = Modifier) {
+private fun CoffeeOnDeck(state: HomeUiState, modifier: Modifier = Modifier, onAddCoffee: () -> Unit = {}) {
     val c = CoffeeTheme.colors
     val bean: BeanEntity? = state.beans.firstOrNull { it.id == state.settings.defaultBeanId } ?: state.beans.firstOrNull()
     SoftCard(modifier.fillMaxWidth()) {
         if (bean == null) {
             Text("No coffee saved yet. Add the one you're drinking under Gear.", style = MaterialTheme.typography.bodyMedium, color = c.inkMid)
+            // Every empty state has its way out (v4 §5).
+            QuietButton(text = "Add a coffee", onClick = onAddCoffee)
         } else {
             val days = bean.roastedOnEpochDay?.let { (state.today.toEpochDay() - it).coerceAtLeast(0L) }
             Text(bean.name.trim(), style = MaterialTheme.typography.titleMedium, color = c.inkHigh)
@@ -752,7 +756,7 @@ private fun LastGrind(state: HomeUiState, modifier: Modifier = Modifier) {
             Text(log.grindSetting.trim().ifEmpty { "No setting" }, style = MaterialTheme.typography.titleMedium, color = c.inkHigh)
             Text(log.grinderLabel.ifBlank { "Pre-ground" }, style = MaterialTheme.typography.bodySmall, color = c.inkMid)
             Spacer(Modifier.height(8.dp))
-            Text("For ${next.name}, ${clock(log.totalTimeSec)}", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
+            Text("For ${next.name}, ${formatDuration(log.totalTimeSec)}", style = MaterialTheme.typography.bodySmall, color = c.inkLow)
         }
     }
 }

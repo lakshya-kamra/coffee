@@ -165,7 +165,7 @@ private fun PhotoMessage(message: String?, onShown: () -> Unit, modifier: Modifi
  * moment the bed is in front of you.
  */
 @Composable
-fun ReviewPhotos(brewLogId: Long, modifier: Modifier = Modifier) {
+fun ReviewPhotos(brewLogId: Long, modifier: Modifier = Modifier, bed: Boolean = true) {
     val owner = remember(brewLogId) { PhotoOwner.Brew(brewLogId) }
     val vm = photosViewModel(owner)
     val ui by vm.state.collectAsStateWithLifecycle()
@@ -179,7 +179,8 @@ fun ReviewPhotos(brewLogId: Long, modifier: Modifier = Modifier) {
             // A short window has no room for the explainer (v4 §3.6 S): the strip says enough.
             if (!LocalWindowClass.current.isShort) {
                 Text(
-                    "A photo of the bed says more than any shape on this list.",
+                    // Only a brewer with a bed section has "a shape on this list" to compare with.
+                    if (bed) "A photo of the bed says more than any shape on this list." else "A photo of the cup or the grounds helps an analysis see what you saw.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = c.inkHigh,
                 )

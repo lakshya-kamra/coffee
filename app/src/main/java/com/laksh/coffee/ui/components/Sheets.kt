@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -260,9 +261,7 @@ private fun CoffeeDialog(
         val window = (LocalView.current.parent as? DialogWindowProvider)?.window
         SideEffect { window?.setDimAmount(0f) }
 
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val maxW = maxWidth
-            val maxH = maxHeight
+        Box(Modifier.fillMaxSize()) {
             Box(
                 Modifier
                     .matchParentSize()
@@ -272,72 +271,78 @@ private fun CoffeeDialog(
                         detectTapGestures { if (properties.shouldDismissOnClickOutside) close() }
                     },
             )
-
             val side = role == SheetRole.Editor
-            val shape: Shape = if (side) SideSheetShape else DialogShape
-            val panel = when (role) {
-                SheetRole.Editor -> Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .width(min(560.dp, maxW))
-                SheetRole.Picker -> Modifier
-                    .align(Alignment.Center)
-                    .width(min(480.dp, maxW - 32.dp))
-                    .heightIn(max = min(560.dp, maxH - 48.dp))
-                SheetRole.Confirm -> Modifier
-                    .align(Alignment.Center)
-                    .width(min(if (wc.usesPanes) 420.dp else 400.dp, maxW - 32.dp))
-                SheetRole.Content -> Modifier
-                    .align(Alignment.Center)
-                    .width(min(640.dp, maxW - 48.dp))
-                    .heightIn(max = maxH * if (wc.isShort) 0.92f else 0.8f)
-            }
-            val dx = with(LocalDensity.current) { 24.dp.toPx() }
-            Column(
-                modifier
-                    .then(panel)
-                    .graphicsLayer {
-                        val p = shown.value
-                        alpha = p
-                        if (side) {
-                            translationX = (1f - p) * dx
-                        } else {
-                            val s = 0.96f + 0.04f * p
-                            scaleX = s
-                            scaleY = s
-                        }
-                    }
-                    .clip(shape)
-                    .background(colors.surface1)
-                    // Taps on the panel's own padding must not fall through to the scrim.
-                    .pointerInput(Unit) {}
-                    .onPreviewKeyEvent { e ->
-                        if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                        when {
-                            e.key == Key.Escape -> {
-                                close()
-                                true
-                            }
-                            (e.isCtrlPressed || e.isMetaPressed) && e.key == Key.S -> {
-                                val save = currentEditor?.onSave
-                                if (save != null && currentEditor?.canSave == true) save()
-                                save != null
-                            }
-                            else -> false
-                        }
-                    }
-                    .then(if (side) Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical + WindowInsetsSides.End)) else Modifier)
-                    .semantics { editor?.title?.let { paneTitle = it } },
-            ) {
-                if (editor != null) EditorHeader(editor, onCancel = close)
+            // A centred panel sits in the space above the keyboard. Without this a picker that opens
+            // ready to type stays centred on the whole screen and the keyboard hides its list.
+            BoxWithConstraints(Modifier.fillMaxSize().then(if (side) Modifier else Modifier.imePadding())) {
+                val maxW = maxWidth
+                val maxH = maxHeight
+
+                val shape: Shape = if (side) SideSheetShape else DialogShape
+                val panel = when (role) {
+                    SheetRole.Editor -> Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .width(min(560.dp, maxW))
+                    SheetRole.Picker -> Modifier
+                        .align(Alignment.Center)
+                        .width(min(480.dp, maxW - 32.dp))
+                        .heightIn(max = min(560.dp, maxH - 48.dp))
+                    SheetRole.Confirm -> Modifier
+                        .align(Alignment.Center)
+                        .width(min(if (wc.usesPanes) 420.dp else 400.dp, maxW - 32.dp))
+                    SheetRole.Content -> Modifier
+                        .align(Alignment.Center)
+                        .width(min(640.dp, maxW - 48.dp))
+                        .heightIn(max = maxH * if (wc.isShort) 0.92f else 0.8f)
+                }
+                val dx = with(LocalDensity.current) { 24.dp.toPx() }
                 Column(
-                    Modifier
-                        .then(if (side) Modifier.weight(1f) else Modifier.weight(1f, fill = false))
-                        .fillMaxWidth()
-                        .padding(horizontal = DialogPadH)
-                        .padding(top = if (editor != null) 8.dp else 24.dp, bottom = 20.dp),
-                    content = content,
-                )
+                    modifier
+                        .then(panel)
+                        .graphicsLayer {
+                            val p = shown.value
+                            alpha = p
+                            if (side) {
+                                translationX = (1f - p) * dx
+                            } else {
+                                val s = 0.96f + 0.04f * p
+                                scaleX = s
+                                scaleY = s
+                            }
+                        }
+                        .clip(shape)
+                        .background(colors.surface1)
+                        // Taps on the panel's own padding must not fall through to the scrim.
+                        .pointerInput(Unit) {}
+                        .onPreviewKeyEvent { e ->
+                            if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                            when {
+                                e.key == Key.Escape -> {
+                                    close()
+                                    true
+                                }
+                                (e.isCtrlPressed || e.isMetaPressed) && e.key == Key.S -> {
+                                    val save = currentEditor?.onSave
+                                    if (save != null && currentEditor?.canSave == true) save()
+                                    save != null
+                                }
+                                else -> false
+                            }
+                        }
+                        .then(if (side) Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical + WindowInsetsSides.End)) else Modifier)
+                        .semantics { editor?.title?.let { paneTitle = it } },
+                ) {
+                    if (editor != null) EditorHeader(editor, onCancel = close)
+                    Column(
+                        Modifier
+                            .then(if (side) Modifier.weight(1f) else Modifier.weight(1f, fill = false))
+                            .fillMaxWidth()
+                            .padding(horizontal = DialogPadH)
+                            .padding(top = if (editor != null) 8.dp else 24.dp, bottom = 20.dp),
+                        content = content,
+                    )
+                }
             }
         }
     }

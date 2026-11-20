@@ -84,7 +84,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.clipWords
-import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.oneDp
 import com.laksh.coffee.core.ratio
 import com.laksh.coffee.core.screenDate
@@ -619,7 +619,8 @@ private fun LogEntryRow(
         ?: log.grindSetting.takeIf { it.isNotBlank() }?.let { clipWords(it, 14) }
     val meta = remember(log, delta, deltaColor, wide) {
         buildAnnotatedString {
-            val time = log.totalTimeSec.takeIf { it > 0 }?.let(::clock)
+            // "12 h 5 min" for a cold brew, never "725:00" (v4 §4.9).
+            val time = log.totalTimeSec.takeIf { it > 0 }?.let(::formatDuration)
             // Wide rows give grind its own column; here it leads the meta line.
             append(listOfNotNull(grind.takeIf { !wide }, time).joinToString(" · "))
             if (time != null && delta != null) {

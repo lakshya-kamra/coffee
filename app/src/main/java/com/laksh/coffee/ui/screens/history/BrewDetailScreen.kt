@@ -336,7 +336,7 @@ private fun BrewDetailContent(
                 )
                 recipe == null && log.totalTimeSec > 0 -> StatusLine(
                     status = Status.Neutral,
-                    lead = "Finished in ${clock(log.totalTimeSec)}",
+                    lead = "Finished in ${formatDuration(log.totalTimeSec)}",
                     detail = bedWords(log.bedShape),
                     onClick = scrollToAnalysis,
                 )
@@ -345,7 +345,7 @@ private fun BrewDetailContent(
                     lead = ts.second,
                     detail = listOfNotNull(
                         recipe?.takeIf { log.totalTimeSec > 0 }
-                            ?.let { "${clock(log.totalTimeSec)} against ${clock(it.totalSec)}" },
+                            ?.let { "${formatDuration(log.totalTimeSec)} against ${formatDuration(it.totalSec)}" },
                         bedWords(log.bedShape),
                     ).joinToString(" · ").ifBlank { null },
                     onClick = scrollToAnalysis,
@@ -667,13 +667,13 @@ private fun TheBrew(
                 progress = { 1f },
                 style = JourneyStyle.Historical,
                 startLabel = "0:00",
-                endLabel = clock(recipe.totalSec),
+                endLabel = formatDuration(recipe.totalSec),
                 actualEnd = actualEnd,
                 endStatus = if (timeTrusted) ts.first else null,
                 // The planned-versus-actual fact, under the cap it belongs to: "2:49 · −0:41".
                 actualLabel = if (timeTrusted) {
                     val delta = if (ts.first == Status.Good) "on time" else signedClock(log.totalTimeSec - recipe.totalSec)
-                    "${clock(log.totalTimeSec)} · $delta"
+                    "${formatDuration(log.totalTimeSec)} · $delta"
                 } else {
                     null
                 },
@@ -794,7 +794,7 @@ private fun passCells(
         label = labels.time,
         // Cold brew reads in hours, not "720:00".
         value = log.totalTimeSec.takeIf { it > 0 }?.let { if (labels.longTimes) formatDuration(it) else clock(it) },
-        sub = recipe?.let { "plan ${if (labels.longTimes) formatDuration(it.totalSec) else clock(it.totalSec)}" },
+        sub = recipe?.let { "plan ${formatDuration(it.totalSec)}" },
         status = ts.first,
     ).ignoredIf(Fields.TIME in distrusted)
 
@@ -835,7 +835,7 @@ private fun brewTimeline(
         if (!timeTrusted) return emptyList()
         return listOf(
             TimelineRow(
-                time = clock(log.totalTimeSec),
+                time = formatDuration(log.totalTimeSec),
                 kind = "ACTUAL",
                 title = "Finished",
                 actual = true,
@@ -872,10 +872,10 @@ private fun brewTimeline(
 
     if (timeTrusted) {
         out += TimelineRow(
-            time = clock(log.totalTimeSec),
+            time = formatDuration(log.totalTimeSec),
             kind = "ACTUAL",
             title = "Finished",
-            detail = "planned ${clock(recipe.totalSec)}",
+            detail = "planned ${formatDuration(recipe.totalSec)}",
             actual = true,
             delta = signedClock(log.totalTimeSec - recipe.totalSec),
             deltaStatus = finishStatus,

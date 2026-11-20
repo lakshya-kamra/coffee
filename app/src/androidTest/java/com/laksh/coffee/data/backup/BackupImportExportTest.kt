@@ -138,7 +138,8 @@ class BackupImportExportTest {
         val second = phone.restore(file)
         assertEquals(0, second.added.total)
         assertEquals(0, second.replaced.total)
-        assertEquals(8, second.kept.total)
+        // Every row in the file is already here, the photo included, so every one is kept.
+        assertEquals(read.preview.counts, second.kept)
         assertEquals(read.preview.counts, phone.counts())
         assertEquals("no second copy of the photo", 1, phone.photoFiles().size)
     }

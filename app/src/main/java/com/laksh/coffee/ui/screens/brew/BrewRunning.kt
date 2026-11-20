@@ -81,9 +81,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.domain.BrewStyle
 import com.laksh.coffee.domain.Glossary
 import com.laksh.coffee.domain.Recipe
+import com.laksh.coffee.domain.RecipeStep
 import com.laksh.coffee.domain.StepKind
 import com.laksh.coffee.domain.catalog.Catalog
 import com.laksh.coffee.ui.components.BrewRing
@@ -230,7 +232,7 @@ private fun PortraitRunning(m: RunningModel, heroScope: AnimatedVisibilityScope?
                         modifier = Modifier.fillMaxWidth(),
                         style = JourneyStyle.Live,
                         startLabel = "0:00",
-                        endLabel = clock(m.recipe.totalSec),
+                        endLabel = formatDuration(m.recipe.totalSec),
                     )
                     OverrunLeaf(elapsed = m.timer.elapsedMs, totalSec = m.recipe.totalSec, modifier = Modifier.align(Alignment.End))
                     Spacer(Modifier.height(8.dp))
@@ -297,7 +299,7 @@ private fun StageRunning(m: RunningModel) {
                         modifier = Modifier.fillMaxWidth(),
                         style = JourneyStyle.Live,
                         startLabel = "0:00",
-                        endLabel = clock(m.recipe.totalSec),
+                        endLabel = formatDuration(m.recipe.totalSec),
                     )
                 }
                 OverrunLeaf(elapsed = m.timer.elapsedMs, totalSec = m.recipe.totalSec)
@@ -360,7 +362,7 @@ private fun StepList(m: RunningModel, modifier: Modifier = Modifier) {
                 )
                 Column(Modifier.weight(1f)) {
                     Text(
-                        BrewWords.lead(s),
+                        stepLead(s, m.state.settings.hasScale),
                         style = MaterialTheme.typography.titleMedium,
                         color = when {
                             now -> colors.inkHigh
@@ -440,7 +442,8 @@ private fun ShortRunning(m: RunningModel) {
 @Composable
 private fun NextLine(m: RunningModel) {
     val next = m.recipe.steps.getOrNull(m.state.stepIndex + 1) ?: return
-    val target = next.targetWaterG?.let { " · Up to $it g" }.orEmpty()
+    // Without a scale the dial reads "about 0 ml / 1250", so this line speaks ml too (as the web).
+    val target = next.targetWaterG?.let { if (m.state.settings.hasScale) " · Up to $it g" else " · Up to about ${aboutMl(it)} ml" }.orEmpty()
     Text(
         if (m.state.waitingForTap) "TIME FOR THE NEXT STEP · TAP NEXT" else "NEXT · ${clock(next.startSec)}$target · ${next.title}",
         style = Micro,
@@ -526,7 +529,7 @@ private fun Dial(
                 TimerClock(m.timer.elapsedMs, clockStyle)
                 // Names the clock's frame, so "1:12" beside a fifth-full ring never looks wrong:
                 // the ring and the clock are both the whole brew.
-                Text("OF ${clock(m.recipe.totalSec)}", style = Micro, color = colors.inkLow)
+                Text("OF ${formatDuration(m.recipe.totalSec)}", style = Micro, color = colors.inkLow)
                 Spacer(Modifier.height(8.dp))
                 WaterReadout(
                     elapsed = m.timer.elapsedMs,
@@ -538,6 +541,20 @@ private fun Dial(
                 )
             }
         }
+    }
+}
+
+/** Grams poured, said as a jug reading: to the nearest 10 ml, like the web's aboutMl. */
+private fun aboutMl(g: Int): Int = maxOf(0, Math.round(g / 10f) * 10)
+
+/** [BrewWords.lead] on screen: "Pour to about 300 ml" without a scale, where "300 g" means nothing. */
+private fun stepLead(step: RecipeStep, hasScale: Boolean): String {
+    val t = step.targetWaterG
+    if (hasScale || t == null) return BrewWords.lead(step)
+    return when (step.kind) {
+        StepKind.Bloom -> "Bloom to about ${aboutMl(t)} ml"
+        StepKind.Pour -> "Pour to about ${aboutMl(t)} ml"
+        else -> BrewWords.lead(step)
     }
 }
 
@@ -789,7 +806,7 @@ private fun BrewStatus(state: BrewUiState, anchor: TimerAnchor, elapsed: LongSta
             state.waitingForTap -> StatusLine(status = Status.Attention, lead = "Time for the next step", detail = "tap Next")
             step == null -> StatusLine(status = Status.Live, lead = "Brewing", live = true)
             else -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                StatusLine(status = Status.Live, lead = BrewWords.lead(step), modifier = Modifier.weight(1f, fill = false), live = true)
+                StatusLine(status = Status.Live, lead = stepLead(step, state.settings.hasScale), modifier = Modifier.weight(1f, fill = false), live = true)
                 StepCountdown(elapsed = elapsed, endSec = step.endSec)
             }
         }

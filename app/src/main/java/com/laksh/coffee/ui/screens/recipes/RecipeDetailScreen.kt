@@ -395,8 +395,13 @@ private fun BrewedLine(state: RecipeDetailState) {
 }
 
 private fun bestGrind(b: BrewLogEntity): String =
-    b.grindClicks?.takeIf { it > 0 }?.let { n -> " · at ${counted(n, "click")}" }
-        ?: b.grindSetting.trim().takeIf { it.isNotEmpty() }?.let { " · at $it" }.orEmpty()
+    // Pre-ground has no setting to repeat, and "at As bought" reads as a slip.
+    if (b.grindKind == "preground") {
+        ""
+    } else {
+        b.grindClicks?.takeIf { it > 0 }?.let { n -> " · at ${counted(n, "click")}" }
+            ?: b.grindSetting.trim().takeIf { it.isNotEmpty() }?.let { " · at $it" }.orEmpty()
+    }
 
 /** Temperature, time, the ratio in words, and the grind with something everyone has seen. */
 @Composable

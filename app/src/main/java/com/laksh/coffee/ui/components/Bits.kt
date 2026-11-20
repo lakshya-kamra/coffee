@@ -93,6 +93,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -854,7 +856,8 @@ fun DotRating(
     val colors = CoffeeTheme.colors
     val off = colors.surface3
     val lit = colors.inkHigh
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    // A radio group like the web's: TalkBack reads "7 of 10, selected", not ten unnamed buttons.
+    Row(modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         (1..max).forEach { i ->
             val on = i <= value
             val target = if (on) 1f else DotOff
@@ -869,9 +872,12 @@ fun DotRating(
             Box(
                 Modifier
                     .size(26.dp)
-                    .clickable(
+                    .semantics { contentDescription = "$i of $max" }
+                    .selectable(
+                        selected = i == value,
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
+                        role = Role.RadioButton,
                     ) {
                         haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onChange(if (value == i) 0 else i)

@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.grams
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.ui.nav.SharedKeys
@@ -147,7 +147,7 @@ fun RecipeCard(
             if (compact) {
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    text = "${clock(recipe.totalSec)} · ${units.tempWithUnit(recipe.tempC)}",
+                    text = "${formatDuration(recipe.totalSec)} · ${units.tempWithUnit(recipe.tempC)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.inkMid,
                     maxLines = 1,
@@ -158,7 +158,7 @@ fun RecipeCard(
                 Spacer(Modifier.height(4.dp))
                 DataGrid(
                     cells = listOf(
-                        Cell("TIME", clock(recipe.totalSec)),
+                        Cell("TIME", formatDuration(recipe.totalSec)),
                         Cell("TEMP", units.temp(recipe.tempC), units.tempUnit),
                     ),
                     columns = 2,

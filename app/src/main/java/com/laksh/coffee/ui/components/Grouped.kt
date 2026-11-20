@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.clipWords
-import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.timeLabel
 import com.laksh.coffee.data.db.entity.BrewLogEntity
 import com.laksh.coffee.domain.BedShape
@@ -183,7 +183,7 @@ fun LogRow(
                 }
                 if (log.totalTimeSec > 0) {
                     sep()
-                    append(clock(log.totalTimeSec))
+                    append(formatDuration(log.totalTimeSec))
                     if (delta != null && deltaInk != null) {
                         append(" ")
                         withStyle(SpanStyle(color = deltaInk)) { append(delta.second) }

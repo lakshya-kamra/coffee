@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.domain.Recipe
 import com.laksh.coffee.ui.theme.CoffeeColors
 import com.laksh.coffee.ui.theme.CoffeeTheme
@@ -214,7 +215,7 @@ fun Recipe.plannedTimelineRows(): List<TimelineRow> =
             trailing = s.targetWaterG?.let { "$it g" },
         )
     } + TimelineRow(
-        time = clock(totalSec),
+        time = formatDuration(totalSec),
         kind = null,
         title = "Done",
         terminal = true,

@@ -79,6 +79,7 @@ import com.laksh.coffee.ui.components.EyebrowLabel
 import com.laksh.coffee.ui.components.GrindRangeLine
 import com.laksh.coffee.ui.components.HairLine
 import com.laksh.coffee.ui.components.IconWell
+import com.laksh.coffee.ui.components.LocalAnimationsActive
 import com.laksh.coffee.ui.components.LocalToday
 import com.laksh.coffee.ui.components.PillButton
 import com.laksh.coffee.ui.components.PinnedScrim
@@ -274,7 +275,11 @@ fun GearScreen(
         }
     }
 
-    if (!wide) {
+    // A sheet is its own window, drawn over whatever is on screen, so it shows only while Gear is
+    // the tab in view. Without this, rotating a tablet to portrait with a grinder open inline
+    // popped "Edit grinder" over a running brew (or over Today). The draft waits in the VM.
+    val inView = LocalAnimationsActive.current
+    if (!wide && inView) {
         // Phones and medium windows edit in a sheet; its draft is the same one the pane uses.
         val key = pane.item
         savedBean(key)?.takeIf { tab == BEANS }?.let { saved ->

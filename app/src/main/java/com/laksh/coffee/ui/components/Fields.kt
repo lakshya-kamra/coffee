@@ -137,13 +137,6 @@ fun FieldWell(
                 Modifier.weight(1f),
                 contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart,
             ) {
-                if (value.isEmpty() && placeholder != null) {
-                    Text(
-                        text = placeholder,
-                        style = placeholderStyle,
-                        maxLines = if (singleLine) 1 else Int.MAX_VALUE,
-                    )
-                }
                 BasicTextField(
                     value = value,
                     onValueChange = onChange,
@@ -163,6 +156,23 @@ fun FieldWell(
                     minLines = if (singleLine) 1 else minLines.coerceAtLeast(1),
                     visualTransformation = transformation,
                     cursorBrush = cursor,
+                    // The placeholder lives inside the field so it merges into the field's own
+                    // node: TalkBack says "Search coffee, recipe, notes, edit box", not just "edit box".
+                    decorationBox = { inner ->
+                        Box(
+                            Modifier.fillMaxWidth(),
+                            contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart,
+                        ) {
+                            if (value.isEmpty() && placeholder != null) {
+                                Text(
+                                    text = placeholder,
+                                    style = placeholderStyle,
+                                    maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                                )
+                            }
+                            inner()
+                        }
+                    },
                 )
             }
             if (suffix != null) {

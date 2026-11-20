@@ -258,7 +258,7 @@ private fun SetupHeader(recipe: Recipe, onExit: () -> Unit) {
     val colors = CoffeeTheme.colors
     // A Box, not a weighted Row: the eyebrow centres on the screen, not in whatever room the
     // close well and the wider brewer chip leave between them.
-    Box(
+    BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp),
@@ -274,6 +274,8 @@ private fun SetupHeader(recipe: Recipe, onExit: () -> Unit) {
         Row(
             Modifier
                 .align(Alignment.CenterEnd)
+                // Stops short of the centred eyebrow: "AUTOMATIC DRIP MACHINE" used to cover "UP".
+                .widthIn(max = maxWidth / 2 - 40.dp)
                 .heightIn(min = 28.dp)
                 .clip(PillShape)
                 .background(colors.surface2)
@@ -282,7 +284,7 @@ private fun SetupHeader(recipe: Recipe, onExit: () -> Unit) {
         ) {
             BrewerIcon(recipe.brewer, size = 14.dp, tint = colors.inkMid)
             Spacer(Modifier.width(6.dp))
-            Text(recipe.brewer.label.labelCase(), style = Micro, color = colors.inkMid, maxLines = 1)
+            Text(recipe.brewer.label.labelCase(), style = Micro, color = colors.inkMid, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -623,7 +625,8 @@ private fun GrindCard(state: BrewUiState, recipe: Recipe, vm: BrewViewModel, tic
         }
 
         Spacer(Modifier.height(8.dp))
-        val reference = Glossary.grindReference(recipe.grind)
+        // A recipe that already says what it looks like ("like rough sand") needs no second picture.
+        val reference = Glossary.grindReference(recipe.grind)?.takeUnless { "like " in recipe.grind.lowercase() }
         Text(
             "Recipe says: ${recipe.grind}" + (reference?.let { " · $it" } ?: ""),
             style = type.bodySmall,

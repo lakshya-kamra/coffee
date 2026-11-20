@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laksh.coffee.core.clock
+import com.laksh.coffee.core.formatDuration
 import com.laksh.coffee.core.ratio
 import com.laksh.coffee.domain.Brewers
 import com.laksh.coffee.domain.Recipe
@@ -203,7 +204,7 @@ fun RecipeEditorScreen(
                 ) {
                     item(key = "preview", contentType = "preview") { Preview(draft) }
                     item(key = "steps-label", contentType = "label") {
-                        SectionLabel("STEPS", trailing = clock(draft.totalSec), topGap = 12.dp)
+                        SectionLabel("STEPS", trailing = formatDuration(draft.totalSec), topGap = 12.dp)
                     }
                     itemsIndexed(draft.steps, key = { _, s -> s.key }, contentType = { _, _ -> "step" }) { i, step ->
                         StepCard(
@@ -265,7 +266,7 @@ fun RecipeEditorScreen(
                 item(key = "level", contentType = "level") { LevelAndNeeds(draft.level, draft.needs, edit) }
 
                 item(key = "steps-label", contentType = "label") {
-                    SectionLabel("STEPS", trailing = clock(draft.totalSec), topGap = 12.dp)
+                    SectionLabel("STEPS", trailing = formatDuration(draft.totalSec), topGap = 12.dp)
                 }
                 itemsIndexed(draft.steps, key = { _, s -> s.key }, contentType = { _, _ -> "step" }) { i, step ->
                     StepCard(
@@ -455,7 +456,7 @@ private fun Preview(draft: RecipeDraft) {
             modifier = Modifier.fillMaxWidth(),
             style = JourneyStyle.Historical,
             startLabel = "0:00",
-            endLabel = clock(recipe.totalSec),
+            endLabel = formatDuration(recipe.totalSec),
         )
     }
 }
