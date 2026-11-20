@@ -33,10 +33,13 @@
   pointer-events: none;
   opacity: 0;
 }
-/* The incoming layer sits over the leaving one, so taps reach only it during the fade. This is
-   the only rule on data-state, and it is on the layer itself: a change of data-state alone
-   (active → leaving) must not restyle the layer's contents (see setLayerState). */
+/* The incoming layer sits over the leaving one. The slide starts half a window away, so the
+   strip it has not reached yet still shows the leaving tab: that tab takes no taps from the
+   moment it starts to leave. Both rules are on the layer itself, and pointer-events is one of
+   the properties the browser passes down without a full restyle, so active → leaving still
+   restyles one tab, not two (see setLayerState). */
 .layer[data-state="active"] { z-index: 1; }
+.layer[data-state="leaving"] { pointer-events: none; }
 /* Infinite animations inside a hidden tab stop costing frames. Only the looping elements carry
    data-loop: a `*` here made every show/hide restyle the whole tab (≈20 ms on Recipes at 4×). */
 .layer[data-hidden] [data-loop] { animation-play-state: paused !important; }

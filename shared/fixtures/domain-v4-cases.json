@@ -32,6 +32,21 @@
       "recipe": {"prep": ["Rinse the paper, add the coffee, level it, zero the scale.", "Water at 93 °C."], "prepNoScale": [], "doseG": 15, "waterG": 250, "method": "pourover"},
       "fahrenheit": true, "form": "",
       "out": ["Measure 250 ml (1 mug) of water in a jug first.", "Measure 3 level tablespoons of coffee.", "Water at 199 °F."]
+    },
+    {
+      "recipe": {"prep": ["Rinse the paper.", "Water at 93 °C."], "prepNoScale": [], "doseG": 20, "waterG": 300, "method": "pourover"},
+      "fahrenheit": false, "form": "",
+      "out": ["Measure 300 ml (1 mug) of water in a jug first.", "Measure 4 level tablespoons of coffee.", "Rinse the paper.", "Water at 93 °C."]
+    },
+    {
+      "recipe": {"prep": ["Preheat the brewer.", "Put 170 g of ice in the carafe.", "One cup instead: 19 g coffee, 165 g hot water, 85 g ice."], "prepNoScale": ["Put 6 to 8 ice cubes in the carafe.", "Add {coffee} to the brewer.", "Measure {water} of hot water in a jug."], "doseG": 37.5, "waterG": 330, "method": "pourover"},
+      "fahrenheit": false, "form": "",
+      "out": ["Preheat the brewer.", "Put 6 to 8 ice cubes in the carafe.", "Add 7½ level tablespoons of coffee to the brewer.", "Measure 330 ml (1½ mugs) of hot water in a jug."]
+    },
+    {
+      "recipe": {"prep": ["Lock in the portafilter.", "Pull at 9 bar."], "prepNoScale": [], "doseG": 18, "waterG": 36, "method": "espresso"},
+      "fahrenheit": false, "form": "",
+      "out": ["Fill the basket level, then tamp.", "Lock in the portafilter.", "Pull at 9 bar."]
     }
   ],
   "servingsPreset": [
@@ -227,14 +242,32 @@
     {"in": "Pour about 30 g of hot water over the coffee and wait a minute.", "out": "Pour about 30 ml of hot water over the coffee and wait a minute."},
     {"in": "160 g at 70 °C", "out": "160 ml at 70 °C"},
     {"in": "Stop at 16.7 g in the cup, 25 to 30 seconds in.", "out": "Stop at 17 ml in the cup, 25 to 30 seconds in."},
-    {"in": "Bloom for 45 seconds.", "out": "Bloom for 45 seconds."}
+    {"in": "Bloom for 45 seconds.", "out": "Bloom for 45 seconds."},
+    {"in": "Up to 352 g", "out": "Up to 352 ml"},
+    {"in": "Top up with 90 °C water until there is 150 g in the cup.", "out": "Top up with 90 °C water until there is 150 ml in the cup."}
   ],
   "stepLeadNoScale": [
-    {"in": {"kind": "Bloom", "title": "Bloom", "targetWaterG": 60}, "out": "Bloom to about 60 ml"},
-    {"in": {"kind": "Pour", "title": "Pour to 300 g", "targetWaterG": 304}, "out": "Pour to about 300 ml"},
+    {"in": {"kind": "Bloom", "title": "Bloom", "targetWaterG": 60}, "out": "Bloom to 60 ml"},
+    {"in": {"kind": "Bloom", "title": "Gentle bloom to 55 g", "targetWaterG": 55}, "out": "Bloom to 55 ml"},
+    {"in": {"kind": "Pour", "title": "Pour to 300 g", "targetWaterG": 304}, "out": "Pour to 304 ml"},
+    {"in": {"kind": "Pour", "title": "Up to 352 g", "targetWaterG": 352}, "out": "Pour to 352 ml"},
     {"in": {"kind": "Pour", "title": "Pour all 500 g", "targetWaterG": null}, "out": "Pour all 500 ml"},
     {"in": {"kind": "Drawdown", "title": "Let it drain", "targetWaterG": null}, "out": "Drawdown"},
     {"in": {"kind": "Steep", "title": "Steep", "targetWaterG": null}, "out": "Steep"}
+  ],
+  "shotBand": [
+    {"name": "a band in a tip", "recipe": {"steps": [{"kind": "Pour", "title": "Pull to 36 g", "detail": "Stop at 36 g.", "startSec": 0, "endSec": 30, "targetWaterG": 36}, {"kind": "Serve", "title": "Serve", "detail": "", "startSec": 30, "endSec": 40, "targetWaterG": null}], "tips": ["Aim for 25 to 30 seconds."], "blurb": ""}, "out": {"from": 25, "to": 30, "stated": true, "label": "25–30 s"}},
+    {"name": "a band in a step title", "recipe": {"steps": [{"kind": "Pour", "title": "Pull, 27-32 s", "detail": "Stop at 36 g.", "startSec": 0, "endSec": 32, "targetWaterG": 36}], "tips": [], "blurb": ""}, "out": {"from": 27, "to": 32, "stated": true, "label": "27–32 s"}},
+    {"name": "a step detail before a tip", "recipe": {"steps": [{"kind": "Pour", "title": "Pull", "detail": "Stop at 36 g, 25 to 30 seconds in.", "startSec": 0, "endSec": 30, "targetWaterG": 36}], "tips": ["Most shots land at 28 to 34 seconds."], "blurb": ""}, "out": {"from": 25, "to": 30, "stated": true, "label": "25–30 s"}},
+    {"name": "a band in the blurb", "recipe": {"steps": [{"kind": "Pour", "title": "Pull", "detail": "Stop at 36 g.", "startSec": 0, "endSec": 30, "targetWaterG": 36}], "tips": [], "blurb": "18 g in, 36 g out, in 25 to 30 seconds."}, "out": {"from": 25, "to": 30, "stated": true, "label": "25–30 s"}},
+    {"name": "a range under 15 s is first drops, not the shot", "recipe": {"steps": [{"kind": "Steep", "title": "Bloom the puck", "detail": "First drops at 6 to 10 s.", "startSec": 0, "endSec": 8, "targetWaterG": 2}, {"kind": "Pour", "title": "Pull", "detail": "Stop at 40 g.", "startSec": 8, "endSec": 34, "targetWaterG": 40}], "tips": [], "blurb": ""}, "out": {"from": 34, "to": 34, "stated": false, "label": "about 34 s"}},
+    {"name": "the second range in a text", "recipe": {"steps": [{"kind": "Pour", "title": "Pull", "detail": "Ratio 1:2 to 1:3. About 4 to 6 s of low pressure, then 26 to 31 seconds in all.", "startSec": 5, "endSec": 31, "targetWaterG": 40}], "tips": [], "blurb": ""}, "out": {"from": 26, "to": 31, "stated": true, "label": "26–31 s"}},
+    {"name": "a range over 120 s is not a shot", "recipe": {"steps": [{"kind": "Pour", "title": "Pull", "detail": "", "startSec": 0, "endSec": 30, "targetWaterG": 36}], "tips": ["Rest the beans for 120 to 180 seconds after grinding? No: grind and pull."], "blurb": ""}, "out": {"from": 30, "to": 30, "stated": false, "label": "about 30 s"}},
+    {"name": "a pre-infusion step by its title is skipped", "recipe": {"steps": [{"kind": "Steep", "title": "Pre-infusion", "detail": "First drops around 18 to 22 seconds.", "startSec": 0, "endSec": 12, "targetWaterG": 2}, {"kind": "Pour", "title": "Ramp and pull", "detail": "Chase 45 g.", "startSec": 12, "endSec": 35, "targetWaterG": 45}, {"kind": "Serve", "title": "Stop and taste", "detail": "", "startSec": 35, "endSec": 45, "targetWaterG": null}], "tips": [], "blurb": ""}, "out": {"from": 35, "to": 35, "stated": false, "label": "about 35 s"}},
+    {"name": "a first step whose detail says pre-infusion is skipped", "recipe": {"steps": [{"kind": "Steep", "title": "Low pressure", "detail": "Pre-infuse until 16 to 20 seconds.", "startSec": 0, "endSec": 12, "targetWaterG": 2}, {"kind": "Pour", "title": "Pull", "detail": "", "startSec": 12, "endSec": 30, "targetWaterG": 36}], "tips": [], "blurb": ""}, "out": {"from": 30, "to": 30, "stated": false, "label": "about 30 s"}},
+    {"name": "no water targets: the end of the last step that is not Serve", "recipe": {"steps": [{"kind": "Pour", "title": "Pull", "detail": "", "startSec": 0, "endSec": 28, "targetWaterG": null}, {"kind": "Serve", "title": "Serve", "detail": "", "startSec": 28, "endSec": 40, "targetWaterG": null}], "tips": [], "blurb": ""}, "out": {"from": 28, "to": 28, "stated": false, "label": "about 28 s"}},
+    {"name": "only Serve steps: the end of the last one", "recipe": {"steps": [{"kind": "Serve", "title": "Serve", "detail": "", "startSec": 0, "endSec": 40, "targetWaterG": null}], "tips": [], "blurb": ""}, "out": {"from": 40, "to": 40, "stated": false, "label": "about 40 s"}},
+    {"name": "no steps: the shot-mode default", "recipe": {"steps": [], "tips": [], "blurb": ""}, "out": {"from": 25, "to": 30, "stated": true, "label": "25–30 s"}}
   ],
   "grindMissing": [
     {"name": "pre-ground with no setting is not missing", "log": {"grindKind": "preground", "grindSetting": "", "grindClicks": null, "grindValue": null}, "missing": false},

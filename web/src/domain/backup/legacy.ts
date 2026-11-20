@@ -41,6 +41,11 @@ function grinderLabel(brand: string, model: string): string {
   return [brand, model].filter((s) => s.trim() !== "").join(" ");
 }
 
+function legacyRecipeId(name: string, author: string, builtIns: readonly RecipeRef[]): string {
+  const id = LegacyIds.RECIPE[`${name.trim()}|${author.trim()}`];
+  return id != null && builtIns.some((r) => r.id === id) ? id : "";
+}
+
 export async function readLegacy(v: unknown, builtIns: readonly RecipeRef[]): Promise<DecodeOutcome> {
   const o = isObj(v) ? v : {};
   const problems: string[] = [];
@@ -167,7 +172,8 @@ export async function readLegacy(v: unknown, builtIns: readonly RecipeRef[]): Pr
       uid: await legacyUid(exportedAtRaw, "brew", id),
       startedAt,
       updatedAt: null,
-      recipeId: builtIns.find((r) => r.name === recipeName && r.author === recipeAuthor)?.id ?? "",
+      // The current name first, then the 1.x name of a built-in renamed or re-attributed since.
+      recipeId: builtIns.find((r) => r.name === recipeName && r.author === recipeAuthor)?.id ?? legacyRecipeId(recipeName, recipeAuthor, builtIns),
       recipeName,
       recipeAuthor,
       brewerId: LegacyIds.BREWER[brewerLabel.trim()] ?? null,

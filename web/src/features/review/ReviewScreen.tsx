@@ -553,12 +553,14 @@ function NumbersHeader({
               </div>
               {espresso && (
                 <div className={v.grow}>
+                  {/* The unit the YIELD cell and shot mode use: ml without a scale (A1). */}
                   <FieldWell
                     label="YIELD"
                     value={text.beverage}
-                    suffix="g"
+                    suffix={water.unit}
                     numeric
                     helper="In the cup"
+                    error={text.beverage.trim() && parseDecimal(text.beverage) == null ? (hasScale ? "Type the grams, like 36" : "Type the ml, like 36") : null}
                     onChange={(s) => {
                       setText((t) => ({ ...t, beverage: s }));
                       const bev = parseDecimal(s);

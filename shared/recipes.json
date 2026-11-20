@@ -366,14 +366,14 @@
     {
       "id": "hedrick-aeropress",
       "name": "High-Extraction AeroPress",
-      "author": "Lance Hedrick",
+      "author": "House recipe",
       "brewer": "aeropress",
       "doseG": 18.0,
       "waterG": 250.0,
       "grind": "Fine. Near espresso, definitely finer than V60",
       "tempC": 95,
       "blurb": "Grind fine, agitate hard early, press slowly. Built around pushing extraction up without the bitterness people expect.",
-      "sourceNote": "Not Hedrick's recipe. Our own high-extraction AeroPress (fine grind, a hard stir in the bloom, a slow press, no bypass), first credited to him in 1.x. Only the slow press matches what he publishes: his own recipe is 15 g / 250 g at 92 °C with a gentle swirl, not a stir. For that, use \"A Very Good AeroPress\".",
+      "sourceNote": "Not Hedrick's recipe as a whole, though 1.x credited it to him. The timeline (bloom to 0:45, fill to 250 g, swirl, a gentle press at 2:00) follows his published recipe; the 18 g dose, 95 °C, the fine grind and the hard stir in the bloom are ours. His own recipe is 15 g / 250 g at 92 °C with a swirl, not a stir: for that, use \"A Very Good AeroPress\".",
       "fidelity": "adapted",
       "sources": [
         {
@@ -521,7 +521,7 @@
     {
       "id": "hedrick-espresso",
       "name": "Light Roast Espresso",
-      "author": "Lance Hedrick",
+      "author": "House recipe",
       "brewer": "espresso-machine",
       "doseG": 18.0,
       "waterG": 45.0,
@@ -653,7 +653,7 @@
     {
       "id": "gagne-v60",
       "name": "Low-Agitation Pulse Pour",
-      "author": "Jonathan Gagné",
+      "author": "House recipe",
       "brewer": "hario-v60-02",
       "doseG": 22.0,
       "waterG": 360.0,
@@ -1228,6 +1228,12 @@
         "Preheat the brewer.",
         "Put 170 g of ice, straight from the freezer, in the carafe.",
         "One cup instead: 19 g coffee, 165 g hot water, 85 g ice."
+      ],
+      "prepNoScale": [
+        "Put 6 to 8 ice cubes, straight from the freezer, in the carafe: about half as much ice as hot water.",
+        "Add {coffee} to the brewer.",
+        "Measure {water} of hot water in a jug.",
+        "One cup instead: halve the coffee, the hot water and the ice."
       ],
       "tips": [
         "Depending on the brewer, add coffee then water, or water then coffee. Both work.",
@@ -2852,6 +2858,11 @@
         "Grind slowly, blow out the chaff and sift out fines below 200 microns.",
         "He used 125 ppm water."
       ],
+      "prepNoScale": [
+        "Pour 70 ml of 50 °C water into the carafe first. That is your bypass.",
+        "Measure {coffee}.",
+        "Measure 100 ml of hot water in a jug for the brew."
+      ],
       "tips": [
         "The sifting is a competition step. Skip it if you have no sieve; the cup will be a little heavier."
       ],
@@ -3001,7 +3012,7 @@
         {
           "kind": "Serve",
           "title": "Dilute",
-          "detail": "Add kettle water until the cup weighs 130-135 g, then 20-30 g of room-temperature 0 ppm water. About 80 g of water, 180 g in all.",
+          "detail": "Add kettle water until there is 130-135 g in the cup, then 20-30 g of room-temperature 0 ppm water. About 80 g of water, 180 g in all.",
           "startSec": 130,
           "endSec": 150,
           "targetWaterG": 180
@@ -3110,7 +3121,7 @@
         {
           "kind": "Serve",
           "title": "Bypass",
-          "detail": "Add room-temperature water until the cup weighs 115 g, then hot water to about 155 g. About 80 g of water, 180 g in all. Taste.",
+          "detail": "Add room-temperature water until there is 115 g in the cup, then hot water to about 155 g. About 80 g of water, 180 g in all. Taste.",
           "startSec": 125,
           "endSec": 150,
           "targetWaterG": 180
@@ -3204,7 +3215,7 @@
         {
           "kind": "Serve",
           "title": "Bypass to 150 g",
-          "detail": "Top up with 90 °C water until the cup weighs 150 g. About 90 g of water, 185 g in all.",
+          "detail": "Top up with 90 °C water until there is 150 g in the cup. About 90 g of water, 185 g in all.",
           "startSec": 130,
           "endSec": 150,
           "targetWaterG": 185
@@ -3564,6 +3575,10 @@
         "Paper filter in the cap. Standard orientation, brewer on the mug.",
         "Add the coffee and level the bed. Zero the scale.",
         "Light roast: 15 g. Medium: 16 g. Dark: 17 g."
+      ],
+      "prepNoScale": [
+        "Add {coffee} and level the bed; a little more for a medium or dark roast.",
+        "Measure {water} of water in a jug."
       ],
       "tips": [
         "Hedrick never brews above 95 °C: about 90-92 °C for light roasts, 88 °C for medium, 82-84 °C for dark.",

@@ -22,12 +22,14 @@ describe("A4 announcement strings", () => {
     expect(stepAnnouncement(steps, 9)).toBe("");
   });
 
-  it("without a scale: jug readings in ml, the detail's grams as ml (A1)", () => {
-    expect(stepLead(steps[1]!, false)).toBe("Pour to about 300 ml");
-    expect(stepLead(steps[0]!, false)).toBe("Bloom to about 60 ml");
+  it("without a scale: the targets in ml, unrounded, the detail's grams as ml (A1)", () => {
+    expect(stepLead(steps[1]!, false)).toBe("Pour to 300 ml");
+    expect(stepLead(steps[0]!, false)).toBe("Bloom to 60 ml");
+    // The same number the step card's title says through noScaleText, never "about 350 ml".
+    expect(stepLead({ kind: "Pour", title: "Up to 352 g", targetWaterG: 352 }, false)).toBe("Pour to 352 ml");
     expect(stepLead({ kind: "Pour", title: "Pour all 500 g", targetWaterG: null }, false)).toBe("Pour all 500 ml");
     const press: RecipeStep[] = [{ kind: "Pour", title: "Pour", detail: "Pour all 500 g straight onto the grounds in one go.", startSec: 0, endSec: 10, targetWaterG: 500 }];
-    expect(stepAnnouncement(press, 0, false)).toBe("Step 1 of 1, Pour to about 500 ml. Pour all 500 ml straight onto the grounds in one go.");
+    expect(stepAnnouncement(press, 0, false)).toBe("Step 1 of 1, Pour to 500 ml. Pour all 500 ml straight onto the grounds in one go.");
     expect(stepAnnouncement(press, 0)).toBe("Step 1 of 1, Pour to 500 g. Pour all 500 g straight onto the grounds in one go.");
   });
 

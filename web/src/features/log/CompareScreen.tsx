@@ -14,6 +14,7 @@ import { useBrew, useStore } from "@/data/store";
 import { DetailTopBar, EyebrowLabel, IconWell, PillButton, QuietPanel } from "@/design/components";
 import { methodLabels } from "@/domain/core/brewer";
 import { totalSec } from "@/domain/core/recipe";
+import { targetSec } from "@/domain/core/shotTarget";
 import { scoreStatus, statusColorVar } from "@/domain/core/status";
 import { unitsOf } from "@/domain/core/units";
 import { compareRows } from "./compare";
@@ -57,7 +58,8 @@ function Compare({ a, b, bar }: { a: BrewRow; b: BrewRow; bar: React.ReactNode }
   const rows = useMemo(() => {
     const plan = (x: BrewRow) => {
       const r = recipes.find((r) => r.id === x.recipeId);
-      return r ? totalSec(r) : null;
+      // A shot's plan is the middle of its band, as on Android's Compare (A4).
+      return r ? targetSec(r, totalSec(r)) : null;
     };
     const grinder = a.grinderId != null ? grinders.find((g) => g.id === a.grinderId) : undefined;
     const brewer = Brewers.byId(a.brewerId) ?? Brewers.resolveOrNull(a.brewer);

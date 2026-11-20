@@ -7,8 +7,9 @@ import { useMemo, useState, type KeyboardEvent } from "react";
 import type { BrewRow } from "@/data/schema";
 import { beanShortName, useRovingList } from "@/design/components";
 import { grams, oneDp, screenTime } from "@/domain/core/format";
-import { cupLabel, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
-import { nextSort, sortTable, TABLE_COLUMNS, timeDelta, type SortDir, type TableKey } from "./logState";
+import { cupLabel, scoreStatus, signedClock, statusColorVar } from "@/domain/core/status";
+import { judgeTime, type TimeTarget } from "@/domain/core/shotTarget";
+import { nextSort, sortTable, TABLE_COLUMNS, type SortDir, type TableKey } from "./logState";
 import l from "./log.module.css";
 
 
@@ -26,7 +27,7 @@ export function LogTable({
 }: {
   rows: readonly BrewRow[];
   selectedUid: string | null;
-  planOf: (b: BrewRow) => number | null;
+  planOf: (b: BrewRow) => TimeTarget | null;
   onSelect: (b: BrewRow) => void;
   onKeyRow: (b: BrewRow, e: KeyboardEvent<HTMLElement>, roam: (e: KeyboardEvent<HTMLElement>) => void) => void;
   onMenu: (b: BrewRow, el?: HTMLElement, at?: { x: number; y: number }) => void;
@@ -75,9 +76,8 @@ export function LogTable({
         </thead>
         <tbody>
           {sorted.map((b, i) => {
-            const plan = planOf(b);
-            const d = timeDelta(b, plan);
-            const st = d != null && plan != null ? timeStatus(b.totalTimeSec, plan)[0] : null;
+            // A shot against its band, everything else against the recipe's time (A4).
+            const judged = judgeTime(b.totalTimeSec, planOf(b));
             const rated = b.overall > 0;
             const props = roving.itemProps(i);
             return (
@@ -117,10 +117,10 @@ export function LogTable({
                 <td data-num="">{b.doseG > 0 ? `${grams(b.doseG)} g` : "—"}</td>
                 <td data-num="">{b.doseG > 0 ? `1:${oneDp(b.waterG / b.doseG)}` : "—"}</td>
                 <td data-num="">
-                  {d == null ? (
+                  {judged == null ? (
                     "—"
                   ) : (
-                    <span style={{ color: st ? statusColorVar(st) : undefined }}>{st === "good" ? "on time" : signedClock(d)}</span>
+                    <span style={{ color: statusColorVar(judged.status) }}>{judged.status === "good" ? judged.hit : signedClock(judged.delta)}</span>
                   )}
                 </td>
                 <td data-num="">

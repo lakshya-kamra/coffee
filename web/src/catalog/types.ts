@@ -62,6 +62,8 @@ export interface CatalogRoaster {
   readonly mainstream: boolean;
   /** v4: `area` values where the brand is sold; [] for specialty roasters. */
   readonly regions: readonly string[];
+  /** v4.1: the roaster's own homepage (a brand page on the owner's site for a few big brands); "" = none, and never anything but https. */
+  readonly website: string;
 }
 
 export interface CatalogOrigin {

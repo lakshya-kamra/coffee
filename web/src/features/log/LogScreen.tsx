@@ -28,8 +28,8 @@ import { firstBrew } from "@/domain/core/firstBrew";
 import { clipWords, clock, epochDayOf, oneDp, screenTime } from "@/domain/core/format";
 import { filterLog, isFilterActive, EMPTY_LOG_FILTER } from "@/domain/core/logQuery";
 import { totalSec } from "@/domain/core/recipe";
-import { targetSec } from "@/domain/core/shotTarget";
-import { cupLabel, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
+import { judgeTime, timeTarget, type TimeTarget } from "@/domain/core/shotTarget";
+import { cupLabel, scoreStatus, signedClock, statusColorVar } from "@/domain/core/status";
 import { useAnalysedBrewIds } from "@/features/ai";
 import { Glyph } from "@/features/ai/glyphs";
 import { BrewDetailScreen } from "./BrewDetailScreen";
@@ -188,8 +188,8 @@ function LogList({ table, view, onView }: { table: boolean; view: LogView; onVie
   const del = useDeleteBrew();
   const picker = useComparePicker();
 
-  // Espresso deltas are against the shot target, as on the brew itself (A4).
-  const targetByRecipe = useMemo(() => new Map(recipes.map((r) => [r.id, targetSec(r, totalSec(r))])), [recipes]);
+  // A shot is judged against its band, as on the brew itself (A4); other brews against the total.
+  const targetByRecipe = useMemo(() => new Map(recipes.map((r) => [r.id, timeTarget(r, totalSec(r))])), [recipes]);
   const summary = useMemo(() => logSummary(logs), [logs]);
   const active = isFilterActive(filter);
   const shown = useMemo(() => filterLog(logs, { ...filter, query }, photoIds), [logs, filter, query, photoIds]);
@@ -275,7 +275,7 @@ function LogList({ table, view, onView }: { table: boolean; view: LogView; onVie
           withDate={withDate}
           rovingProps={props}
           current={i === selectedIndex}
-          targetSec={targetByRecipe.get(log.recipeId) ?? null}
+          target={targetByRecipe.get(log.recipeId) ?? null}
           analysed={log.id != null && analysed.has(log.id)}
           onOpen={() => select(brewPath(log.uid))}
           onKeyDown={(e) => onRowKey(log, e, props.onKeyDown)}
@@ -449,7 +449,7 @@ const LogEntryRow = memo(function LogEntryRow({
   withDate,
   rovingProps,
   current,
-  targetSec,
+  target,
   analysed,
   onOpen,
   onKeyDown,
@@ -459,20 +459,15 @@ const LogEntryRow = memo(function LogEntryRow({
   withDate: boolean;
   rovingProps: ReturnType<ReturnType<typeof useRovingList>["itemProps"]>;
   current: boolean;
-  targetSec: number | null;
+  target: TimeTarget | null;
   analysed: boolean;
   onOpen: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
   onMenu: (el?: HTMLElement, at?: { x: number; y: number }) => void;
 }) {
   // On time says so in words; only a miss shows the signed delta, because then the number is the news.
-  const delta =
-    targetSec != null && targetSec > 0 && log.totalTimeSec > 0
-      ? (() => {
-          const st = timeStatus(log.totalTimeSec, targetSec)[0];
-          return { status: st, text: st === "good" ? "on time" : signedClock(log.totalTimeSec - targetSec) };
-        })()
-      : null;
+  const judged = judgeTime(log.totalTimeSec, target);
+  const delta = judged ? { status: judged.status, text: judged.status === "good" ? judged.hit : signedClock(judged.delta) } : null;
   const grind = log.grindClicks != null ? `${log.grindClicks} clk` : log.grindValue != null ? String(Math.round(log.grindValue * 100) / 100) : log.grindSetting.trim() ? clipWords(log.grindSetting, 14) : null;
   const time = log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null;
   const bean = beanShortName(log.beanLabel);

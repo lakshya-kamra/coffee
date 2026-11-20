@@ -21,14 +21,14 @@ import { db } from "@/data/db";
 import type { BrewRow, GrinderRow } from "@/data/schema";
 import { useBrew, useStore } from "@/data/store";
 import { DetailTopBar, EyebrowLabel, HairLine, IconWell, MenuButton, NumberWithUnit, PerforatedDivider, PillButton, QuietPanel, SecondaryButton, SectionLabel, SoftCard, StatusChip, StatusLine, beanShortName, useContextMenu } from "@/design/components";
-import { methodLabels, reviewSections, type ReviewSections } from "@/domain/core/brewer";
+import { methodLabels, reviewSections, type BrewMethod, type ReviewSections } from "@/domain/core/brewer";
 import { bedShapeInfo, bedShapeLabel, channelingLabel, sludgeLabel } from "@/domain/core/evaluation";
-import { clock, grams, oneDp, ratio } from "@/domain/core/format";
+import { clock, grams, halves, oneDp, ratio } from "@/domain/core/format";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
-import { BAND_WORDS, bandStatus, shotBand, type ShotBand } from "@/domain/core/shotTarget";
+import { BAND_WORDS, bandStatus, shotBand, shotOffBy, type ShotBand } from "@/domain/core/shotTarget";
 import { bedStatus, channelingStatus, cupLabel, roastStatus, roastWord, scoreStatus, signedClock, sludgeStatus, statusColorVar, timeStatus, type Status } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf } from "@/domain/core/units";
-import { waterAmount } from "@/domain/core/noScale";
+import { noScaleAmounts, waterAmount } from "@/domain/core/noScale";
 import { checkBrew, distrustedFields, Fields, lastPourEndSec } from "@/domain/ai";
 import { reading, scaleFor, showsDialNumber, type GrindScale } from "@/domain/grind";
 import { brewMarkdown } from "@/domain/report";
@@ -81,9 +81,11 @@ export function passCells(
     log.extractionYield != null
       ? ignoredIf({ label: "EXTRACTION", value: oneDp(log.extractionYield), unit: "%" }, distrusted.has(Fields.EY))
       : { label: "OFF ROAST", value: log.daysOffRoast != null ? String(log.daysOffRoast) : null, unit: "d", status: roastStatus(log.daysOffRoast) === "attention" ? ("attention" as const) : null };
-  // A value the log does have always shows (an imported brew may carry one).
+  // A value the log does have always shows (an imported brew may carry one). IN CUP goes with
+  // DRAWDOWN, as Review asks for them side by side (a Clever has no retained-water section but
+  // still has a cup to weigh).
   const keepDrawdown = sections.drawdown || log.drawdownSec != null;
-  const keepInCup = (sections.drawdown && sections.retained) || log.beverageG != null;
+  const keepInCup = sections.drawdown || log.beverageG != null;
   return [grind, time, tempCell, ...(keepDrawdown ? [drawdown] : []), ...(keepInCup ? [inCup] : []), sixth];
 }
 
@@ -96,9 +98,19 @@ export function passColumns(count: number): number {
  * Planned steps with the real events placed among them in time order. A distrusted drawdown or
  * time adds no row: nothing is drawn as if it happened when the log says otherwise.
  */
-export function brewTimeline(log: BrewRow, recipe: Recipe | null, finish: Status, timeTrusted: boolean, bedExposedSec: number | null): TimelineRow[] {
+export function brewTimeline(
+  log: BrewRow,
+  recipe: Recipe | null,
+  finish: Status,
+  timeTrusted: boolean,
+  bedExposedSec: number | null,
+  // Espresso: the shot is measured against its band, as the status line and TIME cell are (A4).
+  band: ShotBand | null = null,
+  // Without a scale the planned steps read in ml, as the recipe detail shows them (A1).
+  hasScale = true,
+): TimelineRow[] {
   if (!recipe) return timeTrusted ? [{ time: clock(log.totalTimeSec), kind: "ACTUAL", title: "Finished", actual: true, terminal: true }] : [];
-  const planned = plannedTimelineRows(recipe);
+  const planned = plannedTimelineRows(recipe, hasScale);
   const steps = planned.slice(0, -1);
   const plannedDone = planned[planned.length - 1];
   const bedRow: TimelineRow | null =
@@ -116,9 +128,15 @@ export function brewTimeline(log: BrewRow, recipe: Recipe | null, finish: Status
   if (bedRow && !placed) out.push(bedRow);
   const total = totalSec(recipe);
   if (timeTrusted) {
-    out.push({ time: clock(log.totalTimeSec), kind: "ACTUAL", title: "Finished", detail: `planned ${clock(total)}`, actual: true, delta: signedClock(log.totalTimeSec - total), deltaStatus: finish, terminal: true });
+    const detail = band ? `aim ${band.label}` : `planned ${clock(total)}`;
+    out.push({ time: clock(log.totalTimeSec), kind: "ACTUAL", title: "Finished", detail, actual: true, delta: signedClock(offTarget(log.totalTimeSec, total, band)), deltaStatus: finish, terminal: true });
   } else if (plannedDone) out.push(plannedDone);
   return out;
+}
+
+/** Seconds off the plan: from the band's nearer edge for a shot (0 inside it), else from the total. */
+function offTarget(sec: number, total: number, band: ShotBand | null): number {
+  return band ? shotOffBy(sec, band) : sec - total;
 }
 
 function bedWords(log: BrewRow): string | null {
@@ -219,7 +237,9 @@ function Detail({ log }: { log: BrewRow }) {
   else if (distrusted.has(Fields.TIME) && log.totalTimeSec > 0) line = <StatusLine status="attention" lead="Time looks wrong" rest="left out of the analysis" onClick={scrollToAnalysis} />;
   else if (!recipe && log.totalTimeSec > 0) line = <StatusLine status="neutral" lead={`Finished in ${clock(log.totalTimeSec)}`} rest={bedWords(log) ?? undefined} onClick={scrollToAnalysis} />;
   else {
-    const rest = [recipe && log.totalTimeSec > 0 ? `${clock(log.totalTimeSec)} against ${clock(planned)}` : null, bedWords(log)].filter(Boolean).join(" · ");
+    // A shot says its seconds against the band, the words shot mode used (A4).
+    const against = band ? `${log.totalTimeSec} s against ${band.label}` : `${clock(log.totalTimeSec)} against ${clock(planned)}`;
+    const rest = [recipe && log.totalTimeSec > 0 ? against : null, bedWords(log)].filter(Boolean).join(" · ");
     line = <StatusLine status={ts[0]} lead={ts[1]} rest={rest || undefined} onClick={scrollToAnalysis} />;
   }
 
@@ -258,12 +278,12 @@ function Detail({ log }: { log: BrewRow }) {
       <div className={l.layout}>
         <div className={l.mainCol}>
           <div className={l.o1}>
-            <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} timeLabel={labels.time} waterLabel={labels.water} sections={sections} band={band} hasScale={settings.hasScale} />
+            <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} timeLabel={labels.time} waterLabel={labels.water} sections={sections} band={band} hasScale={settings.hasScale} method={brewer?.method ?? "pourover"} />
             <div className={l.statusLine}>{line}</div>
           </div>
 
           <div className={l.o4}>
-            {settled ? <TheBrew log={log} recipe={recipe} ts={ts} timeTrusted={timeTrusted} bedExposedSec={bedExposedSec} /> : recipe && <div className={l.placeholder} style={{ height: 320, marginTop: 24 }} aria-hidden="true" />}
+            {settled ? <TheBrew log={log} recipe={recipe} ts={ts} timeTrusted={timeTrusted} bedExposedSec={bedExposedSec} band={band} hasScale={settings.hasScale} /> : recipe && <div className={l.placeholder} style={{ height: 320, marginTop: 24 }} aria-hidden="true" />}
           </div>
 
           <div className={l.o5}>
@@ -348,6 +368,7 @@ function BoardingPass({
   sections,
   band,
   hasScale,
+  method,
 }: {
   log: BrewRow;
   recipe: Recipe | null;
@@ -360,14 +381,18 @@ function BoardingPass({
   sections: ReviewSections;
   band: ShotBand | null;
   hasScale: boolean;
+  method: BrewMethod;
 }) {
   const nodes = useMemo(() => (recipe ? pourNodes(recipe) : []), [recipe]);
   const scale = useGrindScale(grinder);
   const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel, sections, band);
   const rated = log.overall > 0;
   const r = ratio(log.doseG, log.waterG);
-  // Without a scale the water reads in ml, as the brew and the review said it (A1).
+  // Without a scale the amounts read as the brew and Review said them (A1): water in ml, the
+  // coffee in level tablespoons (espresso's and moka's dose is the basket's, so it keeps grams).
   const water = waterAmount(log.waterG, hasScale);
+  const tbsp = hasScale ? null : noScaleAmounts(log.doseG, log.waterG, method).coffeeTbsp;
+  const coffee = tbsp != null ? { value: halves(tbsp), unit: "tbsp" } : { value: grams(log.doseG), unit: "g" };
   return (
     <SoftCard padding={0}>
       <div className={l.passTop}>
@@ -382,7 +407,7 @@ function BoardingPass({
           </div>
           <NumberWithUnit value={rated ? String(log.overall) : "—"} unit={rated ? "/10" : undefined} numeral="num-display" color={rated ? statusColorVar(scoreStatus(log.overall)) : "var(--ink-low)"} />
         </div>
-        <RouteRow mode="done" from={grams(log.doseG)} fromUnit="g" fromLabel="COFFEE" to={water.value} toUnit={water.unit} toLabel={waterLabel} nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
+        <RouteRow mode="done" from={coffee.value} fromUnit={coffee.unit} fromLabel="COFFEE" to={water.value} toUnit={water.unit} toLabel={waterLabel} nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
       </div>
       <PerforatedDivider />
       <div className={l.passGrid}>
@@ -393,8 +418,24 @@ function BoardingPass({
 }
 
 /** THE BREW: the trip drawn as a line, then the planned steps with what actually happened. */
-function TheBrew({ log, recipe, ts, timeTrusted, bedExposedSec }: { log: BrewRow; recipe: Recipe | null; ts: [Status, string]; timeTrusted: boolean; bedExposedSec: number | null }) {
-  const rows = useMemo(() => brewTimeline(log, recipe, ts[0], timeTrusted, bedExposedSec), [log, recipe, ts, timeTrusted, bedExposedSec]);
+function TheBrew({
+  log,
+  recipe,
+  ts,
+  timeTrusted,
+  bedExposedSec,
+  band,
+  hasScale,
+}: {
+  log: BrewRow;
+  recipe: Recipe | null;
+  ts: [Status, string];
+  timeTrusted: boolean;
+  bedExposedSec: number | null;
+  band: ShotBand | null;
+  hasScale: boolean;
+}) {
+  const rows = useMemo(() => brewTimeline(log, recipe, ts[0], timeTrusted, bedExposedSec, band, hasScale), [log, recipe, ts, timeTrusted, bedExposedSec, band, hasScale]);
   if (!recipe && rows.length === 0) return null;
   const total = recipe ? Math.max(1, totalSec(recipe)) : 1;
   const actualEnd = recipe && timeTrusted ? log.totalTimeSec / total : null;
@@ -420,7 +461,7 @@ function TheBrew({ log, recipe, ts, timeTrusted, bedExposedSec }: { log: BrewRow
             endLabel={clock(total)}
             actualEnd={actualEnd}
             endStatus={timeTrusted ? ts[0] : null}
-            actualLabel={timeTrusted ? `${clock(log.totalTimeSec)} · ${ts[0] === "good" ? "on time" : signedClock(log.totalTimeSec - total)}` : null}
+            actualLabel={timeTrusted ? `${clock(log.totalTimeSec)} · ${ts[0] === "good" ? "on time" : signedClock(offTarget(log.totalTimeSec, total, band))}` : null}
             label={timeTrusted ? `Planned ${clock(total)}, finished at ${clock(log.totalTimeSec)}` : `Planned ${clock(total)}`}
           />
         )}

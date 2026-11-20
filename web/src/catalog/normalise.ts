@@ -198,6 +198,8 @@ export function roaster(o: Obj): CatalogRoaster {
     notable: optStr(o, "notable"),
     mainstream: optBool(o, "mainstream", false),
     regions: Object.freeze(strList(o, "regions")),
+    // Only an https link is handed to a browser; anything else reads as no site.
+    website: /^https:\/\/\S+$/.test(optStr(o, "website").trim()) ? optStr(o, "website").trim() : "",
   };
 }
 

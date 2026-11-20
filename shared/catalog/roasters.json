@@ -316,7 +316,7 @@
       "country": "United States",
       "city": "Durham, North Carolina",
       "area": "North America",
-      "website": "https://littlewavescoffee.com"
+      "website": "https://littlewaves.coffee"
     },
     {
       "id": "peets",
@@ -813,11 +813,12 @@
     },
     {
       "id": "cartel-coffee",
-      "name": "Cartel Coffee Lab",
+      "name": "Cartel Roasting Co.",
       "country": "United States",
       "city": "Tempe, Arizona",
       "area": "North America",
-      "website": "https://cartel-9.myshopify.com"
+      "notable": "Formerly Cartel Coffee Lab.",
+      "website": "https://www.cartelroasting.co"
     },
     {
       "id": "pts-coffee",
@@ -897,8 +898,7 @@
       "name": "Octavio Café",
       "country": "Brazil",
       "city": "São Paulo",
-      "area": "Latin America",
-      "website": "https://octaviocafe.com.br"
+      "area": "Latin America"
     },
     {
       "id": "santo-grao",

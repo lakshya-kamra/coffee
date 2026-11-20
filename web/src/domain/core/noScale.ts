@@ -58,13 +58,19 @@ export function noScaleAmounts(doseG: number, waterG: number, method: BrewMethod
 
 /** A prep line that needs a scale: weighing, zeroing or taring. */
 export const SCALE_LINE = /\b(scales?|zero(?:ed)?|tare|weigh)\b/i;
+/** A prep line that gives an amount in grams ("Put 170 g of ice…"): it needs a scale too. */
+export const GRAMS_LINE = /\d\s*(?:g|grams?)\b/i;
 
 const GENERIC_NO_SCALE = ["Measure {water} of water in a jug first.", "Measure {coffee}."];
 
 /**
- * The prep list for someone without a scale: the lines that mention one are replaced, where the
- * first of them stood, by the recipe's prepNoScale, else by the basket line (espresso, moka), else
- * by the two generic measuring lines. Every line has its temperatures in the user's unit.
+ * The prep list for someone without a scale: the lines that need one (they mention a scale, or
+ * give grams) are replaced, where the first of them stood, by the recipe's prepNoScale, else by
+ * the basket line (espresso, moka), else by the two generic measuring lines. A recipe with no such
+ * line gets the replacement first, so every no-scale prep says how to measure. prepNoScale is
+ * written by hand where grams are not water (ice, a bypass, a dose per roast), because "170 ml of
+ * ice" is not a measure anyone can pour. Every line has its temperatures in the user's unit.
+ * Kotlin twin: NoScale.prep (parity cases "noScalePrep").
  */
 export function noScalePrep(
   recipe: Pick<Recipe, "prep" | "prepNoScale" | "doseG" | "waterG" | "brewer">,
@@ -77,13 +83,14 @@ export function noScalePrep(
   const out: string[] = [];
   let replaced = false;
   for (const line of recipe.prep) {
-    if (!SCALE_LINE.test(line)) {
+    if (!SCALE_LINE.test(line) && !GRAMS_LINE.test(line)) {
       out.push(line);
     } else if (!replaced) {
       out.push(...replacement);
       replaced = true;
     }
   }
+  if (!replaced) out.unshift(...replacement);
   const unit = units.fahrenheit ? "f" : "c";
   return out.map((l) => renderTemps(l, unit));
 }

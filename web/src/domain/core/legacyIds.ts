@@ -50,6 +50,18 @@ export const LegacyIds = {
     makeBrewer({ id: "espresso-machine", label: "Espresso", brand: "", category: "espresso", method: "espresso", filter: "metal" }),
     makeBrewer({ id: "cold-brew-jar", label: "Cold Brew", brand: "", category: "cold", method: "coldBrew", filter: "paper" }),
   ]),
+  /**
+   * The (name, author) pairs 1.x wrote on a brew of a built-in recipe → recipes.json ids, keyed
+   * "name|author". 1.x exports carry no recipe id, so an old brew finds its recipe by these; they
+   * let a built-in be renamed or re-attributed without orphaning brews logged under its 1.x name.
+   * Kotlin twin: LegacyIds.RECIPE.
+   */
+  RECIPE: frozen<Record<string, string>>({
+    "High-Extraction AeroPress|Lance Hedrick": "hedrick-aeropress",
+    "Light Roast Espresso|Lance Hedrick": "hedrick-espresso",
+    "Low-Agitation Pulse Pour|Jonathan Gagné": "gagne-v60",
+    "Switch Hybrid: Steep and Release|Community standard": "switch-hybrid",
+  }),
   /** The 14 recipe ids shipped in 1.x. Old logs point at them; they must resolve forever. */
   LEGACY_RECIPE_IDS: Object.freeze([
     "hoffmann-v60", "kasuya-46", "hoffmann-french-press", "hoffmann-aeropress",

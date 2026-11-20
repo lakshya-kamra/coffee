@@ -55,7 +55,7 @@ web app. One file, so both apps always show the same numbers.
 | `basedOn` | string | optional: the id a user recipe was duplicated from |
 | `level` | string | v4, optional: `easy`, `medium` or `advanced`; omitted or `""` = not said (user recipes). Every built-in has one. Judged from the steps: one pour and a steep is easy; several timed pours, medium; competition recipes, two water temperatures or espresso, advanced. |
 | `needs` | string[] | v4, optional: kit the recipe really depends on, a subset of `scale` (several weighed pours or a weighed yield; one pour of all the water does not count), `gooseneck` (controlled pour-over pours), `grinder` (a grind pre-ground coffee does not offer), `thermometer` (a stated temperature of 93 °C or less, or two temperatures). Readers drop words they don't know. |
-| `prepNoScale` | string[] | v4, optional: prep lines for someone without a scale. They replace the `prep` lines that mention a scale, zeroing, taring or weighing, where the first of those stood. `{coffee}` becomes e.g. "6 level tablespoons of coffee" and `{water}` "500 ml (2 mugs)" (see `schema/units.md`). Every `easy` recipe whose prep mentions a scale has one. |
+| `prepNoScale` | string[] | v4, optional: prep lines for someone without a scale. They replace the `prep` lines that need one (they mention a scale, zeroing, taring or weighing, or give an amount in grams), where the first of those stood; a prep with no such line gets them first. Without it, the basket line (espresso, moka) or two generic lines ("Measure {water} of water in a jug first.", "Measure {coffee}.") stand in. `{coffee}` becomes e.g. "6 level tablespoons of coffee" and `{water}` "500 ml (2 mugs)" (see `schema/units.md`). Every `easy` recipe whose prep mentions a scale has one, and so does every recipe whose prep gives grams of something that is not the brew water (ice, a bypass, a dose per roast), because the apps would otherwise drop that line with nothing in its place. |
 
 ## Rules for changing it
 
@@ -67,6 +67,11 @@ web app. One file, so both apps always show the same numbers.
   change numbers; publish a corrected version under a new id.
 - A new recipe needs complete numbers from a cited source and at least one `sources` entry with
   a URL.
+- Without a scale, step titles and details read their grams as ml (water) or level tablespoons
+  ("16 g of coffee"), so step prose says amounts as amounts in the cup: "until there is 150 g in
+  the cup", not "until the cup weighs 150 g" (which would read "weighs 150 ml"). `tips`, `blurb`
+  and `sourceNote` stay in grams for everyone: they describe the recipe as its author wrote it,
+  and a brew never asks anyone to act on them.
 - Temperatures in prose are written "70 °C" or "90-95 °C" (a space, then °C). Both apps convert
   that form to °F for people who use °F, with the pattern in `fixtures/domain-v4-cases.json`.
 - `RecipeIdsTest` (Android) checks ids, order, contiguous steps, pour targets, levels, needs,
@@ -99,3 +104,11 @@ web app. One file, so both apps always show the same numbers.
   because both apps match 1.x export rows to built-ins by exact name and author
   (`LegacyExportReader`, `domain/backup/legacy.ts`); renaming needs a legacy alias in both
   readers first.
+- 2026-11-20 (v4.1): both legacy readers fall back to `LegacyIds.RECIPE`, the (name, author) pairs
+  1.x wrote, so `hedrick-aeropress`, `hedrick-espresso` and `gagne-v60` now carry the author
+  "House recipe" (names unchanged) and still resolve from 1.x exports. `hedrick-aeropress`'s
+  `sourceNote` now says its timeline follows Hedrick's published recipe. `prepNoScale` added to
+  `hoffmann-iced-immersion` (ice in cubes), `wac-2025-pop` (the bypass in ml) and
+  `hedrick-aeropress-very-good` (one dose line for every roast); the "cup weighs N g" steps of
+  `wac-2022-little`, `wac-2023-wipvasutt` and `wac-2024-stanica` now read "until there is N g in
+  the cup". No numbers changed.

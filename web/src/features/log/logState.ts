@@ -6,6 +6,7 @@
 import type { BrewRow } from "@/data/schema";
 import { screenTime } from "@/domain/core/format";
 import { brewerKey, EMPTY_LOG_FILTER, isFilterActive, logCountLabel, recipeKey, type LogFilter, type LogSort } from "@/domain/core/logQuery";
+import { judgeTime, type TimeTarget } from "@/domain/core/shotTarget";
 
 // ---------------------------------------------------------------- copy (§4.11)
 
@@ -135,12 +136,12 @@ export function nextSort(cur: { key: TableKey; dir: SortDir }, key: TableKey): {
   return cur.key === key ? { key, dir: cur.dir === "asc" ? "desc" : "asc" } : { key, dir: defaultDir(key) };
 }
 
-/** Seconds over (+) or under (-) the plan; null without a plan or a time. */
-export function timeDelta(b: BrewRow, planSec: number | null): number | null {
-  return planSec != null && planSec > 0 && b.totalTimeSec > 0 ? b.totalTimeSec - planSec : null;
+/** Seconds over (+) or under (-) the plan, or outside a shot's band; null without a plan or a time. */
+export function timeDelta(b: BrewRow, plan: TimeTarget | null): number | null {
+  return judgeTime(b.totalTimeSec, plan)?.delta ?? null;
 }
 
-function sortValue(b: BrewRow, key: TableKey, planSec: number | null): number | string | null {
+function sortValue(b: BrewRow, key: TableKey, plan: TimeTarget | null): number | string | null {
   switch (key) {
     case "date":
       return b.startedAt;
@@ -155,7 +156,7 @@ function sortValue(b: BrewRow, key: TableKey, planSec: number | null): number | 
     case "ratio":
       return b.doseG > 0 && b.waterG > 0 ? b.waterG / b.doseG : null;
     case "time": {
-      const d = timeDelta(b, planSec);
+      const d = timeDelta(b, plan);
       // Closest to the plan first when ascending: the size of the miss, not its sign.
       return d == null ? null : Math.abs(d);
     }
@@ -170,7 +171,7 @@ function sortValue(b: BrewRow, key: TableKey, planSec: number | null): number | 
  * Sorted copy. Missing values always go last, whichever way; ties fall back to newest first, so the
  * order never jumps between renders.
  */
-export function sortTable(rows: readonly BrewRow[], key: TableKey, dir: SortDir, planOf: (b: BrewRow) => number | null = () => null): BrewRow[] {
+export function sortTable(rows: readonly BrewRow[], key: TableKey, dir: SortDir, planOf: (b: BrewRow) => TimeTarget | null = () => null): BrewRow[] {
   const sign = dir === "asc" ? 1 : -1;
   const keyed = rows.map((b) => ({ b, v: sortValue(b, key, planOf(b)) }));
   keyed.sort((x, y) => {

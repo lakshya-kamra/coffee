@@ -61,12 +61,18 @@ object NoScale {
     /** A prep line that needs a scale: weighing, zeroing or taring. */
     val SCALE_LINE = Regex("\\b(scales?|zero(?:ed)?|tare|weigh)\\b", RegexOption.IGNORE_CASE)
 
+    /** A prep line that gives an amount in grams ("Put 170 g of ice..."): it needs a scale too. */
+    val GRAMS_LINE = Regex("\\d\\s*(?:g|grams?)\\b", RegexOption.IGNORE_CASE)
+
     private val GENERIC = listOf("Measure {water} of water in a jug first.", "Measure {coffee}.")
 
     /**
-     * The prep list for someone without a scale: the lines that mention one are replaced, where
-     * the first of them stood, by the recipe's prepNoScale, else by the basket line (espresso,
-     * moka), else by the two generic measuring lines. Temperatures read in [tempUnit] ("c" | "f").
+     * The prep list for someone without a scale: the lines that need one (they mention a scale,
+     * or give grams) are replaced, where the first of them stood, by the recipe's prepNoScale,
+     * else by the basket line (espresso, moka), else by the two generic measuring lines. A recipe
+     * with no such line gets the replacement first, so every no-scale prep says how to measure.
+     * prepNoScale is written by hand where grams are not water (ice, a bypass, a dose per roast).
+     * Temperatures read in [tempUnit] ("c" | "f"). Web twin: noScalePrep.
      */
     fun prep(recipe: Recipe, tempUnit: String, form: String = ""): List<String> {
         val a = amounts(recipe.doseG, recipe.waterG, recipe.brewer.method, form)
@@ -79,13 +85,14 @@ object NoScale {
         val out = mutableListOf<String>()
         var replaced = false
         for (line in recipe.prep) {
-            if (!SCALE_LINE.containsMatchIn(line)) {
+            if (!SCALE_LINE.containsMatchIn(line) && !GRAMS_LINE.containsMatchIn(line)) {
                 out += line
             } else if (!replaced) {
                 out += replacement
                 replaced = true
             }
         }
+        if (!replaced) out.addAll(0, replacement)
         return out.map { Temperatures.render(it, tempUnit) }
     }
 

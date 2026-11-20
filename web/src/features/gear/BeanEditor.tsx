@@ -75,12 +75,23 @@ const EssentialsSection = memo(function EssentialsSection({
   update,
   openPicker,
   roasterRef,
-}: Pick<BeanRow, "name" | "roaster" | "form" | "groundFor"> & { update: Update; openPicker: OpenPicker; roasterRef: RefObject<HTMLButtonElement | null> }) {
+  roasterId,
+}: Pick<BeanRow, "name" | "roaster" | "form" | "groundFor" | "roasterId"> & { update: Update; openPicker: OpenPicker; roasterRef: RefObject<HTMLButtonElement | null> }) {
   const ground = form === "ground";
+  useCatalog(["roasters"]);
+  const site = roasterId ? (catalog.roaster(roasterId)?.website ?? "") : "";
   return (
     <section className={s.section} aria-label="The coffee">
       <FieldWell label="Coffee name" value={name} placeholder="Kiamabara AA, or House Blend" onChange={(v) => update({ name: v })} maxLength={80} />
       <PickRow label="Roaster" value={roaster} placeholder="Pick a roaster or brand" onClick={() => openPicker("roaster")} anchorRef={roasterRef} />
+      {/* A catalog roaster's own site, in a new tab; nothing is fetched by the app. */}
+      {site && (
+        <div className={s.linkRow}>
+          <a className={`${s.link} t-label-l`} href={site} target="_blank" rel="noopener noreferrer">
+            Roaster's site<span className="visually-hidden"> (opens in a new tab)</span>
+          </a>
+        </div>
+      )}
       <div className={s.field}>
         <EyebrowLabel text="Whole beans or ground" />
         <SegmentedControl
@@ -407,7 +418,7 @@ function BeanForm({ bean, update, ounces, isNew, keyPrefix }: { bean: BeanRow; u
 
   return (
     <>
-      <EssentialsSection key={ck} name={bean.name} roaster={bean.roaster} form={bean.form} groundFor={bean.groundFor} update={update} openPicker={openPicker} roasterRef={roasterRef} />
+      <EssentialsSection key={ck} name={bean.name} roaster={bean.roaster} roasterId={bean.roasterId} form={bean.form} groundFor={bean.groundFor} update={update} openPicker={openPicker} roasterRef={roasterRef} />
       <BasicsSection key={`${ck}:${ounces}`} roastedOnEpochDay={bean.roastedOnEpochDay} roastLevelId={bean.roastLevelId} bagSizeG={bean.bagSizeG} ounces={ounces} update={update} />
       <Disclosure label="More details" hint="Origin, farm, process, lot" open={more} onToggle={setMore}>
         <OriginSection

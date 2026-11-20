@@ -12,16 +12,21 @@ export const TEN_LEFT_MIN_STEP_SEC = 30;
 export const TEN_LEFT = "10 seconds left";
 export const TIME_FOR_NEXT = "Time for the next step.";
 
-/** "about 60 ml": a jug is read to the nearest 10 ml. */
-export const aboutMl = (g: number): number => Math.max(0, Math.round(g / 10) * 10);
+/**
+ * Without a scale a water target is the recipe's grams read as ml, unrounded: the same number the
+ * step card, the NEXT line, the readout and the recipe's timeline show (noScaleText keeps it too),
+ * so "Up to 352 ml" is never "about 350 ml" in the line below it. Android says the same in
+ * BrewWords.lead (parity cases "stepLeadNoScale").
+ */
+export const targetMl = (g: number): number => Math.max(0, Math.round(g));
 
 /**
  * "Bloom to 50 g", "Pour to 300 g", "Drawdown", else the step's title. Without a scale the target
- * is a jug reading, "Pour to about 300 ml", and a title's grams read as ml (noScaleText), so the
- * banner, the status line and the screen reader never say a weight nobody can measure.
+ * reads in ml, "Pour to 352 ml", and a title's grams read as ml (noScaleText), so the banner, the
+ * status line and the screen reader never say a weight nobody can measure.
  */
 export function stepLead(s: Pick<RecipeStep, "kind" | "title" | "targetWaterG">, hasScale = true): string {
-  const amount = (t: number) => (hasScale ? `${t} g` : `about ${aboutMl(t)} ml`);
+  const amount = (t: number) => (hasScale ? `${t} g` : `${targetMl(t)} ml`);
   if (s.kind === "Bloom" && s.targetWaterG != null) return `Bloom to ${amount(s.targetWaterG)}`;
   if (s.kind === "Pour" && s.targetWaterG != null) return `Pour to ${amount(s.targetWaterG)}`;
   if (s.kind === "Drawdown") return "Drawdown";

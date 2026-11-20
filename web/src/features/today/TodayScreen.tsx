@@ -29,7 +29,7 @@ import { brewerRowTag, ownedFamilies, type Brewer } from "@/domain/core/brewer";
 import { clipWords, formatDuration, oneDp, screenDayLabel, screenTime, todayEyebrow } from "@/domain/core/format";
 import { noScaleAmounts } from "@/domain/core/noScale";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
-import { BAND_WORDS, bandStatus, shotBand, targetSec } from "@/domain/core/shotTarget";
+import { BAND_WORDS, bandStatus, judgeTime, shotBand, timeTarget, type TimeTarget } from "@/domain/core/shotTarget";
 import { roastStatus, roastWord, scoreStatus, signedClock, statusColorVar, timeStatus } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf, type Units } from "@/domain/core/units";
 import { StatGrid } from "@/features/recipes/StatGrid";
@@ -113,7 +113,7 @@ export function TodayScreen() {
   useBrewNext(brewNext, "today", front);
 
   const recent = logs.slice(0, layout.recentCount);
-  const targetById = useMemo(() => new Map(recipes.map((r) => [r.id, targetSec(r, totalSec(r))])), [recipes]);
+  const targetById = useMemo(() => new Map(recipes.map((r) => [r.id, timeTarget(r, totalSec(r))])), [recipes]);
   const startFrom = useMemo(() => startFromRecipes(recipes, families, next?.id ?? null, startCount), [recipes, families, next, startCount]);
   const firstOwned = useMemo(() => settings.ownedBrewerIds.map((id) => Brewers.byId(id)).find((b) => b != null) ?? null, [settings.ownedBrewerIds]);
   const bean = useMemo(() => (yourCoffee ? beanOnDeck(beans, settings.defaultBeanId, logs) : null), [yourCoffee, beans, settings.defaultBeanId, logs]);
@@ -455,7 +455,7 @@ function lastGrindCell(log: BrewRow | null, recipe: Recipe) {
 }
 
 /** Recent brews: open in Log (its pane at expanded and up), or brew the same again. */
-function RecentList({ logs, targetById }: { logs: readonly BrewRow[]; targetById: ReadonlyMap<string, number> }) {
+function RecentList({ logs, targetById }: { logs: readonly BrewRow[]; targetById: ReadonlyMap<string, TimeTarget> }) {
   const target = useRef<BrewRow | null>(null);
   const menu = useContextMenu(() => {
     const log = target.current;
@@ -472,7 +472,7 @@ function RecentList({ logs, targetById }: { logs: readonly BrewRow[]; targetById
           <RecentRow
             key={log.uid}
             log={log}
-            targetSec={targetById.get(log.recipeId) ?? null}
+            timeTarget={targetById.get(log.recipeId) ?? null}
             onContextMenu={(e) => {
               target.current = log;
               menu.onContextMenu(e);
@@ -485,12 +485,14 @@ function RecentList({ logs, targetById }: { logs: readonly BrewRow[]; targetById
   );
 }
 
-function RecentRow({ log, targetSec, onContextMenu }: { log: BrewRow; targetSec: number | null; onContextMenu: (e: MouseEvent<HTMLElement>) => void }) {
+function RecentRow({ log, timeTarget, onContextMenu }: { log: BrewRow; timeTarget: TimeTarget | null; onContextMenu: (e: MouseEvent<HTMLElement>) => void }) {
   const brewer = Brewers.byId(log.brewerId) ?? Brewers.resolveOrNull(log.brewer);
   const tag = brewer ? brewerRowTag(brewer) : log.brewer;
   const name = log.recipeName.trim() || "Brew";
   const grind = log.grindKind === "preground" ? "as bought" : log.grindClicks != null ? `${log.grindClicks} clk` : log.grindSetting.trim() ? clipWords(log.grindSetting, 14) : null;
-  const st = targetSec != null && targetSec > 0 && log.totalTimeSec > 0 ? timeStatus(log.totalTimeSec, targetSec)[0] : null;
+  // A shot against its band (as Log judges it), everything else against the recipe's time.
+  const judged = judgeTime(log.totalTimeSec, timeTarget);
+  const miss = judged && judged.status !== "good" ? judged : null;
   return (
     <li className={`interactive-row ${t.recentRow}`} onContextMenu={onContextMenu}>
       {/* Named by its own text (WCAG 2.5.3: the name holds what is visible), plus the score in words. */}
@@ -508,10 +510,10 @@ function RecentRow({ log, targetSec, onContextMenu }: { log: BrewRow; targetSec:
             {log.totalTimeSec > 0 && (
               <>
                 {" · "}
-                <span className={t.nowrap} style={{ color: st && st !== "good" ? statusColorVar(st) : undefined }}>
+                <span className={t.nowrap} style={{ color: miss ? statusColorVar(miss.status) : undefined }}>
                   {formatDuration(log.totalTimeSec)}
                   {/* Colour never alone: a miss carries its signed delta, as in Log. */}
-                  {st && st !== "good" && targetSec != null && ` ${signedClock(log.totalTimeSec - targetSec)}`}
+                  {miss && ` ${signedClock(miss.delta)}`}
                 </span>
               </>
             )}

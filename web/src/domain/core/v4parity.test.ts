@@ -15,6 +15,7 @@ import { matchesLogQuery, type LogSearchable } from "./logQuery";
 import { stepLead } from "@/features/brew/announce";
 import { noScaleAmounts, noScalePrep, noScaleText, servingsPreset, type BeanForm } from "./noScale";
 import { quickRead, type QuickReadInput, type QuickReadOptions } from "./quickRead";
+import { shotBand } from "./shotTarget";
 import type { Recipe, RecipeLevel, RecipeNeed, RecipeStep } from "./recipe";
 import { defaultTempUnit, PROSE_TEMP, renderTemps, stepsInUnit } from "./units";
 
@@ -45,6 +46,7 @@ interface Cases {
   grindMissing: { name: string; log: Partial<BrewRow>; missing: boolean }[];
   noScaleText: Pair<string, string>[];
   stepLeadNoScale: Pair<Pick<RecipeStep, "kind" | "title" | "targetWaterG">, string>[];
+  shotBand: { name: string; recipe: { steps: RecipeStep[]; tips: string[]; blurb: string }; out: { from: number; to: number; stated: boolean; label: string } }[];
 }
 
 const cases = JSON.parse(readFileSync(fileURLToPath(new URL("../../../../shared/fixtures/domain-v4-cases.json", import.meta.url)), "utf8")) as Cases;
@@ -93,6 +95,13 @@ describe("shared/fixtures/domain-v4-cases.json", () => {
 
   it("stepLeadNoScale (banner, status line and announcements without a scale, A1)", () => {
     for (const c of cases.stepLeadNoScale) expect(stepLead(c.in, false), JSON.stringify(c.in)).toBe(c.out);
+  });
+
+  it("shotBand (one espresso target on both platforms, A4)", () => {
+    for (const c of cases.shotBand) {
+      const b = shotBand(c.recipe);
+      expect({ from: b.from, to: b.to, stated: b.label !== `about ${b.to} s`, label: b.label }, c.name).toEqual(c.out);
+    }
   });
 
   it("servingsPreset", () => {

@@ -4,7 +4,7 @@ import { BREW_METHOD_IDS } from "@/domain/core/brewer";
 import { findTerm, termForStepKind } from "@/domain/core/glossary";
 import { LegacyIds } from "@/domain/core/legacyIds";
 import { Brewers, catalog } from "./catalog";
-import { KEBAB } from "./normalise";
+import { KEBAB, roaster } from "./normalise";
 
 beforeAll(async () => {
   await catalog.load();
@@ -89,6 +89,7 @@ describe("catalog", () => {
     const fileBrewerIds = new Set(catalog.brewers.map((b) => b.id));
     for (const id of Object.values(LegacyIds.BREWER)) expect(fileBrewerIds.has(id), id).toBe(true);
     for (const f of LegacyIds.FALLBACK_BREWERS) expect(fileBrewerIds.has(f.id), f.id).toBe(true);
+    for (const id of Object.values(LegacyIds.RECIPE)) expect(LegacyIds.LEGACY_RECIPE_IDS, id).toContain(id);
     const processIds = new Set(catalog.beans.processes.map((p) => p.id));
     for (const id of [...Object.values(LegacyIds.PROCESS), ...Object.values(LegacyIds.PROCESS_LABEL)]) if (id) expect(processIds.has(id), id).toBe(true);
     const roastIds = new Set(catalog.beans.roastLevels.map((r) => r.id));
@@ -135,6 +136,13 @@ describe("v4 catalog additions", () => {
     for (const r of mainstream) expect(r.regions.length, r.id).toBeGreaterThan(0);
     expect(catalog.roaster("folgers")!.regions).toEqual(["North America"]);
     expect(catalog.roaster("square-mile")!.mainstream).toBe(false);
+    // The roaster's own site (v4.1): https only, read through to the bean editor's link.
+    expect(catalog.roasters.filter((r) => r.website).length).toBeGreaterThanOrEqual(370);
+    for (const r of catalog.roasters) if (r.website) expect(r.website, r.id).toMatch(/^https:\/\/\S+$/);
+    expect(catalog.roaster("little-waves")!.website).toBe("https://littlewaves.coffee");
+    expect(catalog.roaster("octavio-cafe")!.website).toBe("");
+    expect(roaster({ id: "x", name: "X", website: "http://x.example" }).website).toBe("");
+    expect(roaster({ id: "x", name: "X" }).website).toBe("");
     // Generic waters the onboarding offers first.
     for (const id of ["tap-unfiltered", "tap-filtered", "bottled-spring"]) expect(catalog.waterById(id), id).not.toBeNull();
   });

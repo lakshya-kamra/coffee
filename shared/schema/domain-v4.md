@@ -85,10 +85,30 @@ Placeholder art: Drip draws the V60, Siphon the Chemex, Phin the AeroPress, Cezv
 - Web (`domain/core/noScale.ts`): `GROUND_COFFEE_G_PER_LEVEL_TBSP`, `ML_PER_MUG`,
   `noScaleAmounts(doseG, waterG, method, form?): NoScaleAmounts`,
   `noScalePrep(recipe, units: Units, form?): string[]`, `servingsPreset(recipe, mugs): Recipe`,
-  `SCALE_LINE`.
+  `SCALE_LINE`, `GRAMS_LINE`.
 - Kotlin (`domain/NoScale.kt`): `NoScale.amounts(doseG, waterG, method, form = "")`,
   `NoScale.prep(recipe, tempUnit: "c"|"f", form = "")`, `NoScale.servings(recipe, mugs)`,
-  `NoScale.SCALE_LINE`, `NoScale.GROUND_COFFEE_G_PER_LEVEL_TBSP`, `NoScale.ML_PER_MUG`.
+  `NoScale.SCALE_LINE`, `NoScale.GRAMS_LINE`, `NoScale.GROUND_COFFEE_G_PER_LEVEL_TBSP`,
+  `NoScale.ML_PER_MUG`.
+- Prep: a line that mentions a scale or gives grams is replaced (where the first stood) by
+  `prepNoScale`, the basket line or the generic lines; a prep with no such line gets them first.
+- Water targets without a scale are the grams read as ml, unrounded, everywhere: step prose
+  (`noScaleText`), the lead (`stepLead` / `BrewWords.lead`, "Pour to 352 ml"), the NEXT line, the
+  readout and its denominator, the step list. A jug step's "About N ml from your jug" is the
+  difference of two such targets, so the jug steps add up to the recipe's water. (2026-11-20:
+  was "about" rounded to 10 ml in the lead, which put "about 350 ml" beside "352 ml".)
+
+## Shot target (§4.9)
+
+- Web `shotBand(recipe)` (`domain/core/shotTarget.ts`), Kotlin `ShotTarget.of(recipe)`; parity
+  cases `shotBand`. One rule: a band stated in the words of the non-pre-infusion steps' details,
+  then their titles, then the tips, then the blurb (every "N to M s" in a text tried in order; the
+  first with 0 < N < M and 15 <= M <= 120 wins); else "about E s", E the latest end of a step
+  that is not Serve; else 25-30 s. A pre-infusion step has "infus" in its title, or starts at 0
+  with "pre-infus" / "preinfus" in its detail. The label is "25–30 s" (en dash) or "about 35 s".
+- Every place that judges a shot uses the band: in it is good ("In the band", "in band" in the
+  lists), outside it is attention, and a delta is the seconds from the nearer edge (0 inside; a
+  single-number band allows 2 s either side). Compare's single plan number is the band's middle.
 - `NoScaleAmounts { coffeeTbsp, coffee, coffeeLine, waterMl, mugs, water, basket }`; see
   `schema/units.md`. `form "whole"` = beans measured before a blade grinder ("… of beans").
 

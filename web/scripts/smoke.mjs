@@ -1811,6 +1811,18 @@ function V4_FLOWS() {
         await settle(page, 600);
         if (right > 1 && left < -1) ok(`slides by tab order: Log came in from the right (${Math.round(right)} px), Recipes from the left (${Math.round(left)} px)`);
         else fail(`tab slide direction: Log entered at ${right} px (want > 0), Recipes at ${left} px (want < 0)`);
+        // The strip the incoming page has not reached yet still shows the leaving tab, which must
+        // take no taps: a tap there mid-switch never lands on the old tab's controls.
+        await page.mouse.click(...at["Log"]);
+        await page.waitForTimeout(60);
+        const strip = await page.evaluate(() => {
+          const hit = document.elementFromPoint(20, innerHeight / 2);
+          const layer = hit?.closest("section[data-tab]");
+          return layer ? `${layer.dataset.tab}/${layer.dataset.state}` : "none";
+        });
+        await settle(page, 600);
+        if (strip.endsWith("/leaving")) fail(`mid-switch, a tap on the uncovered strip lands on the leaving tab (${strip})`);
+        else ok(`mid-switch, the leaving tab takes no taps (the strip hits ${strip})`);
         // Rapid taps, both ways, ~30 ms apart: each retargets from where the pages are.
         for (const label of ["Gear", "Today", "Insights", "Recipes", "Log"]) {
           await page.mouse.click(...at[label]);

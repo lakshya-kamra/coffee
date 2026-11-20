@@ -25,7 +25,7 @@ import { stepBoundaries, totalSec, waterAt, waterAtF, type Recipe, type RecipeSt
 import { renderTemps } from "@/domain/core/units";
 import { BrewRing, JourneyLine, journeyNodes, useFrame, writeText, type BrewEngineView, type JourneyNode } from "@/viz";
 import { noScaleText } from "@/domain/core/noScale";
-import { aboutMl, stepLead } from "./announce";
+import { stepLead, targetMl } from "./announce";
 import type { BrewEngine, EngineState } from "./engine";
 import type { RunLayout } from "./layout";
 import b from "./brew.module.css";
@@ -253,7 +253,7 @@ function Journey({ recipe, st, total, trip }: { recipe: Recipe; st: EngineState;
   return <JourneyLine nodes={nodes} style="live" progress={trip} startLabel="0:00" endLabel={clock(total)} label={`Brew progress, ${clock(total)} planned`} />;
 }
 
-/** Poured / target: grams with a scale; "about 60 ml / 500" or "Pour all 500 ml" without (§4.3). */
+/** Poured / target: grams with a scale; "60 ml / 500" or "Pour all 500 ml" without (§4.3), the same numbers the step says. */
 function Readout({ engine, recipe, step, hasScale }: { engine: BrewEngine; recipe: Recipe; step: RecipeStep | undefined; hasScale: boolean }) {
   const target = step?.targetWaterG ?? Math.round(recipe.waterG);
   if (!hasScale && step?.targetWaterG != null && step.targetWaterG >= recipe.waterG && brewStyle(recipe.brewer) === "immersion") {
@@ -263,7 +263,7 @@ function Readout({ engine, recipe, step, hasScale }: { engine: BrewEngine; recip
       </span>
     );
   }
-  const text = hasScale ? () => `${waterAt(recipe, engine.elapsedMs())} g` : () => `about ${aboutMl(waterAt(recipe, engine.elapsedMs()))} ml`;
+  const text = () => `${waterAt(recipe, engine.elapsedMs())} ${hasScale ? "g" : "ml"}`;
   return (
     <span className={b.water}>
       <Leaf className={`${b.waterNow}`} initial={text()} update={(el) => writeText(el, text())} />
@@ -303,7 +303,8 @@ function StepCard({
   const firstOfKind = recipe.steps.findIndex((x) => x.kind === s.kind) === index;
   const short = firstBrew && firstOfKind && termId && glossaryReady ? (findTerm(catalog.glossary, termId)?.short ?? null) : null;
   const before = recipe.steps.slice(0, index).reduce<number>((acc, x) => (x.targetWaterG != null ? x.targetWaterG : acc), 0);
-  const jugMl = !hasScale && s.targetWaterG != null && s.targetWaterG > before ? s.targetWaterG - before : null;
+  // Worked out from the targets themselves, so the jug pours add up to the recipe's water.
+  const jugMl = !hasScale && s.targetWaterG != null && s.targetWaterG > before ? targetMl(s.targetWaterG) - targetMl(before) : null;
   return (
     <section className={b.stepCard} aria-label="Current step">
       <m.div
@@ -326,7 +327,7 @@ function StepCard({
           </span>
         </div>
         <h2 className={`step-title ${b.stepTitle}`}>{prose(s.title, hasScale)}</h2>
-        {jugMl != null && <p className="t-body-m">About {aboutMl(jugMl)} ml from your jug</p>}
+        {jugMl != null && <p className="t-body-m">About {jugMl} ml from your jug</p>}
         {s.detail && <p className={`${layout === "stage" ? "t-body-l" : "t-body-m"} ink-mid`}>{prose(renderTemps(s.detail, fahrenheit ? "f" : "c"), hasScale)}</p>}
         {short && <p className={`t-body-s ${b.glossLine}`}>{short}</p>}
         {bedHelp && (
@@ -366,7 +367,7 @@ function StepList({ recipe, index, hasScale }: { recipe: Recipe; index: number; 
     <ol ref={list} className={b.stepList} aria-label="All steps">
       {recipe.steps.map((s, i) => {
         const state = i < index ? "done" : i === index ? "current" : "next";
-        const amount = s.targetWaterG == null ? "" : hasScale ? `${s.targetWaterG} g` : `about ${aboutMl(s.targetWaterG)} ml`;
+        const amount = s.targetWaterG == null ? "" : hasScale ? `${s.targetWaterG} g` : `${targetMl(s.targetWaterG)} ml`;
         return (
           <li key={i} className={b.listItem} data-state={state} aria-current={state === "current" ? "step" : undefined}>
             <span className={`num-inline ${b.listTime}`}>{clock(s.startSec)}</span>
@@ -385,7 +386,7 @@ function NextLine({ recipe, index, hasScale, bedAt }: { recipe: Recipe; index: n
   if (!next) {
     return bedAt != null ? <p className={`micro ${b.nextLine}`}>BED EXPOSED · {clock(bedAt)}</p> : <p className={`micro ink-low ${b.nextLine}`}>LAST STEP</p>;
   }
-  const what = next.targetWaterG != null ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to about ${aboutMl(next.targetWaterG)} ml`) : prose(next.title, hasScale);
+  const what = next.targetWaterG != null ? (hasScale ? `Up to ${next.targetWaterG} g` : `Up to ${targetMl(next.targetWaterG)} ml`) : prose(next.title, hasScale);
   return (
     <p className={`micro ink-low ${b.nextLine}`}>
       NEXT · {clock(next.startSec)} · {toCaps(what)}
