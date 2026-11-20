@@ -65,8 +65,36 @@ object Motion {
     val EffectsDefault: SpringSpec<Float> = spring(dampingRatio = 1f, stiffness = 1600f, visibilityThreshold = 1f / 255f)
     val EffectsSlow: SpringSpec<Float> = spring(dampingRatio = 1f, stiffness = 800f, visibilityThreshold = 1f / 255f)
 
-    /** Tab fade-through progress 0 to 1: about 250 ms, and a re-tap mid-switch carries its velocity. */
+    /** Tab fade-through progress 0 to 1: about 250 ms, and a re-tap mid-switch carries its velocity. Gear's sections. */
     val TabSwitch: SpringSpec<Float> = spring(dampingRatio = 1f, stiffness = 700f, visibilityThreshold = 0.002f)
+
+    // ------------------------------------- top-level tab slide (Forge 2.0's ForgeNavTransitions)
+
+    /** The pages' slide between top-level tabs, on [Emphasized]. Tweens, as Forge's: a fixed, known length. */
+    const val TabSlideMillis = 380
+
+    /** Both pages' fade, over the first half of the slide (FastOutSlowIn, Compose's tween default). */
+    const val TabFadeMillis = 190
+
+    /** Reduced motion: the whole switch is a cross-fade this long. */
+    const val TabReducedMillis = 150
+
+    /**
+     * A page caught mid-slide by another tap turns toward its new place from where it is, keeping
+     * its speed (a tween would restart from rest). In travels (half a width), so it settles to a
+     * thousandth of one. Critically damped: a page never swings past where it lands.
+     */
+    val TabRetarget: SpringSpec<Float> = spring(dampingRatio = 1f, stiffness = 600f, visibilityThreshold = 0.001f)
+
+    /**
+     * The selected nav icon's pop to 1.1 (Forge's FloatingNavBar): medium-bouncy on purpose, the one
+     * place a visible bounce belongs, since it is a 24dp glyph and scale is a layer property.
+     */
+    val NavIconBounce: SpringSpec<Float> = spring(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessMedium,
+        visibilityThreshold = 0.001f,
+    )
 
     /** Shared-element flight. */
     val Bounds: SpringSpec<Rect> = spring(dampingRatio = 0.9f, stiffness = 700f, visibilityThreshold = Rect.VisibilityThreshold)

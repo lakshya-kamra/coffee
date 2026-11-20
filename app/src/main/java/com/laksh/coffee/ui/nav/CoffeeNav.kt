@@ -77,7 +77,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -90,6 +92,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -305,6 +308,8 @@ private fun AppShell(
     var showShortcuts by rememberSaveable { mutableStateOf(false) }
 
     val navKind = windowClass.nav(sidebarCollapsed)
+    // Animator scale off (Settings > Accessibility > Remove animations): tab slides become fades.
+    val reduceMotion = rememberSystemReduceMotion()
     val usesPanes = windowClass.usesPanes
     val usesPanesNow by rememberUpdatedState(usesPanes)
 
@@ -506,6 +511,7 @@ private fun AppShell(
                             selected = selected,
                             short = windowClass.isShort || LocalDensity.current.fontScale > NavLabelMaxFontScale,
                             tooltips = windowClass.showsTooltips,
+                            reduceMotion = reduceMotion,
                             onSelect = { tab -> go(tab.route) },
                             onStartBrew = startBrew,
                             modifier = navCovered,
@@ -542,6 +548,9 @@ private fun AppShell(
                                 // the first frame of a pop; baseScope covers a push until it settles and
                                 // a predictive-back gesture that has not committed yet.
                                 visible = baseScope != null || atBase,
+                                // Forge 2.0's slide: across beside the bar, down the column beside a rail.
+                                motion = if (navKind == NavKind.Bar) TabMotion.SlideHorizontal else TabMotion.SlideVertical,
+                                reduceMotion = reduceMotion,
                             ) { tab ->
                                 CompositionLocalProvider(LocalCurrentTab provides tab) {
                                     TabContent(tab, nav, go, panes, windowClass, startBrew)
@@ -591,6 +600,7 @@ private fun AppShell(
                                 Spacer(Modifier.height(ScrimFade))
                                 BottomBar(
                                     selected = selected,
+                                    reduceMotion = reduceMotion,
                                     onSelect = { tab -> if (atBase) selected = tab },
                                 )
                             }
@@ -1123,9 +1133,11 @@ private fun BarScrim(modifier: Modifier = Modifier) {
 }
 
 /**
- * Every item is a fixed share of the bar, and the only thing that moves is one indicator pill.
- * The pill moves in Float translation inside its layer (sub-pixel, never a re-layout), and the
- * item colours cross-fade in draw, so a switch recomposes nothing in the bar.
+ * Every item is a fixed share of the bar, and the only thing that moves is one indicator pill,
+ * Forge 2.0's liquid one: drawn behind the items at a Float position (sub-pixel, never a
+ * re-layout), stretching along its slide with its speed, so a jump across three tabs reads as one
+ * motion. The item colours cross-fade in draw and the icon pops in its layer, so a switch
+ * recomposes nothing in the bar.
  */
 private val ItemHeight = Dimens.BottomBarItem
 
@@ -1139,10 +1151,13 @@ internal val PillSpring = spring(
 @Composable
 private fun BottomBar(
     selected: AppTab,
+    reduceMotion: Boolean,
     onSelect: (AppTab) -> Unit,
 ) {
     val colors = CoffeeTheme.colors
-    val pill = animateFloatAsState(selected.ordinal.toFloat(), PillSpring, label = "indicator")
+    val pill = rememberNavPill(selected.ordinal, reduceMotion)
+    // Neutral ink, never crema: the tab you are on is not a status and not the live brew.
+    val pillColor = colors.inkHigh.copy(alpha = if (colors.isDark) 0.10f else 0.06f)
 
     Surface(
         modifier = Modifier
@@ -1157,22 +1172,27 @@ private fun BottomBar(
         shadowElevation = 0.dp,
         tonalElevation = 0.dp,
     ) {
-        Box(Modifier.padding(4.dp)) {
-            // Neutral ink, never crema: the tab you are on is not a status and not the live brew.
-            Box(
-                Modifier
-                    .fillMaxWidth(1f / TABS.size)
-                    .height(ItemHeight)
-                    .graphicsLayer { translationX = pill.value * size.width }
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(colors.inkHigh.copy(alpha = if (colors.isDark) 0.10f else 0.06f)),
-            )
-
+        Box(
+            Modifier
+                .padding(4.dp)
+                .drawBehind {
+                    drawLiquidPill(
+                        pill = pill,
+                        count = TABS.size,
+                        vertical = false,
+                        length = size.width / TABS.size,
+                        thickness = ItemHeight.toPx(),
+                        radius = 20.dp.toPx(),
+                        color = pillColor,
+                    )
+                },
+        ) {
             Row(Modifier.height(ItemHeight)) {
                 TABS.forEach { tab ->
                     BarItem(
                         tab = tab,
                         selected = tab == selected,
+                        reduceMotion = reduceMotion,
                         onClick = { onSelect(tab) },
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                     )
@@ -1186,14 +1206,16 @@ private fun BottomBar(
 private fun BarItem(
     tab: AppTab,
     selected: Boolean,
+    reduceMotion: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = CoffeeTheme.colors
+    val haptics = LocalHapticFeedback.current
+    val interaction = remember { MutableInteractionSource() }
     // 0..1 selection, read only in draw and layer lambdas.
     val sel = animateFloatAsState(if (selected) 1f else 0f, Motion.EffectsDefault, label = "tabSel")
-    // graphicsLayer, not Modifier.scale on a sized icon: this never touches layout.
-    val iconScale = animateFloatAsState(if (selected) 1.06f else 1f, Motion.bounce(), label = "tabScale")
+    val iconScale = rememberNavIconScale(selected, reduceMotion)
     val low = colors.inkLow
     val high = colors.inkHigh
 
@@ -1205,11 +1227,17 @@ private fun BarItem(
                 this.selected = selected
             }
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interaction,
+                // No ripple: the pill, the icon's pop and the press are the feedback.
                 indication = null,
                 role = Role.Tab,
-                onClick = onClick,
-            ),
+                onClick = {
+                    if (!selected) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick()
+                },
+            )
+            // Inside the clickable, so the shrink never moves the edge a finger is lifted on.
+            .navPress(interaction),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
