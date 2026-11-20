@@ -3,21 +3,27 @@
  * (verdict or timing), the analysis, THE BREW (planned against actual), coffee and gear, THE BED,
  * photos, taste and notes. The first frame seeds from the hot store (rule 5); the heavy sections
  * (analysis, journey, photos) sit behind fixed-height placeholders until the flight lands.
+ *
+ * v4 §3.8: pushed (compact, medium) or in Log's detail pane (expanded up, no Back). From an 880
+ * wide pane it splits into the main column and a 340 supporting column (photos, analysis, Brew
+ * again). The header carries Brew again and Compare with… (in an overflow menu when narrow).
  */
 import { useLiveQuery } from "dexie-react-hooks";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
+import { usePane, useSelectedPath } from "@/app/panes";
 import { nav } from "@/app/router";
 import { pathOf } from "@/app/routes";
 import { useTransitionSettled } from "@/app/transitionState";
 import { BedShapeIcon } from "@/art";
+import { Brewers } from "@/catalog/catalog";
 import { useCatalog } from "@/catalog/useCatalog";
 import { db } from "@/data/db";
-import { repo } from "@/data/repo";
 import type { BrewRow, GrinderRow } from "@/data/schema";
 import { useBrew, useStore } from "@/data/store";
-import { CoffeeSheet, DetailTopBar, EyebrowLabel, HairLine, IconWell, NumberWithUnit, PerforatedDivider, QuietButton, QuietPanel, SecondaryButton, SectionLabel, SoftCard, StatusChip, StatusLine, beanShortName } from "@/design/components";
+import { DetailTopBar, EyebrowLabel, HairLine, IconWell, MenuButton, NumberWithUnit, PerforatedDivider, PillButton, QuietPanel, SecondaryButton, SectionLabel, SoftCard, StatusChip, StatusLine, beanShortName, useContextMenu } from "@/design/components";
+import { methodLabels } from "@/domain/core/brewer";
 import { bedShapeInfo, bedShapeLabel, channelingLabel, sludgeLabel } from "@/domain/core/evaluation";
-import { clock, dayLabel, grams, oneDp, ratio, timeLabel } from "@/domain/core/format";
+import { clock, grams, oneDp, ratio } from "@/domain/core/format";
 import { totalSec, type Recipe } from "@/domain/core/recipe";
 import { bedStatus, channelingStatus, cupLabel, roastStatus, roastWord, scoreStatus, signedClock, sludgeStatus, statusColorVar, timeStatus, type Status } from "@/domain/core/status";
 import { temp, tempUnit, unitsOf } from "@/domain/core/units";
@@ -28,6 +34,8 @@ import { BrewAnalysisSection, useBrewVerdict } from "@/features/ai";
 import { useGrindScale } from "@/features/grind";
 import { PhotoStrip } from "@/features/photos";
 import { InfoGrid, JourneyLine, RouteRow, TimelineCard, journeyNodes, plannedTimelineRows, pourNodes, type GridCell, type JourneyNode, type TimelineRow } from "@/viz";
+import { brewAgain, toggleFavourite, useComparePicker, useDeleteBrew } from "./logActions";
+import { detailWhen } from "./logState";
 import { TasteStrip } from "./TasteStrip";
 import l from "./log.module.css";
 
@@ -45,6 +53,8 @@ export function passCells(
   units: ReturnType<typeof unitsOf>,
   // The screen passes its subscribed scale (useGrindScale), so the cell follows grinders.json landing.
   scale: GrindScale | null = grinder ? scaleFor(grinder) : null,
+  // "SHOT TIME" for espresso (methodLabels, §4.9).
+  timeLabel = "TIME",
 ): GridCell[] {
   const clicks = log.grindClicks;
   // The way the dial reads it: "dial 7.5" on a numbered ring, "6 turns + 6" on a plain one.
@@ -55,7 +65,7 @@ export function passCells(
   }
   const grindValue = clicks != null ? String(clicks) : log.grindValue != null ? String(Math.round(log.grindValue * 100) / 100) : log.grindSetting.trim() || null;
   const grind = ignoredIf({ label: "GRIND", value: grindValue, unit: clicks != null ? "clicks" : log.grindValue != null && scale?.unit ? scale.unit : null, sub: grindSub, textValue: clicks == null && log.grindValue == null }, distrusted.has(Fields.GRIND));
-  const time = ignoredIf({ label: "TIME", value: log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null, sub: recipe ? `plan ${clock(totalSec(recipe))}` : null, status: ts[0] }, distrusted.has(Fields.TIME));
+  const time = ignoredIf({ label: timeLabel, value: log.totalTimeSec > 0 ? clock(log.totalTimeSec) : null, sub: recipe ? `plan ${clock(totalSec(recipe))}` : null, status: ts[0] }, distrusted.has(Fields.TIME));
   const tempCell = ignoredIf({ label: "TEMP", value: log.tempC > 0 ? temp(units, log.tempC) : null, unit: tempUnit(units) }, distrusted.has(Fields.TEMP));
   const drawdown = ignoredIf({ label: "DRAWDOWN", value: log.drawdownSec != null ? clock(log.drawdownSec) : null }, distrusted.has(Fields.DRAWDOWN));
   const inCup = ignoredIf({ label: "IN CUP", value: log.beverageG != null ? grams(log.beverageG) : null, unit: "g" }, distrusted.has(Fields.BEVERAGE));
@@ -121,22 +131,25 @@ async function shareText(text: string, title: string): Promise<"shared" | "copie
 export function BrewDetailScreen({ brewUid }: { brewUid: string }) {
   useCatalog(["brewers", "grinders", "beans", "roasters", "origins", "water"]);
   const log = useBrew(brewUid);
-  const [deleting, setDeleting] = useState(false);
-  const [gone, setGone] = useState(false);
-  if (!log || gone) {
+  const pane = usePane();
+  if (!log) {
     return (
-      <div className={`column ${l.page}`}>
-        <DetailTopBar onBack={nav.back} />
+      <div className={l.page}>
+        {pane.inPane ? <div className={l.paneBar} /> : <DetailTopBar onBack={nav.back} />}
         <div style={{ height: 8 }} />
+        <h1 className="visually-hidden">Brew</h1>
         <QuietPanel text="This brew is no longer in the log." />
       </div>
     );
   }
-  return <Detail log={log} deleting={deleting} setDeleting={setDeleting} onDeleted={() => setGone(true)} />;
+  return <Detail log={log} />;
 }
 
-function Detail({ log, deleting, setDeleting, onDeleted }: { log: BrewRow; deleting: boolean; setDeleting: (v: boolean) => void; onDeleted: () => void }) {
+function Detail({ log }: { log: BrewRow }) {
   const settled = useTransitionSettled();
+  const pane = usePane();
+  const selectedPath = useSelectedPath("log");
+  const selected = pane.inPane && selectedPath === pathOf({ kind: "brewDetail", brewUid: log.uid });
   const recipe = useStore((st) => st.recipes.find((r) => r.id === log.recipeId) ?? null, undefined, log.recipeId);
   const grinder = useStore((st) => (log.grinderId != null ? (st.grinders.find((g) => g.id === log.grinderId) ?? null) : null), undefined, log.grinderId ?? -1);
   const bean = useStore((st) => (log.beanId != null ? (st.beans.find((b) => b.id === log.beanId) ?? null) : null), undefined, log.beanId ?? -1);
@@ -145,8 +158,11 @@ function Detail({ log, deleting, setDeleting, onDeleted }: { log: BrewRow; delet
   const id = log.id ?? 0;
   const photoCount = useLiveQuery(() => db.photos.where("brewLogId").equals(id).count(), [id]) ?? 0;
   const [notice, setNotice] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState(false);
-  const [addingPhoto, setAddingPhoto] = useState(false);
+  const del = useDeleteBrew();
+  const picker = useComparePicker();
+  const compareBtn = useRef<HTMLDivElement>(null);
+  const brewer = Brewers.byId(log.brewerId) ?? Brewers.resolveOrNull(log.brewer);
+  const labels = methodLabels(brewer?.method ?? "pourover");
 
   // Fields the local log check distrusts: their numbers stay visible but are marked, and nothing
   // derived from them (the bed-exposed node and row) is drawn as if it were true.
@@ -166,15 +182,17 @@ function Detail({ log, deleting, setDeleting, onDeleted }: { log: BrewRow; delet
     const r = await shareText(report(), `Brew log — ${log.recipeName}`);
     setNotice(r === "copied" ? "Report copied." : r === "failed" ? "Couldn't share or copy the report in this browser." : null);
   };
-  const onDelete = async () => {
-    if (deleting || log.id == null) return;
-    setDeleting(true);
-    setConfirm(false);
-    await repo.deleteBrew(log.id);
-    onDeleted();
-    nav.back();
-  };
   const scrollToAnalysis = () => document.getElementById(`analysis-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const openCompare = () => picker.open(log, compareBtn.current?.querySelector("button") ?? null);
+
+  // The overflow menu on a narrow header holds what the wide header shows as words.
+  const overflow = useContextMenu(
+    () => [
+      { label: "Brew again", icon: "Play", keys: "b", onSelect: () => brewAgain(log) },
+      { label: "Compare with…", icon: "History", onSelect: () => picker.open(log, null) },
+    ],
+    "More for this brew",
+  );
 
   let line: ReactNode;
   if (verdict) line = <StatusLine status={verdict.status} lead={verdict.lead} rest={verdict.detail ?? undefined} onClick={scrollToAnalysis} />;
@@ -185,111 +203,130 @@ function Detail({ log, deleting, setDeleting, onDeleted }: { log: BrewRow; delet
     line = <StatusLine status={ts[0]} lead={ts[1]} rest={rest || undefined} onClick={scrollToAnalysis} />;
   }
 
+  const actions = (
+    <div className={l.actions}>
+      <PillButton text="Brew again" icon="Play" onClick={() => brewAgain(log)} className={l.wideAction} />
+      <div ref={compareBtn} className={l.wideAction}>
+        <PillButton text="Compare with…" icon="History" onClick={openCompare} />
+      </div>
+      <IconWell icon="Star" label={log.isFavourite ? "Remove from favourites" : "Add to favourites"} onClick={() => toggleFavourite(log)} tint={log.isFavourite ? "var(--crema-ink)" : undefined} size={44} />
+      <IconWell icon="Share" label="Share report" onClick={() => void onShare()} size={44} />
+      <IconWell icon="Edit" label="Edit brew" onClick={() => nav.push(pathOf({ kind: "review", brewUid: log.uid }))} size={44} />
+      <IconWell icon="Delete" label="Delete brew" keys="delete" onClick={() => del.ask(log)} size={44} />
+      <MenuButton className={l.narrowAction} label="More: Brew again, Compare with…" onOpen={overflow.openFrom} />
+    </div>
+  );
+
   return (
-    <div className={`column ${l.page}`}>
-      <DetailTopBar
-        onBack={nav.back}
-        actions={
-          <div className={l.actions}>
-            <IconWell icon="Star" label={log.isFavourite ? "Remove from favourites" : "Add to favourites"} onClick={() => log.id != null && void repo.toggleFavourite(log.id)} tint={log.isFavourite ? "var(--crema-ink)" : undefined} />
-            <IconWell icon="Share" label="Share report" onClick={() => void onShare()} />
-            <IconWell icon="Edit" label="Edit brew" onClick={() => nav.push(pathOf({ kind: "review", brewUid: log.uid }))} />
-            <IconWell icon="Delete" label="Delete brew" onClick={() => setConfirm(true)} />
+    <div className={l.page}>
+      {pane.inPane ? (
+        <div className={l.paneBar}>
+          {selected && <IconWell icon="Close" label="Close" keys="escape" onClick={pane.close} size={44} />}
+          <div className={l.paneBarActions}>
+            {actions}
           </div>
-        }
-      />
+        </div>
+      ) : (
+        <DetailTopBar onBack={nav.back} actions={actions} />
+      )}
       {notice && (
         <p className={`t-body-s ink-mid ${l.notice}`} role="status">
           {notice}
         </p>
       )}
 
-      <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} />
-      <div className={l.statusLine}>{line}</div>
+      <div className={l.layout}>
+        <div className={l.mainCol}>
+          <div className={l.o1}>
+            <BoardingPass log={log} recipe={recipe} grinder={grinder} ts={ts} distrusted={distrusted} units={units} timeLabel={labels.time} waterLabel={labels.water} />
+            <div className={l.statusLine}>{line}</div>
+          </div>
 
-      {/* No section label: the card's own eyebrow says ANALYSIS. */}
-      <div style={{ height: 20 }} />
-      {settled ? <BrewAnalysisSection brewId={id} /> : <div className={l.placeholder} style={{ height: 220 }} aria-hidden="true" />}
+          <div className={l.o4}>
+            {settled ? <TheBrew log={log} recipe={recipe} ts={ts} timeTrusted={timeTrusted} bedExposedSec={bedExposedSec} /> : recipe && <div className={l.placeholder} style={{ height: 320, marginTop: 24 }} aria-hidden="true" />}
+          </div>
 
-      {settled ? <TheBrew log={log} recipe={recipe} ts={ts} timeTrusted={timeTrusted} bedExposedSec={bedExposedSec} /> : recipe && <div className={l.placeholder} style={{ height: 320, marginTop: 24 }} aria-hidden="true" />}
+          <div className={l.o5}>
+            <SectionLabel text="COFFEE & GEAR" />
+            <SoftCard>
+              <InfoGrid
+                columns={2}
+                cells={[
+                  { label: "COFFEE", value: bean?.name.trim() || beanShortName(log.beanLabel) || null, sub: bean?.roaster.trim() || null, textValue: true },
+                  { label: "OFF ROAST", value: log.daysOffRoast != null ? String(log.daysOffRoast) : null, unit: "d", sub: roastWord(log.daysOffRoast), status: roastStatus(log.daysOffRoast) === "attention" ? "attention" : null },
+                  { label: "GRINDER", value: grinder?.model.trim() || log.grinderLabel.trim() || null, sub: grinder?.brand.trim() || null, textValue: true },
+                  { label: "BREWER", value: log.brewer.trim() || null, textValue: true },
+                ]}
+              />
+            </SoftCard>
+          </div>
 
-      <SectionLabel text="COFFEE & GEAR" />
-      <SoftCard>
-        <InfoGrid
-          columns={2}
-          cells={[
-            { label: "COFFEE", value: bean?.name.trim() || beanShortName(log.beanLabel) || null, sub: bean?.roaster.trim() || null, textValue: true },
-            { label: "OFF ROAST", value: log.daysOffRoast != null ? String(log.daysOffRoast) : null, unit: "d", sub: roastWord(log.daysOffRoast), status: roastStatus(log.daysOffRoast) === "attention" ? "attention" : null },
-            { label: "GRINDER", value: grinder?.model.trim() || log.grinderLabel.trim() || null, sub: grinder?.brand.trim() || null, textValue: true },
-            { label: "BREWER", value: log.brewer.trim() || null, textValue: true },
-          ]}
-        />
-      </SoftCard>
+          <div className={l.o6}>
+            <TheBed log={log} />
+          </div>
 
-      <TheBed log={log} />
-
-      {settled && (photoCount > 0 || addingPhoto) ? (
-        <>
-          <SectionLabel text="PHOTOS" />
-          <PhotoStrip brewId={id} kinds={["bed", "cup"]} editable />
-        </>
-      ) : settled ? (
-        <div style={{ marginTop: 12 }}>
-          <QuietButton text="Add photo" icon="Camera" onClick={() => setAddingPhoto(true)} />
+          <div className={l.o8}>
+            <SectionLabel text="TASTE" />
+            <SoftCard>
+              {distrusted.has(Fields.TASTE) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <StatusChip status="attention" text="Ignored" />
+                  <span className="t-body-s ink-mid">Sliders never moved from 5</span>
+                </div>
+              )}
+              <TasteStrip taste={log.taste} />
+              {(log.descriptors.length > 0 || log.faults.length > 0) && <div style={{ height: 14 }} />}
+              {log.descriptors.length > 0 && <p className="t-body-m">{log.descriptors.join(" · ")}</p>}
+              {log.faults.length > 0 && <p className="t-body-m" style={{ color: "var(--fault)" }}>{log.faults.join(" · ")}</p>}
+              {log.notes.trim() && <p className={l.quote} style={{ marginTop: 12 }}>{log.notes}</p>}
+              {log.nextTime.trim() && (
+                <>
+                  <p className="micro ink-low" style={{ marginTop: 12, marginBottom: 4 }}>
+                    NEXT TIME
+                  </p>
+                  <p className={l.notes}>{log.nextTime}</p>
+                </>
+              )}
+            </SoftCard>
+          </div>
         </div>
-      ) : null}
 
-      <SectionLabel text="TASTE" />
-      <SoftCard>
-        {distrusted.has(Fields.TASTE) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <StatusChip status="attention" text="Ignored" />
-            <span className="t-body-s ink-mid">Sliders never moved from 5</span>
+        <aside className={l.sideCol} aria-label="Photos and analysis">
+          <div className={l.o7}>
+            <SectionLabel text="PHOTOS" />
+            {settled ? <PhotoStrip brewId={id} kinds={["bed", "cup"]} editable large /> : <div className={l.placeholder} style={{ height: 76 }} aria-hidden="true" />}
           </div>
-        )}
-        <TasteStrip taste={log.taste} />
-        {(log.descriptors.length > 0 || log.faults.length > 0) && <div style={{ height: 14 }} />}
-        {log.descriptors.length > 0 && <p className="t-body-m">{log.descriptors.join(" · ")}</p>}
-        {log.faults.length > 0 && <p className="t-body-m" style={{ color: "var(--fault)" }}>{log.faults.join(" · ")}</p>}
-        {log.notes.trim() && <p className={l.quote} style={{ marginTop: 12 }}>{log.notes}</p>}
-        {log.nextTime.trim() && (
-          <>
-            <p className="micro ink-low" style={{ marginTop: 12, marginBottom: 4 }}>
-              NEXT TIME
-            </p>
-            <p className={l.notes}>{log.nextTime}</p>
-          </>
-        )}
-      </SoftCard>
 
-      {confirm && (
-        <CoffeeSheet label="Delete this brew?" onClose={() => setConfirm(false)}>
-          <div className={l.dialogBody}>
-            <h2 className="t-headline-s">Delete this brew?</h2>
-            <p className="t-body-m ink-mid">It will not be in the log or in anything you export after this. Any analysis of it and its photos go too.</p>
-            <div className={l.dialogButtons}>
-              <SecondaryButton text="Keep it" onClick={() => setConfirm(false)} height={44} />
-              <QuietButton text="Delete" onClick={() => void onDelete()} color="var(--fault)" icon="Delete" />
-            </div>
+          {/* No section label: the card's own eyebrow says ANALYSIS. */}
+          <div className={`${l.o3} ${l.analysisSlot}`}>
+            {settled ? <BrewAnalysisSection brewId={id} /> : <div className={l.placeholder} style={{ height: 220 }} aria-hidden="true" />}
           </div>
-        </CoffeeSheet>
-      )}
+
+          <div className={`${l.o9} ${l.againSlot}`}>
+            <SecondaryButton text="Brew again" icon="Play" onClick={() => brewAgain(log)} />
+            <p className="t-body-s ink-mid">Same coffee, grind and dose.</p>
+          </div>
+        </aside>
+      </div>
+      {del.element}
+      {picker.element}
+      {overflow.element}
     </div>
   );
 }
 
 /** The boarding pass: when, what, how it scored, the dose-to-water route, then the numbers. */
-function BoardingPass({ log, recipe, grinder, ts, distrusted, units }: { log: BrewRow; recipe: Recipe | null; grinder: GrinderRow | null; ts: [Status, string]; distrusted: ReadonlySet<string>; units: ReturnType<typeof unitsOf> }) {
+function BoardingPass({ log, recipe, grinder, ts, distrusted, units, timeLabel, waterLabel }: { log: BrewRow; recipe: Recipe | null; grinder: GrinderRow | null; ts: [Status, string]; distrusted: ReadonlySet<string>; units: ReturnType<typeof unitsOf>; timeLabel: string; waterLabel: string }) {
   const nodes = useMemo(() => (recipe ? pourNodes(recipe) : []), [recipe]);
   const scale = useGrindScale(grinder);
-  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale);
+  const cells = passCells(log, recipe, grinder, ts, distrusted, units, scale, timeLabel);
   const rated = log.overall > 0;
   const r = ratio(log.doseG, log.waterG);
   return (
     <SoftCard padding={0}>
       <div className={l.passTop}>
         <div className={l.passHead}>
-          <EyebrowLabel text={`${dayLabel(log.startedAt)} · ${timeLabel(log.startedAt)}`} />
+          <EyebrowLabel text={detailWhen(log.startedAt)} />
           <StatusChip status={scoreStatus(log.overall)} text={cupLabel(log.overall)} />
         </div>
         <div className={l.passTitle}>
@@ -299,7 +336,7 @@ function BoardingPass({ log, recipe, grinder, ts, distrusted, units }: { log: Br
           </div>
           <NumberWithUnit value={rated ? String(log.overall) : "—"} unit={rated ? "/10" : undefined} numeral="num-display" color={rated ? statusColorVar(scoreStatus(log.overall)) : "var(--ink-low)"} />
         </div>
-        <RouteRow mode="done" from={grams(log.doseG)} fromUnit="g" fromLabel="COFFEE" to={grams(log.waterG)} toUnit="g" toLabel="WATER" nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
+        <RouteRow mode="done" from={grams(log.doseG)} fromUnit="g" fromLabel="COFFEE" to={grams(log.waterG)} toUnit="g" toLabel={waterLabel} nodes={nodes} midLabel={distrusted.has(Fields.RATIO) ? `${r} · ignored` : r} />
       </div>
       <PerforatedDivider />
       <div className={l.passGrid}>

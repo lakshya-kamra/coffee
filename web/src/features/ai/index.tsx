@@ -8,7 +8,10 @@ import { runner } from "./runner";
 export { runner as analysisRunner, type Target as AnalysisTarget } from "./runner";
 export { useAnalysedBrewIds } from "./stored";
 import { keyStore } from "./keyStore";
+import { registerAiCommands } from "./commands";
 export { keyStore };
+
+registerAiCommands();
 
 /** Review's "Save & analyse": starts the brew analysis that Brew detail then shows running. */
 export function startBrewAnalysis(brewId: number): boolean {

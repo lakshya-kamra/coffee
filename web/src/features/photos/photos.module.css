@@ -1,4 +1,11 @@
-.strip { display: flex; flex-direction: column; gap: 8px; }
+.strip { position: relative; display: flex; flex-direction: column; gap: 8px; }
+/* v4 §4.14: the drop zone covers the strip while files are dragged over its screen. */
+.dropZone {
+  position: absolute; inset: -6px; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 84px; border-radius: var(--r-card); border: 2px dashed var(--ink-high);
+  background: color-mix(in srgb, var(--surface2) 92%, transparent); color: var(--ink-high); pointer-events: none;
+}
+.strip[data-dragging] { min-height: 84px; }
 .row {
   display: flex;
   gap: 8px;
@@ -41,6 +48,12 @@
   border: 1.5px dashed var(--outline-strong);
 }
 .busyTile { display: flex; align-items: center; justify-content: center; }
+.tile:focus-visible, .addTile:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 2px; }
+/* Brew detail's 340 side column (pane >= 880): tiles of at least 160 px in a grid, no sideways scroll. */
+@container pane (min-width: 880px) {
+  .strip[data-large] .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); overflow: visible; }
+  .strip[data-large] .tile, .strip[data-large] .addTile, .strip[data-large] .busyTile { width: 100%; height: auto; aspect-ratio: 1; min-height: 72px; }
+}
 .error { color: var(--attention); }
 
 .sheet { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
@@ -74,12 +87,30 @@
   overflow: hidden;
 }
 .viewer:not([open]) { display: none; }
+.viewer { container: viewer / inline-size; }
 .viewer::backdrop { background: var(--bg); }
 .viewerTop {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
   padding: calc(env(safe-area-inset-top) + 8px) var(--gutter) 8px;
 }
+.counter { margin-right: auto; color: var(--ink-mid); font-variant-numeric: tabular-nums; }
+.viewerBody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.stageWrap { position: relative; flex: 1; min-height: 0; display: flex; }
+.navBtn {
+  position: absolute; top: 50%; z-index: 1; display: grid; place-items: center; width: 48px; height: 48px;
+  margin-top: -24px; border-radius: 50%; background: var(--surface2); color: var(--ink-high); cursor: pointer;
+  transition: opacity 120ms var(--ease-emphasized), background-color 120ms var(--ease-emphasized);
+}
+.navBtn[data-side="prev"] { left: 12px; }
+.navBtn[data-side="next"] { right: 12px; }
+.navBtn:disabled { opacity: 0.3; cursor: default; }
+.navBtn:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 2px; opacity: 1; }
+.flip { display: grid; transform: scaleX(-1); }
+.panelHead { display: flex; flex-direction: column; gap: 2px; }
+.zoomHint { display: none; }
 .stage {
   flex: 1;
   min-height: 0;
@@ -112,4 +143,32 @@
   align-self: flex-start;
   padding: 0 4px;
   color: var(--fault);
+}
+
+/* ---------------------------------------------------------------- lightbox (v4 §3.13, E+) */
+@container viewer (min-width: 840px) {
+  .viewerTop { position: absolute; top: 0; left: 0; right: 320px; z-index: 2; }
+  .viewerBody { display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+  .stageWrap { padding: 64px 72px 32px; }
+  .full { max-height: 90vh; }
+  .viewerPanel {
+    max-width: none; margin: 0; height: 100%; overflow-y: auto; gap: 12px;
+    padding: calc(env(safe-area-inset-top) + 24px) 20px 24px; background: var(--surface1);
+  }
+  .zoomHint { display: block; margin-top: auto; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .navBtn:hover:not(:disabled) { background: var(--surface3); }
+}
+/* Arrows show on hover over the photo on a wide pointer screen; always focusable. */
+@container viewer (min-width: 840px) {
+  @media (hover: hover) and (pointer: fine) {
+    .navBtn:not(:focus-visible) { opacity: 0; }
+    .stageWrap:hover .navBtn:not(:disabled) { opacity: 1; }
+    .stageWrap:hover .navBtn:disabled { opacity: 0.3; }
+  }
+}
+@media (forced-colors: active) {
+  .navBtn, .tile, .addTile { border: 1px solid ButtonBorder; }
+  .dropZone { border-color: Highlight; background: Canvas; color: CanvasText; }
 }

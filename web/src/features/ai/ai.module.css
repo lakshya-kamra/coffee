@@ -1,5 +1,18 @@
 /* AI cards and settings (ports of ui/ai/*.kt). Only opacity/transform animate (web-spec §7). */
 
+/* Every analysis card measures itself (v4 §3.8, §3.9): in a 340 supporting column or a 4-of-12
+   dashboard tile the two-up rows stack and the hero numbers may wrap, as on the narrowest phone. */
+.panel { container: aicard / inline-size; }
+@container aicard (max-width: 340px) {
+  .outcomes { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .outcomes > :nth-child(2) { display: none; }
+  .twoCol { grid-template-columns: minmax(0, 1fr); }
+  .fromTo { flex-wrap: wrap; white-space: normal; }
+  .heroText { font-size: 1.1875rem; line-height: 1.5rem; }
+  .footerRow { flex-wrap: wrap; }
+  .heroHead { flex-wrap: wrap; }
+}
+
 .panelHead { display: flex; align-items: center; gap: 6px; min-height: 22px; margin-bottom: 12px; }
 .panelHead > :nth-child(2) { flex: 1; }
 .spark { color: var(--ink-low); flex: none; }
@@ -115,3 +128,12 @@
 .search { position: sticky; top: 0; background: var(--surface1); padding-bottom: 8px; z-index: 1; }
 .pickerList { display: flex; flex-direction: column; }
 .pickerRow { content-visibility: auto; contain-intrinsic-size: auto 56px; }
+
+/* Radios (A2) and rows: a visible focus ring and the pointer hover (v4 §2.6). */
+.providerRow:focus-visible, .modelRow:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 2px; border-radius: 8px; }
+.providerRow, .modelRow { cursor: pointer; }
+@media (forced-colors: active) {
+  .radioMark { border-color: CanvasText; }
+  .radioMark[data-on="true"]::after { forced-color-adjust: none; background: Highlight; }
+  .dateChip { border: 1px solid CanvasText; }
+}

@@ -1,17 +1,22 @@
 /**
  * PhotoStrip (A§9.2, web-spec §13): 72 px rounded tiles with a kind label and an add tile. Adding
  * opens a small sheet: kind chips (Bed / Cup / Bag / Other, as allowed), then "Take photo" or
- * "Choose from library". Desktop also accepts paste and drag-and-drop. No getUserMedia, so no
- * camera permission is ever asked for (Permissions-Policy keeps camera=()).
+ * "Choose from library". No getUserMedia, so no camera permission is ever asked for
+ * (Permissions-Policy keeps camera=()).
+ *
+ * v4 §4.14: dragging image files over the strip's screen shows a dashed "Drop photos here" zone,
+ * and Ctrl/Cmd+V pastes an image while that screen is in front and no field is focused (intake.ts).
+ * `large` asks for 160 px tiles in a grid once the pane is 880 wide (brew detail's side column).
  */
 import { useLiveQuery } from "dexie-react-hooks";
-import { useRef, useState, type ClipboardEvent, type DragEvent } from "react";
+import { useRef, useState } from "react";
 import { TumblingBeans } from "@/art";
 import { repo } from "@/data/repo";
 import { newUid, type PhotoKind, type PhotoRow } from "@/data/schema";
 import { persistOnce } from "@/data/storage";
 import { CoffeeSheet, Icon, SelectableChip } from "@/design/components";
 import { PhotoError, processPhoto } from "./pipeline";
+import { usePhotoIntake } from "./intake";
 import { MAX_PER_BEAN, MAX_PER_BREW, PhotoErrors } from "./photoMath";
 import { KIND_LABELS, photoAlt } from "./photoText";
 import { PhotoViewer } from "./PhotoViewer";
@@ -21,14 +26,14 @@ import s from "./photos.module.css";
 function Tile({ photo, onOpen }: { photo: PhotoRow; onOpen: () => void }) {
   const url = usePhotoUrl(photo.uid, "thumb");
   return (
-    <button type="button" className={s.tile} onClick={onOpen} aria-label={`Open ${photoAlt(photo)}`}>
+    <button type="button" className={s.tile} onClick={onOpen} aria-label={`Open ${photoAlt(photo)}`} aria-haspopup="dialog">
       {url ? <img src={url} alt="" width={72} height={72} decoding="async" loading="lazy" className={s.thumb} /> : <span className={s.thumbEmpty} />}
       <span className={`micro ${s.kindTag}`}>{KIND_LABELS[photo.kind]}</span>
     </button>
   );
 }
 
-export function PhotoStrip({ brewId, beanId, kinds, editable = true }: { brewId?: number; beanId?: number; kinds: PhotoKind[]; editable?: boolean }) {
+export function PhotoStrip({ brewId, beanId, kinds, editable = true, large = false }: { brewId?: number; beanId?: number; kinds: PhotoKind[]; editable?: boolean; large?: boolean }) {
   const photos = useLiveQuery(
     () => (brewId != null ? repo.photosForBrew(brewId) : beanId != null ? repo.photosForBean(beanId) : Promise.resolve([] as PhotoRow[])),
     [brewId, beanId],
@@ -41,6 +46,7 @@ export function PhotoStrip({ brewId, beanId, kinds, editable = true }: { brewId?
   const camera = useRef<HTMLInputElement>(null);
   const library = useRef<HTMLInputElement>(null);
   const sheetBox = useRef<HTMLDivElement>(null);
+  const zone = useRef<HTMLDivElement>(null);
 
   const max = brewId != null ? MAX_PER_BREW : MAX_PER_BEAN;
   const count = photos?.length ?? 0;
@@ -99,22 +105,17 @@ export function PhotoStrip({ brewId, beanId, kinds, editable = true }: { brewId?
   const closeSheet = () => sheetBox.current?.closest("dialog")?.dispatchEvent(new Event("cancel", { cancelable: true }));
   const pick = (which: "camera" | "library") => (which === "camera" ? camera : library).current?.click();
 
-  const onDrop = (e: DragEvent) => {
-    if (!editable) return;
-    e.preventDefault();
-    void addFiles([...e.dataTransfer.files], kinds[0] ?? "other");
-  };
-  const onPaste = (e: ClipboardEvent) => {
-    if (!editable) return;
-    const files = [...e.clipboardData.files];
-    if (files.length) {
-      e.preventDefault();
-      void addFiles(files, kinds[0] ?? "other");
-    }
-  };
+  // A full strip still listens, so a drop or paste says "That's the most" instead of doing nothing.
+  const { dragging } = usePhotoIntake(zone, { enabled: editable && photos !== undefined, onFiles: (files) => void addFiles(files, kinds[0] ?? "other") });
 
   return (
-    <div className={s.strip} onDragOver={(e) => editable && e.preventDefault()} onDrop={onDrop} onPaste={onPaste}>
+    <div ref={zone} className={s.strip} data-large={large || undefined} data-dragging={dragging || undefined}>
+      {dragging && (
+        <div className={s.dropZone} aria-hidden="true">
+          <Icon name="Image" size={22} />
+          <span className="t-label-l">Drop photos here</span>
+        </div>
+      )}
       <div className={s.row} role="list" aria-label="Photos">
         {(photos ?? []).map((p) => (
           <div key={p.uid} role="listitem">
@@ -164,7 +165,7 @@ export function PhotoStrip({ brewId, beanId, kinds, editable = true }: { brewId?
           </div>
         </CoffeeSheet>
       )}
-      {open && <PhotoViewer photo={open} kinds={kinds} editable={editable} onClose={() => setOpenUid(null)} />}
+      {open && <PhotoViewer photo={open} photos={photos} onShow={setOpenUid} kinds={kinds} editable={editable} onClose={() => setOpenUid(null)} />}
     </div>
   );
 }

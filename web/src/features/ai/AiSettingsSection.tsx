@@ -18,6 +18,7 @@ import { getSnapshot } from "@/data/store";
 import { aiPrefs as aiPrefsStore } from "@/data/settings";
 import { Glyph } from "./glyphs";
 import { keyStore } from "./keyStore";
+import { useRadioGroup } from "./radioGroup";
 import s from "./ai.module.css";
 
 type TestUi = { kind: "idle" } | { kind: "running"; since: number } | { kind: "ok"; modelLabel: string; seconds: string } | { kind: "failed"; error: AiError };
@@ -137,6 +138,14 @@ export function AiSettingsSection({ inSheet = false }: { inSheet?: boolean }) {
     setBaseError(null);
     void aiActions.setProvider(id);
   };
+  const providerRadio = useRadioGroup(
+    st.providers.length,
+    st.providers.findIndex((x) => x.id === st.providerId),
+    (n) => {
+      const next = st.providers[n];
+      if (next) select(next.id);
+    },
+  );
 
   const runTest = async () => {
     // Fresh prefs, not the rendered copy, so a key saved a moment ago is seen.
@@ -210,11 +219,11 @@ export function AiSettingsSection({ inSheet = false }: { inSheet?: boolean }) {
       <EyebrowLabel text="SERVICE" as="h3" />
       <div className={s.gap8} />
       <div className={s.providerList} role="radiogroup" aria-label="AI service">
-        {st.providers.map((prov) => {
+        {st.providers.map((prov, n) => {
           const ps = providerStatus(prov, st);
           const on = prov.id === st.providerId;
           return (
-            <button key={prov.id} type="button" role="radio" aria-checked={on} className={s.providerRow} onClick={() => select(prov.id)}>
+            <button key={prov.id} type="button" role="radio" aria-checked={on} className={s.providerRow} onClick={() => select(prov.id)} {...providerRadio(n)}>
               <span className={s.radioMark} data-on={on} aria-hidden="true" />
               <span className="t-body-l">{prov.name}</span>
               <StatusChip status={ps.status} text={ps.word} />
@@ -348,11 +357,18 @@ function ModelList({ p, st, customModel, setCustomModel, onBrowse }: { p: AiProv
   const choose = (id: string) => void aiActions.setModel(p.id, id);
   const custom = st.model !== "" && !p.models.some((m) => m.id === st.model);
   const def = defaultModel(p);
+  // The custom row, when shown, is the last radio and is already checked.
+  const count = p.models.length + (custom ? 1 : 0);
+  const checked = custom ? p.models.length : p.models.findIndex((m) => m.id === st.model);
+  const radio = useRadioGroup(count, checked, (n) => {
+    const m = p.models[n];
+    if (m) choose(m.id);
+  });
   return (
     <div className={s.stack}>
       <div role="radiogroup" aria-label="Model">
-        {p.models.map((m: AiModel) => (
-          <button key={m.id} type="button" role="radio" aria-checked={st.model === m.id} className={s.modelRow} onClick={() => choose(m.id)}>
+        {p.models.map((m: AiModel, n) => (
+          <button key={m.id} type="button" role="radio" aria-checked={st.model === m.id} className={s.modelRow} onClick={() => choose(m.id)} {...radio(n)}>
             <span className={s.radioMark} data-on={st.model === m.id} aria-hidden="true" />
             <span>
               <span className={`t-body-l ${s.modelTitle}`}>
@@ -366,7 +382,7 @@ function ModelList({ p, st, customModel, setCustomModel, onBrowse }: { p: AiProv
           </button>
         ))}
         {custom && (
-          <button type="button" role="radio" aria-checked className={s.modelRow}>
+          <button type="button" role="radio" aria-checked className={s.modelRow} {...radio(p.models.length)}>
             <span className={s.radioMark} data-on aria-hidden="true" />
             <span>
               <span className="t-body-l">Another model</span>

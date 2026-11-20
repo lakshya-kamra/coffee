@@ -1,10 +1,62 @@
-/* Insights (ports of ui/screens/insights/*.kt). Charts animate transform/opacity once per session. */
+/* Insights (ports of ui/screens/insights/*.kt, v4 §3.9). Charts animate transform/opacity once per
+   session. Layout is container queries on the tab layer (`pane`), never the viewport. */
 
-.cards { display: flex; flex-direction: column; gap: 12px; }
+.page { width: 100%; max-width: var(--column-max); margin: 0 auto; padding: 0 var(--gutter); }
+.dash { display: flex; flex-direction: column; gap: 12px; }
+.dash > * { min-width: 0; }
 .section { content-visibility: auto; contain-intrinsic-size: auto 280px; }
 
-.passCount { display: flex; align-items: baseline; gap: 8px; margin: 12px 0 0; }
+/* Medium: two columns, the passport (the KPI row) and the patterns across the top and bottom. */
+@container pane (min-width: 600px) {
+  .page { max-width: 1040px; }
+  .dash { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  .tPass, .tAi { grid-column: 1 / -1; }
+}
+/* Expanded: the 12-column dashboard (§2.5). Rows align to the tallest tile; tiles keep their own height. */
+@container pane (min-width: 760px) {
+  .page { max-width: 1280px; }
+  .dash { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .tPass { grid-column: span 8; }
+  .tBests { grid-column: span 4; }
+  .tScore, .tGrind { grid-column: span 6; }
+  .tMost, .tCoffees, .tAi { grid-column: span 4; }
+  .dash:not([data-bests]) .tPass { grid-column: 1 / -1; }
+  .dash:not([data-grind]) .tScore, .dash:not([data-scores]) .tGrind { grid-column: 1 / -1; }
+  .dash:not([data-coffees]) .tMost, .dash:not([data-most]) .tCoffees { grid-column: span 8; }
+  .dash:not([data-most]):not([data-coffees]) .tAi { grid-column: 1 / -1; }
+}
+/* Large and up: patterns become a supporting column beside the charts and the rankings. */
+@container pane (min-width: 1100px) {
+  .dash { gap: 24px; }
+  .tPass { grid-column: 1 / span 8; }
+  .tBests { grid-column: 9 / span 4; }
+  .tScore { grid-column: 1 / span 4; }
+  .tGrind { grid-column: 5 / span 4; }
+  .tMost { grid-column: 1 / span 4; }
+  .tCoffees { grid-column: 5 / span 4; }
+  .tAi { grid-column: 9 / span 4; grid-row: 2 / span 2; }
+  .dash:not([data-grind]) .tScore, .dash:not([data-scores]) .tGrind { grid-column: 1 / span 8; }
+  .dash:not([data-coffees]) .tMost, .dash:not([data-most]) .tCoffees { grid-column: 1 / span 8; }
+  .dash:not([data-most]):not([data-coffees]) .tAi { grid-column: 9 / span 4; }
+}
+@container pane (min-width: 1500px) {
+  .page { max-width: 1440px; }
+}
+
+.footer { display: flex; flex-direction: column; }
+@container pane (min-width: 760px) {
+  .footer { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px; align-items: start; }
+}
+
+.emptyRow { display: flex; align-items: flex-start; gap: 14px; }
+.emptyIcon { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--surface2); color: var(--ink-high); }
+.emptyText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.emptyAction { margin-top: 16px; max-width: var(--primary-max); }
+.emptyWrap { margin-bottom: 12px; }
+
+.passCount { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin: 12px 0 0; }
 .passCount > :last-child { margin-left: auto; }
+.passGrid { min-width: 0; }
 .gap16 { height: 16px; }
 .stamps { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 8px; }
 .stamp { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-mid); }
@@ -12,36 +64,63 @@
 
 .bestCup {
   display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-  background: var(--surface2); border-radius: var(--r-well); padding: 16px; margin-top: 12px;
-  transition: transform var(--press-ms) var(--ease-emphasized);
+  background: var(--surface2); border-radius: var(--r-well); padding: 16px; margin-top: 12px; cursor: pointer;
+  transition: transform var(--press-ms) var(--ease-emphasized), background-color 120ms var(--ease-emphasized);
 }
 .bestCup:active { transform: scale(0.98); }
 .bestCup > :first-child { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.records { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); gap: 8px; margin-top: 8px; }
 .record { background: var(--surface2); border-radius: var(--r-well); padding: 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-.cardHead { display: flex; align-items: center; gap: 8px; }
+.cardHead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .cardHead > :first-child { flex: 1; }
+.fromTo { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* ---------------------------------------------------------------- chart interaction (§3.9) */
+.interact { position: absolute; inset: 0; z-index: 1; cursor: crosshair; border-radius: 6px; touch-action: pan-y; }
+.interact:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 4px; }
+/* Plot-wide, so translateX(f * 100%) puts its left edge on the point: transform only while moving. */
+.cross { position: absolute; inset: 0; pointer-events: none; }
+.crossLine { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--ink-mid); }
+.tip {
+  position: absolute; left: 0; top: -6px; z-index: 2; white-space: nowrap; padding: 5px 9px; border-radius: 8px;
+  background: var(--surface3); color: var(--ink-high); box-shadow: 0 2px 10px rgb(0 0 0 / 0.18);
+  transform: translate(-50%, -100%);
+}
+.tip[data-align="start"] { transform: translate(-12px, -100%); }
+.tip[data-align="end"] { transform: translate(calc(-100% + 12px), -100%); }
+.ticks { position: relative; height: 22px; }
+.tick { position: absolute; top: 4px; white-space: nowrap; color: var(--ink-low); transform: translateX(-50%); }
+.tick[data-align="start"] { transform: translateX(-6px); }
+.tick[data-align="end"] { transform: translateX(calc(-100% + 6px)); }
 
 /* ---------------------------------------------------------------- score bars */
-.bars { position: relative; height: 112px; margin-top: 12px; }
-.barsPlot { position: absolute; left: 0; right: 22px; top: 6px; bottom: 16px; display: flex; align-items: flex-end; }
-.gridLine { position: absolute; left: 0; right: 22px; height: 1px; background: var(--hairline); }
-.gridLabel { position: absolute; right: 0; transform: translateY(-50%); color: var(--ink-low); }
+.bars { position: relative; margin: 28px 0 0; }
+.barsArea { position: relative; height: 112px; }
+.barsPlot { position: absolute; left: 0; right: 28px; top: 0; bottom: 0; }
+.barsRow { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.gridLine { position: absolute; left: 0; right: 28px; height: 1px; background: var(--hairline); }
+.gridLabel { position: absolute; right: 0; transform: translateY(-50%); color: var(--ink-low); font-variant-numeric: tabular-nums; }
 .slot { flex: 1; height: 100%; display: flex; justify-content: center; align-items: flex-end; }
 /* Bars grow from the baseline: scaleY on a full-height bar, never height (rule 1). */
 .bar { width: 10px; border-radius: 3px 3px 0 0; transform-origin: bottom; }
 .bar[data-animate="true"] { animation: bar-grow 640ms var(--ease-emphasized) both; }
 @keyframes bar-grow { from { transform: scaleY(0); } }
 .stub { width: 10px; height: 3px; }
-.axisLabels { position: absolute; left: 0; right: 22px; bottom: 0; display: flex; justify-content: space-between; color: var(--ink-low); }
+.ticksRow { margin-right: 28px; }
 
 /* ---------------------------------------------------------------- grind chart */
-.chart { width: 100%; height: auto; display: block; margin-top: 12px; overflow: visible; }
-.chartText { font-size: 10px; font-weight: 700; letter-spacing: 1px; fill: var(--ink-low); }
-.chartValue { font-size: 11px; font-weight: 500; fill: var(--ink-low); font-variant-numeric: tabular-nums; }
+.grind { margin: 28px 0 0; }
+.grindArea { position: relative; }
+.axisWord { position: absolute; left: 0; color: var(--ink-low); letter-spacing: 0.6px; z-index: 0; }
+.band { position: absolute; left: 0; right: 28px; background: color-mix(in srgb, var(--good) 11%, transparent); display: flex; align-items: center; }
+.bandLabel { padding-left: 4px; color: var(--good); }
+.grindPlot { position: absolute; left: 8px; right: 36px; top: 0; bottom: 0; }
+.grindSvg { position: absolute; inset: 0; overflow: visible; }
+.latestLabel { position: absolute; transform: translate(-50%, -85%); color: var(--ink-high); font-weight: 700; white-space: nowrap; pointer-events: none; }
+.grindTicks { margin: 0 36px 0 8px; }
 .point[data-animate="true"] { animation: point-in 420ms var(--ease-decel) both; transform-box: fill-box; transform-origin: center; }
 @keyframes point-in { from { opacity: 0; transform: scale(0.3); } }
 .line[data-animate="true"] { animation: line-in 420ms var(--ease-decel) both; }
@@ -49,7 +128,7 @@
 
 /* ---------------------------------------------------------------- ranked list */
 .ranked { display: flex; flex-direction: column; }
-.rankRow { display: flex; align-items: center; height: 56px; gap: 12px; }
+.rankRow { display: flex; align-items: center; min-height: 56px; gap: 12px; padding: 4px 0; }
 .rankNum { width: 16px; color: var(--ink-low); }
 .rankMain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .rankBar { height: 3px; border-radius: 2px; background: var(--ink-high); opacity: 0.22; margin-top: 4px; transform-origin: left; }
@@ -57,9 +136,26 @@
 .rankValue { font-size: 1.0625rem; line-height: 1.375rem; font-weight: 700; }
 
 .privacy { font-size: 0.8125rem; line-height: 1.1875rem; color: var(--ink-mid); }
-.copyBtn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r-well); color: var(--ink-mid); flex: none; cursor: pointer; }
+.copyBtn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--r-well); color: var(--ink-mid); flex: none; cursor: pointer; }
 .copyBtn:active { transform: scale(0.94); }
 .shareRow { display: flex; align-items: center; gap: 4px; min-height: var(--settings-row-h); padding: 8px 8px 8px 16px; }
-.shareMain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; }
+.shareMain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
 .shareMain:disabled, .copyBtn:disabled { opacity: 0.4; cursor: default; }
 .shareText { display: flex; flex-direction: column; min-width: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .bestCup:hover { background: var(--surface3); }
+  .copyBtn:hover:not(:disabled) { background: var(--surface2); color: var(--ink-high); }
+}
+
+/* ---------------------------------------------------------------- forced colors (A1) */
+@media (forced-colors: active) {
+  .bar, .stub { forced-color-adjust: none; background: CanvasText !important; }
+  .mark { forced-color-adjust: none; fill: CanvasText; }
+  .crossLine { forced-color-adjust: none; background: Highlight; }
+  .tip { border: 1px solid CanvasText; }
+  .interact:focus-visible { outline-color: Highlight; }
+  .band { border-top: 1px dashed CanvasText; border-bottom: 1px dashed CanvasText; }
+  .gridLine { forced-color-adjust: none; background: GrayText; }
+  .bestCup, .record { border: 1px solid CanvasText; }
+}

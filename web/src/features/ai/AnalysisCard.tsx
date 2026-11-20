@@ -103,7 +103,7 @@ export function noKeyLead(host: string, keyHost: string, providerName: string): 
 
 export function AnalysisPanel({ eyebrow, chip, children, id }: { eyebrow: string; chip: ReactNode; children: ReactNode; id?: string }) {
   return (
-    <section id={id} aria-label={eyebrow === "ANALYSIS" ? "Analysis" : "Patterns"}>
+    <section id={id} className={s.panel} aria-label={eyebrow === "ANALYSIS" ? "Analysis" : "Patterns"}>
       <SoftCard>
         <div className={s.panelHead}>
           <Glyph name="spark" size={14} className={s.spark} />

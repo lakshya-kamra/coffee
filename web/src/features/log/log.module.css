@@ -1,33 +1,191 @@
-/* Log, Brew detail and the taste strip (ports of ui/screens/history/*.kt). */
+/* Log, Brew detail, Compare and the taste strip (ports of ui/screens/history/*.kt, v4 §3.7, §3.8).
+   Layout inside the screen is container queries on `pane` (the tab layer, a pane or a detail layer),
+   never the viewport. Animations: background-color, transform and opacity only. */
 
-.dayHead { display: flex; align-items: flex-end; gap: 8px; padding: 20px 0 8px; }
-.dayHead[data-first="true"] { padding-top: 4px; }
-.dayHead > :first-child { flex: 1; }
-.group { display: flex; flex-direction: column; }
+/* ---------------------------------------------------------------- list / table modes */
+.listMode, .tableMode { display: contents; }
+/* XL table view: the table takes the list pane's place, the detail pane is 480 (§3.7). The shell's
+   grid reads --list-pane-w, so overriding it here moves the split without touching the shell. */
+.tableMode { --list-pane-w: calc(100% - 480px); }
+.tableColumn { width: 100%; padding: 0 var(--gutter); }
+.viewToggle { width: 180px; flex: none; }
 
-/* One brew: 68 px, skipped by layout and paint while off screen (rule 9). */
-.row {
-  display: flex; align-items: center; gap: 12px; height: var(--log-row-h); padding: 0 16px;
-  content-visibility: auto; contain-intrinsic-size: auto 68px;
+/* ---------------------------------------------------------------- filters (§4.11) */
+.filters { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 4px; }
+.search {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px;
+  border-radius: var(--r-well); background: var(--surface1); color: var(--ink-mid); cursor: text;
 }
-.rowTime { width: 68px; flex: none; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.search:focus-within { outline: 2px solid var(--ink-high); outline-offset: 2px; }
+.searchInput {
+  flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: var(--ink-high);
+  font: inherit; outline: none;
+}
+.searchInput::placeholder { color: var(--ink-low); }
+.searchInput::-webkit-search-cancel-button { cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.menuChip {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: var(--chip-h);
+  padding: 0 14px; border-radius: var(--r-pill); background: var(--surface2); color: var(--ink-high);
+  border: 1px solid transparent; cursor: pointer; transition: background-color 160ms var(--ease-emphasized);
+  max-width: 100%;
+}
+.menuChip::after { content: ""; position: absolute; inset: -5px 0; }
+.menuChip[data-on="true"] { background: var(--inverse); color: var(--on-inverse); }
+.resultRow { display: flex; align-items: center; gap: 4px 8px; min-height: 40px; flex-wrap: wrap; }
+.resultRow > p { flex: 1; min-width: 0; }
+.sortChip {
+  position: relative; display: inline-flex; align-items: center; min-height: 40px; padding: 0 6px 0 12px;
+  border-radius: var(--r-pill); color: var(--ink-high); cursor: pointer; margin-left: auto;
+}
+.sortChip:focus-visible { outline: 2px solid var(--ink-high); outline-offset: 2px; }
+.summary { color: var(--ink-low); }
+.noResults { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- day groups and rows */
+.dayHead { display: flex; align-items: flex-end; gap: 8px; padding: 20px 0 8px; }
+.dayHead[data-first="true"] { padding-top: 8px; }
+.dayHead > :first-child { flex: 1; }
+.group { display: flex; flex-direction: column; background: var(--surface1); border-radius: var(--r-card); }
+.group > li:first-child .rowWrap, .group > li:first-child .rowBtn { border-top-left-radius: var(--r-card); border-top-right-radius: var(--r-card); }
+.group > li:last-child .rowWrap, .group > li:last-child .rowBtn { border-bottom-left-radius: var(--r-card); border-bottom-right-radius: var(--r-card); }
+.group > li + li .rowWrap::before {
+  content: ""; position: absolute; left: calc(4.25rem + 28px); right: 0; top: 0; height: 1px; background: var(--hairline); pointer-events: none;
+}
+
+.rowWrap { position: relative; display: flex; align-items: stretch; content-visibility: auto; contain-intrinsic-size: auto 68px; }
+.rowBtn {
+  flex: 1; min-width: 0; display: block; text-align: left; color: inherit; cursor: pointer;
+  transition: background-color 120ms var(--ease-emphasized);
+}
+.rowBtn:focus-visible { outline: 2px solid var(--ink-high); outline-offset: -2px; }
+.rowBtn[aria-current="true"] { background: var(--surface3); }
+
+/* One brew: at least 68 px; it grows with its text (A7), never clips it. */
+.row { display: flex; align-items: center; gap: 12px; min-height: var(--log-row-h); padding: 10px 16px; }
+.rowTime { width: 4.25rem; flex: none; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rowTag { letter-spacing: 0.6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rowMeta { display: flex; flex-wrap: wrap; column-gap: 4px; min-width: 0; }
+.nw { white-space: nowrap; }
+.metaBean { flex: 1 1 0; min-width: 4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowWideMeta, .wideCell, .scoreWord { display: none; }
 .rowEnd { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
-.rowScore { font-size: 1.375rem; line-height: 1.625rem; font-weight: 700; letter-spacing: -0.3px; }
-.marks { display: flex; align-items: center; gap: 4px; height: 16px; color: var(--ink-low); }
+.scoreLine { display: flex; align-items: baseline; gap: 8px; }
+.rowScore { font-size: 1.375rem; line-height: 1.625rem; font-weight: 700; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
+.marks { display: flex; align-items: center; gap: 4px; min-height: 16px; color: var(--ink-low); }
 .faultDot { width: 6px; height: 6px; border-radius: 50%; background: var(--fault); }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* The "..." on a row: pointer devices only, shown on hover or focus within (§2.6). Touch has long-press. */
+.rowMore { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .rowBtn:hover { background: var(--surface2); }
+  .rowBtn[aria-current="true"]:hover { background: var(--surface3); }
+  .rowBtn:hover [data-title] { color: var(--ink-high); }
+  .rowMore {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface3); color: var(--ink-high); opacity: 0; cursor: pointer;
+    transition: opacity 120ms var(--ease-emphasized);
+  }
+  .rowWrap:hover .rowMore, .rowWrap:focus-within .rowMore { opacity: 1; }
+  .menuChip:hover { filter: brightness(1.06); }
+}
+
+/* Beside a detail pane the list is a narrow column: tighter rows and day heads so more brews fit. */
+:global([data-panes]) .row { min-height: 54px; padding: 7px 14px; }
+:global([data-panes]) .dayHead { padding: 10px 0 5px; }
+:global([data-panes]) .rowWrap { contain-intrinsic-size: auto 54px; }
+:global([data-panes]) .filters { gap: 8px; }
+
+/* Medium: a wide row spreads out (§3.7 M): time, recipe, coffee, grind, ratio, score as a word + colour.
+   Fixed tracks so the columns line up from row to row; */
+/* rem, so 200% text (A7) falls back to the stacked row instead of squeezing numbers into 68 px. */
+@container pane (min-width: 32.5rem) {
+  .row { display: grid; grid-template-columns: 4rem minmax(0, 1.6fr) minmax(0, 1fr) 4.25rem 3.75rem 7.375rem; gap: 14px; }
+  .rowEnd { justify-self: end; }
+  .rowMeta { display: none; }
+  .rowWideMeta, .wideCell { display: block; }
+  .wideCell { min-width: 0; }
+  .scoreWord { display: inline; letter-spacing: 0.8px; }
+  .group > li + li .rowWrap::before { left: 16px; }
+}
+
 .empty { display: flex; align-items: center; gap: 14px; }
 .emptyArt { width: 64px; height: 64px; flex: none; display: grid; place-items: center; overflow: hidden; }
+.emptyText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.emptyAction { margin-top: 16px; max-width: var(--primary-max); }
+.emptyDetail { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 60vh; text-align: center; }
 .more { display: flex; justify-content: center; padding: 16px 0; }
 
+/* ---------------------------------------------------------------- picker (compare with…) */
+.picker { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+.pickerHead { margin: 14px 0 6px; letter-spacing: 1px; }
+.pickerList { display: flex; flex-direction: column; background: var(--surface2); border-radius: var(--r-well); overflow: hidden; }
+.pickerList > li + li { border-top: 1px solid var(--hairline); }
+.pickerRow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 14px; text-align: left; cursor: pointer; }
+.pickerRow:focus-visible { outline: 2px solid var(--ink-high); outline-offset: -2px; }
+.pickerMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pickerScore { font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+@media (hover: hover) and (pointer: fine) {
+  .pickerRow:hover { background: var(--surface3); }
+}
+
+/* ---------------------------------------------------------------- table (XL) */
+.tableScroll { overflow-x: auto; margin-top: 8px; border-radius: var(--r-card); background: var(--surface1); }
+.table { width: 100%; min-width: 860px; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 0.875rem; line-height: 1.25rem; }
+.table td { overflow: hidden; text-overflow: ellipsis; }
+.cellOne { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.table th { text-align: left; padding: 0; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+.table th[data-num] { text-align: right; }
+.sortBtn {
+  display: inline-flex; align-items: center; gap: 4px; width: 100%; min-height: 44px; padding: 0 12px;
+  color: var(--ink-low); letter-spacing: 1px; cursor: pointer; justify-content: inherit;
+}
+.table th[data-num] .sortBtn { justify-content: flex-end; }
+.sortBtn:focus-visible { outline: 2px solid var(--ink-high); outline-offset: -2px; }
+.sortMark { opacity: 0; font-size: 0.625rem; }
+.sortMark[data-on] { opacity: 1; color: var(--ink-high); }
+.table th[aria-sort="ascending"] .sortBtn, .table th[aria-sort="descending"] .sortBtn { color: var(--ink-high); }
+.table td { padding: 8px 12px; vertical-align: top; border-bottom: 1px solid var(--hairline); color: var(--ink-high); }
+.table tr:last-child td { border-bottom: 0; }
+.table td[data-num] { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cellTop { display: block; }
+.cellWide { overflow-wrap: anywhere; }
+.tableScore { font-weight: 700; font-size: 1rem; }
+.tr { cursor: pointer; transition: background-color 120ms var(--ease-emphasized); }
+.tr:focus-visible { outline: 2px solid var(--ink-high); outline-offset: -2px; }
+.tr[aria-current="true"] { background: var(--surface3); }
+@media (hover: hover) and (pointer: fine) {
+  .tr:hover { background: var(--surface2); }
+  .tr[aria-current="true"]:hover { background: var(--surface3); }
+  .sortBtn:hover { color: var(--ink-high); }
+}
+
 /* ---------------------------------------------------------------- brew detail */
-.page { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+.page {
+  width: 100%; max-width: var(--column-max); margin: 0 auto;
+  padding: 0 var(--gutter) calc(32px + env(safe-area-inset-bottom));
+}
+/* In a pane: no Back (§2.3 rule 7); a quiet close when something is selected, actions on the right. */
+.paneBar {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px;
+  min-height: 60px; padding: 8px 0; background: var(--bg);
+}
+.paneBarActions { margin-left: auto; }
+.actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.wideAction { display: none; }
+.narrowAction { display: inline-flex; }
+@container pane (min-width: 600px) {
+  .wideAction { display: inline-flex; }
+  .narrowAction { display: none; }
+}
 .section { margin-top: 0; }
 .pass { padding: 0; overflow: hidden; }
 .passTop { padding: 18px; display: flex; flex-direction: column; }
-.passHead { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.passHead { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .passHead > :first-child { flex: 1; }
 .passTitle { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; }
 .passTitle > :first-child { flex: 1; min-width: 0; }
@@ -39,14 +197,53 @@
 .bedRow > :last-child { flex: 1; min-width: 0; }
 .quote { border-left: 2px solid var(--ink-faint); padding-left: 10px; font-size: 0.875rem; line-height: 1.25rem; color: var(--ink-mid); white-space: pre-wrap; }
 .notes { font-size: 0.875rem; line-height: 1.25rem; color: var(--ink-high); white-space: pre-wrap; }
-.actions { display: flex; gap: 8px; }
-.dialogBody { display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
-.dialogButtons { display: flex; justify-content: flex-end; gap: 8px; }
 .placeholder { border-radius: var(--r-card); background: var(--surface1); }
+
+/* One column: the two wrappers dissolve and the order classes interleave their blocks the way the
+   phone always showed them. From an 880 pane they are real columns (main + 340 supporting). */
+.layout { display: flex; flex-direction: column; }
+.mainCol, .sideCol { display: contents; }
+.o1 { order: 1; }
+.o3 { order: 3; }
+.o4 { order: 4; }
+.o5 { order: 5; }
+.o6 { order: 6; }
+.o7 { order: 7; }
+.o8 { order: 8; }
+.o9 { order: 9; }
+.analysisSlot { margin-top: 20px; }
+.againSlot { display: flex; flex-direction: column; gap: 6px; margin-top: 24px; max-width: var(--primary-max); }
+@container pane (min-width: 880px) {
+  .page { max-width: var(--detail-max); }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
+  .mainCol, .sideCol { display: flex; flex-direction: column; min-width: 0; }
+  .mainCol > *, .sideCol > * { order: 0; }
+  .sideCol > :first-child > :first-child { margin-top: 0; }
+}
+
+/* ---------------------------------------------------------------- compare */
+.cmpTitle { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+.cmpScroll { border-radius: var(--r-card); background: var(--surface1); overflow: hidden; }
+.cmpTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cmpTable th, .cmpTable td { padding: 12px 10px; vertical-align: top; text-align: left; border-bottom: 1px solid var(--hairline); overflow-wrap: anywhere; }
+.cmpTable tbody tr:last-child th, .cmpTable tbody tr:last-child td { border-bottom: 0; }
+.cmpTable thead td { width: 84px; }
+.cmpTable tbody th { letter-spacing: 1px; padding-top: 15px; }
+.cmpTable tbody td { font-size: 0.9375rem; line-height: 1.375rem; color: var(--ink-high); font-variant-numeric: tabular-nums; }
+.cmpTable tbody tr[data-changed] td:last-child { background: var(--surface2); }
+.cmpHead { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cmpLink { color: var(--ink-high); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 3px; }
+.cmpScore { font-weight: 700; margin-top: 2px; }
+.cmpLong { white-space: pre-wrap; font-size: 0.875rem !important; color: var(--ink-mid) !important; }
+.cmpWord { display: block; margin-top: 4px; color: var(--ink-high); font-weight: 600; }
+@container pane (min-width: 600px) {
+  .cmpTable thead td { width: 140px; }
+  .cmpTable th, .cmpTable td { padding: 12px 16px; }
+}
 
 /* ---------------------------------------------------------------- taste strip */
 .taste { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.tasteCol { display: flex; flex-direction: column; align-items: center; height: 108px; }
+.tasteCol { display: flex; flex-direction: column; align-items: center; min-height: 108px; }
 .tasteValue { font-size: 0.8125rem; line-height: 1.125rem; font-weight: 700; color: var(--ink-high); }
 .tasteTrack { position: relative; width: 10px; height: 56px; margin: 6px 0; border-radius: 5px; background: var(--surface2); overflow: hidden; }
 /* The fill is drawn full and scaled from the bottom: transform only (rule 1). */
@@ -54,3 +251,16 @@
 .tasteFill[data-animate="true"] { animation: taste-grow 520ms var(--ease-emphasized) both; }
 @keyframes taste-grow { from { transform: scaleY(0); } }
 .tasteLabel { letter-spacing: 0.8px; white-space: nowrap; overflow: visible; }
+
+/* ---------------------------------------------------------------- forced colors (A1) */
+@media (forced-colors: active) {
+  .group, .tableScroll, .cmpScroll, .pickerList { border: 1px solid CanvasText; }
+  .rowBtn[aria-current="true"], .tr[aria-current="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .rowBtn[aria-current="true"] *, .tr[aria-current="true"] * { color: HighlightText !important; }
+  .menuChip { border: 1px solid ButtonBorder; }
+  .menuChip[data-on="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .search { border: 1px solid ButtonBorder; }
+  .rowMore { border: 1px solid ButtonBorder; }
+  .cmpTable tbody tr[data-changed] td:last-child { border-left: 2px solid Highlight; }
+  .tasteFill { forced-color-adjust: none; background: CanvasText; }
+}
