@@ -11,7 +11,7 @@
  * Only discrete engine changes render React; the clock, water readout, countdown, ring, journey
  * line and progress strip are frame-loop leaves (rule 4).
  */
-import { m, type MotionValue } from "motion/react";
+import { m } from "motion/react";
 import { memo, useEffect, useMemo, useRef, type ReactNode, type Ref } from "react";
 import { prefersReducedMotion } from "@/app/transitionState";
 import { catalog } from "@/catalog/catalog";
@@ -27,6 +27,7 @@ import { BrewRing, JourneyLine, journeyNodes, useFrame, writeText, type BrewEngi
 import { noScaleText } from "@/domain/core/noScale";
 import { MACHINE_BREWING, stepLead, targetMl } from "./announce";
 import type { BrewEngine, EngineState } from "./engine";
+import type { SeekOffset } from "./glide";
 import type { RunLayout } from "./layout";
 import b from "./brew.module.css";
 
@@ -40,7 +41,8 @@ export interface RunningProps {
   recipe: Recipe;
   engine: BrewEngine;
   st: EngineState;
-  seek: MotionValue<number>;
+  /** The seek glide: drawn minus true elapsed, read every frame by the ring and journey line. */
+  seek: SeekOffset;
   layout: RunLayout;
   finishing: boolean;
   /** Auto-advance is off and the clock has passed the step: the card waits for a tap. */

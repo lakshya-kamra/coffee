@@ -8,12 +8,12 @@
  * The clock digits, countdown, water readout, overrun, ring and journey line are leaves fed by
  * the shared frame loop (rule 4). A reload mid-brew resumes from kv activeBrew (§12.5).
  */
-import { animate } from "motion";
-import { AnimatePresence, m, useMotionValue } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
 import { nav } from "@/app/router";
 import { useShortcuts, type Binding } from "@/app/shortcuts";
 import { showToast } from "@/app/toast";
+import { prefersReducedMotion } from "@/app/transitionState";
 import { useWindowClass } from "@/app/windowClass";
 import { CoffeeMug } from "@/art";
 import { Brewers } from "@/catalog/catalog";
@@ -24,7 +24,7 @@ import { settings as settingsStore } from "@/data/settings";
 import { persistOnce } from "@/data/storage";
 import { getSnapshot, store, useBrew, useRecipe, useSettings } from "@/data/store";
 import { ConfirmSheet, DetailTopBar, QuietButton, SecondaryButton } from "@/design/components";
-import { decel, settle } from "@/design/motion";
+import { decel } from "@/design/motion";
 import { machinePours } from "@/domain/core/brewer";
 import { timeLabel } from "@/domain/core/format";
 import type { Recipe } from "@/domain/core/recipe";
@@ -34,6 +34,7 @@ import { AGAIN_TITLE, againSetup, oneOffRecipe } from "./again";
 import { Announcer, doneAnnouncement, stepAnnouncement, stepLead, TEN_LEFT, tenLeftDue, TIME_FOR_NEXT } from "./announce";
 import { CuePlayer, cueOffsetsSec, vibrateStep } from "./cues";
 import { BrewEngine, type EngineState } from "./engine";
+import { glideSeek, SeekGlide } from "./glide";
 import { runLayoutFor, setupLayoutFor } from "./layout";
 import { RunningPane, type StepCueEvent } from "./RunningPane";
 import { SetupPane, type SetupData } from "./SetupPane";
@@ -200,7 +201,7 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
   const [leaving, setLeaving] = useState(false);
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [cue, setCue] = useState<StepCueEvent | null>(null);
-  const seek = useMotionValue(0);
+  const [seek] = useState(() => new SeekGlide());
   const cues = useRef<CuePlayer | null>(null);
   const lock = useRef<ScreenLock | null>(null);
   const [announcer] = useState(() => new Announcer());
@@ -330,11 +331,8 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
 
   // ------------------------------------------------------------ actions
   const seekBy = (fn: () => void) => {
-    const before = engine.elapsedMs() + seek.get();
-    fn();
-    // The digits snap; the ring glides from where it was drawn.
-    seek.set(before - engine.elapsedMs());
-    animate(seek, 0, settle);
+    // The digits snap; the ring and journey line glide on from where they were drawn (glide.ts).
+    glideSeek(engine, seek, fn, prefersReducedMotion());
   };
 
   const start = () => {

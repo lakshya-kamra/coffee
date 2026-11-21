@@ -5,7 +5,7 @@
  * gradients and colours are built once per size or colour change (Compose's drawWithCache rule);
  * a frame allocates nothing but the wave path's points. No React render happens per frame.
  */
-import { animate, type MotionValue } from "motion";
+import { animate } from "motion";
 import { memo, useEffect, useRef, type ReactNode } from "react";
 import { prefersReducedMotion } from "@/app/transitionState";
 import { heavy } from "@/design/motion";
@@ -53,7 +53,7 @@ export const BrewRing = memo(function BrewRing({
   /** Fractions of the total where each step ends (stepBoundaries). */
   boundaries: readonly number[];
   /** How far the ring is drawn ahead of or behind the clock: a seek snaps the digits but glides the arc. */
-  seek?: MotionValue<number>;
+  seek?: { get(): number };
   pouring?: boolean;
   running?: boolean;
   trackColor?: string;
