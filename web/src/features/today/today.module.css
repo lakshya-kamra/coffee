@@ -114,8 +114,9 @@
 .passOpen:active { transform: scale(0.985); }
 .passEyebrow { display: block; margin-bottom: 2px; }
 .passBody { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 0; }
-/* The primary button never spans a wide window (§2.5): capped and at the end. */
-.passCta { display: flex; justify-content: flex-end; padding: 16px 18px 18px; }
+/* The primary button never spans a wide window (§2.5): capped at --primary-max (full width on a
+   phone) and centred in its card, Start brew and Start my first brew alike. */
+.passCta { display: flex; justify-content: center; padding: 16px 18px 18px; }
 .passCta > button { max-width: var(--primary-max); }
 button.inverse { background: var(--inverse); color: var(--on-inverse); }
 @media (hover: hover) and (pointer: fine) {
