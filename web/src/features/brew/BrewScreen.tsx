@@ -258,17 +258,20 @@ function BrewSession({ recipe: base, resume, again, oneOff }: { recipe: Recipe; 
 
   // Cues on a step change: one buzz, one announcement, the flash and the banner (§3.5, A4).
   const hapticsOn = settings.haptics;
-  useEffect(
-    () =>
-      engine.onStep((i) => {
-        if (hapticsOn) vibrateStep();
-        const steps = stepsInUnit(engine.getRecipe().steps, unitRef.current);
-        announcer.say(stepAnnouncement(steps, i, scaleRef.current, machinePours(engine.getRecipe().brewer)));
-        const s = steps[i];
-        if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `NEXT STEP · ${stepLead(s, scaleRef.current, machinePours(engine.getRecipe().brewer))}` }));
-      }),
-    [engine, hapticsOn, announcer],
-  );
+  useEffect(() => {
+    // A -5 s seek can land in an earlier step; that banner must not call it the next one.
+    let last = engine.state.stepIndex;
+    return engine.onStep((i) => {
+      const back = i < last;
+      last = i;
+      if (hapticsOn) vibrateStep();
+      const steps = stepsInUnit(engine.getRecipe().steps, unitRef.current);
+      announcer.say(stepAnnouncement(steps, i, scaleRef.current, machinePours(engine.getRecipe().brewer)));
+      const s = steps[i];
+      const label = back ? "BACK TO" : "NEXT STEP";
+      if (s) setCue((c) => ({ serial: (c?.serial ?? 0) + 1, text: `${label} · ${stepLead(s, scaleRef.current, machinePours(engine.getRecipe().brewer))}` }));
+    });
+  }, [engine, hapticsOn, announcer]);
   // The other two moments A4 names: auto-advance off reaching a boundary, and the end.
   useEffect(() => {
     let prev = engine.state;
