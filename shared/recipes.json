@@ -26,6 +26,11 @@
           "note": "Written-up version of the video: 30 g / 500 g, 60 g bloom, 300 g by 1:15, 500 g by 1:45."
         }
       ],
+      "video": {
+        "youtubeId": "AI4ynXzkSQo",
+        "title": "The Ultimate V60 Technique",
+        "channel": "James Hoffmann"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -118,6 +123,11 @@
           "note": "Interview with Kasuya; a later variant times the last two pours at 2:10 and 2:40."
         }
       ],
+      "video": {
+        "youtubeId": "wmCW8xSWGZY",
+        "title": "A Coffee Brewing Theory \"4:6 method\" Invented by Tetsu Kasuya_ World Brewers Cup 2016 Champion",
+        "channel": "HARIO Official Channel"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -212,6 +222,11 @@
           "note": "Aggregator write-up of the video's numbers."
         }
       ],
+      "video": {
+        "youtubeId": "st571DYYTR8",
+        "title": "The Ultimate French Press Technique",
+        "channel": "James Hoffmann"
+      },
       "level": "easy",
       "needs": [
         "grinder"
@@ -301,6 +316,11 @@
           "note": "Written summary in the video description."
         }
       ],
+      "video": {
+        "youtubeId": "j6VlT_jUVPc",
+        "title": "The Ultimate AeroPress Technique (Episode #3)",
+        "channel": "James Hoffmann"
+      },
       "level": "easy",
       "needs": [
         "grinder"
@@ -467,6 +487,11 @@
           "note": "A one-pour 22 g V60 with no water weight or temperature given."
         }
       ],
+      "video": {
+        "youtubeId": "c0Qe_ASxfNM",
+        "title": "(old) V60 Method. See new manual pourover video for current method!",
+        "channel": "Scott"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -599,6 +624,11 @@
           "note": "2012 Hario V60 video. No written recipe."
         }
       ],
+      "video": {
+        "youtubeId": "MPDfn--vxK8",
+        "title": "Hario V60 Pour Over Method - by Matt Perger",
+        "channel": "Matt Perger"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -752,6 +782,11 @@
           "note": "His general pour-over method: 65 g per litre."
         }
       ],
+      "video": {
+        "youtubeId": "XQRndZ_W7mE",
+        "title": "How to make Pourover/Filter Coffee w/ Tim Wendelboe",
+        "channel": "Tim Wendelboe"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -906,6 +941,11 @@
           "note": "'How I ACTUALLY Make Coffee At Home', pour-over chapter at 6:32. No written recipe."
         }
       ],
+      "video": {
+        "youtubeId": "oiHdMqQ9UV0",
+        "title": "How I ACTUALLY Make Coffee At Home",
+        "channel": "Morgan Eckroth"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -1066,6 +1106,11 @@
           "note": "Ultimate Moka Pot Technique. The description has no written recipe."
         }
       ],
+      "video": {
+        "youtubeId": "BfDLoIvb0w4",
+        "title": "The Ultimate Moka Pot Technique (Episode #3)",
+        "channel": "James Hoffmann"
+      },
       "level": "easy",
       "needs": [],
       "prep": [
@@ -1124,6 +1169,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "1oB1oDrDkHM",
+        "title": "A Better 1 Cup V60 Technique",
+        "channel": "James Hoffmann"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -1219,6 +1269,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "8uGGeV8A-BM",
+        "title": "Immersion Iced Coffee: A Better & Easier Technique",
+        "channel": "James Hoffmann"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -1303,6 +1358,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "AB0QLjroFss",
+        "title": "Everything I Learned About Cold Brew Coffee",
+        "channel": "James Hoffmann"
+      },
       "level": "easy",
       "needs": [
         "grinder"
@@ -1377,6 +1437,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "gC8K40kZ_6E",
+        "title": "【もう戻れない】このレシピは「神」か「悪魔」か？｜どんな豆も簡単に美味しくなる究極系。",
+        "channel": "TETSU KASUYA World Brewers Cup Champion"
+      },
       "level": "advanced",
       "needs": [
         "scale",
@@ -1457,6 +1522,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "3euEkTBxtEk",
+        "title": "Easy Hario Switch Recipe from World Brewers Cup Champion (Emi Fukahori, MAME Coffee)",
+        "channel": "European Coffee Trip"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -1598,6 +1668,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "YIC-2nFQ7vM",
+        "title": "[HARIO]  V60 Five-Pour Recipe - Matt Winton (World Brewers Cup Champion)",
+        "channel": "HARIO Official Channel"
+      },
       "level": "advanced",
       "needs": [
         "scale",
@@ -1690,6 +1765,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "ZiSL3NmIcqs",
+        "title": "Carlos Medina, Chile — 2023 World Brewers Cup: Round One",
+        "channel": "World Coffee Championships"
+      },
       "level": "advanced",
       "needs": [
         "scale",
@@ -1782,6 +1862,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "sTroaHo5zsk",
+        "title": "Shih Yuan Hsu Sherry, Chinese Taipei - 2022 World Brewers Cup Finals",
+        "channel": "World Coffee Championships"
+      },
       "level": "advanced",
       "needs": [
         "scale",
@@ -1860,6 +1945,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "fi5MZE-4HDQ",
+        "title": "Coffee with April Episode 77: World Brewers Cup Recipe - Final Round - Patrik Rolf",
+        "channel": "Coffee with April"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -2157,6 +2247,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "CJpLMpAfN8Q",
+        "title": "aeropress brew",
+        "channel": "JGagne"
+      },
       "level": "medium",
       "needs": [
         "grinder"
@@ -2337,6 +2432,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "ggCK_oOS_08",
+        "title": "How to use an Aeropress w/ Tim Wendelboe",
+        "channel": "Tim Wendelboe"
+      },
       "level": "easy",
       "needs": [
         "grinder"
@@ -2417,6 +2517,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "8gXuo8c_bNI",
+        "title": "How to make French Press Coffee & Kokekaffe w/ Tim Wendelboe",
+        "channel": "Tim Wendelboe"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -2519,6 +2624,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "XQRndZ_W7mE",
+        "title": "How to make Pourover/Filter Coffee w/ Tim Wendelboe",
+        "channel": "Tim Wendelboe"
+      },
       "level": "medium",
       "needs": [
         "scale",
@@ -2666,6 +2776,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "4ps8eLnSU50",
+        "title": "Onyx Coffee Lab - The French Press",
+        "channel": "Onyx Coffee Lab"
+      },
       "level": "easy",
       "needs": [
         "grinder"
@@ -3489,6 +3604,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "NVcgSBJFhgM",
+        "title": "How To Make AeroPress Coffee - The Winning AeroPress Recipe 2017",
+        "channel": "European Coffee Trip"
+      },
       "level": "advanced",
       "needs": [
         "scale",
@@ -3566,6 +3686,11 @@
           "note": ""
         }
       ],
+      "video": {
+        "youtubeId": "CafyJ2p0Bgs",
+        "title": "A Very Good Aeropress Recipe, Maybe the Best",
+        "channel": "Lance Hedrick"
+      },
       "level": "medium",
       "needs": [
         "grinder",

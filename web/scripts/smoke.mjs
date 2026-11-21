@@ -1052,6 +1052,13 @@ const FLOWS = [
         }
         // On Recipes now: open a card (the header flies to the detail), then Back.
         for (let i = 0; i < 3; i++) {
+          // Cards with a video row are taller, so the third card's header can sit under the bar:
+          // bring it on screen first (unmeasured, before the span starts).
+          await cards.nth(i).evaluate((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.top < 0 || r.top + 80 > innerHeight - 120) el.scrollIntoView({ block: "center" });
+          });
+          await settle(page, 300);
           const box = await cards.nth(i).boundingBox();
           if (!box) throw new Error("perf: recipe card has no box");
           await span("recipe open", () => page.mouse.click(box.x + box.width / 2, box.y + 40), 1000);

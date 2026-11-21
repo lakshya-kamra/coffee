@@ -31,6 +31,7 @@ import { brewRecipe, useBrewNext } from "@/features/today/brewNext";
 import { noRecipeLine } from "@/features/today/firstBrewCard";
 import { nextRecipe, RECENT_WINDOW } from "@/features/today/homeModel";
 import { RecipeCard } from "@/viz";
+import { RecipeRowThumb, videoOf } from "@/viz/RecipeCardVideo";
 import { brewerPlainName } from "./needs";
 import { RecipeDetailScreen } from "./RecipeDetailScreen";
 import { RECIPE_SORTS, brewersIn, filterRecipes, headerEyebrow, isMine, myBrewersOn, ownedFamilies, recipeStats, sortRecipes, type RecipeSort } from "./recipeFilters";
@@ -407,7 +408,10 @@ function RecipeList({ next }: { next: Recipe | null }) {
   );
 }
 
-/** One compact row (~76 px): who, which brewer, the numbers; the "..." menu on hover. */
+/**
+ * One compact row (~76 px): who, which brewer, the numbers; the "..." menu on hover. A recipe with
+ * its expert's video shows the video's picture in the icon slot (the brewer is named under the name).
+ */
 function RecipeRow({
   recipe,
   hasScale,
@@ -425,6 +429,7 @@ function RecipeRow({
   onContextMenu: (e: MouseEvent<HTMLElement>) => void;
   onMore: (el: HTMLElement) => void;
 }) {
+  const video = videoOf(recipe);
   return (
     <li className={`interactive-row ${r.rowItem}`} aria-current={current || undefined} onContextMenu={onContextMenu}>
       <button
@@ -444,9 +449,7 @@ function RecipeRow({
           itemProps.onKeyDown(e);
         }}
       >
-        <span className={r.rowIcon}>
-          <BrewerIcon brewer={recipe.brewer} size={22} decorative />
-        </span>
+        <span className={r.rowIcon}>{video ? <RecipeRowThumb video={video} /> : <BrewerIcon brewer={recipe.brewer} size={22} decorative />}</span>
         <span className={r.rowMain}>
           <span className={`t-title-m ${r.rowName}`} data-title="">
             <span className={r.rowDot} style={{ background: accentCss(recipe.accent) }} aria-hidden="true" />

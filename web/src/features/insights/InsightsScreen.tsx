@@ -67,10 +67,10 @@ export function privacyCopy(service: { name: string; host: string } | null): str
   const lead =
     "Coffee on the web is a set of files served by Vercel. Once loaded it runs in your browser and keeps everything here, in this browser's storage; Vercel sees requests for those files like any website.";
   if (!service) {
-    return `${lead} It goes online only to load or update itself. No AI service is set up, so nothing you log leaves this browser. Photos are re-saved without location or camera details and leave this browser only in a backup you save. Backups never include your key.`;
+    return `${lead} Recipe pictures load from YouTube's image server, which sees those requests like any website. Otherwise it goes online only to load or update itself. No AI service is set up, so nothing you log leaves this browser. Photos are re-saved without location or camera details and leave this browser only in a backup you save. Backups never include your key.`;
   }
   return (
-    `${lead} It goes online only to load or update itself, and when you tap a button that runs an analysis, tests a connection or lists models — and then only to ${service.name} at ${service.host}, the service you chose in Gear › App › AI analysis. ` +
+    `${lead} Recipe pictures load from YouTube's image server, which sees those requests like any website. Otherwise it goes online only to load or update itself, and when you tap a button that runs an analysis, tests a connection or lists models — and then only to ${service.name} at ${service.host}, the service you chose in Gear › App › AI analysis. ` +
     "An analysis sends the brews it reads — recipe, coffee details, grinder and its scale, brewer, water, times, bed, taste and your notes — and, if the model can see images and you left them ticked, up to 3 photos of that brew. " +
     "Photos are re-saved without location or camera details and leave this browser only in an analysis or a backup you save. Backups never include your key."
   );

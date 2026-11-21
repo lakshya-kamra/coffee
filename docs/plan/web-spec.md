@@ -1069,7 +1069,8 @@ heuristic).
 
 "Coffee on the web is a set of files served by Vercel. Once loaded it runs in your browser and
 keeps everything here, in this browser's storage; Vercel sees requests for those files like any
-website. It goes online only to load or update itself, and when you tap a button that runs an
+website. Recipe pictures load from YouTube's image server, which sees those requests like any
+website. Otherwise it goes online only to load or update itself, and when you tap a button that runs an
 analysis, tests a connection or lists models — and then only to {provider} at {host}, the
 service you chose in Gear › App › AI analysis. An analysis sends the brews it reads — recipe,
 coffee details, grinder and its scale, brewer, water, times, bed, taste and your notes — and, if
@@ -1173,7 +1174,7 @@ string staying untouched; re-import is a no-op (fake-indexeddb).
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; frame-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'" },
+        { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data: https://i.ytimg.com; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; frame-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'" },
         { "key": "Referrer-Policy", "value": "no-referrer" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), bluetooth=(), midi=(), display-capture=(), browsing-topics=(), screen-wake-lock=(self), fullscreen=(self)" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
@@ -1188,7 +1189,9 @@ string staying untouched; re-import is a no-op (fake-indexeddb).
   ]
 }
 ```
-- **CSP.** No `'unsafe-inline'`, no `'unsafe-eval'`, nothing third-party. `connect-src` is `https:`
+- **CSP.** No `'unsafe-inline'`, no `'unsafe-eval'`, no third-party code. The one third-party
+  source is `img-src https://i.ytimg.com`: the cover pictures of the recipes' YouTube videos
+  (shared/recipes.json `video`), plain images, never cached by the service worker. `connect-src` is `https:`
   (any AI provider the user chooses, from the browser) plus `http://localhost:*` and
   `http://127.0.0.1:*` for Ollama / LM Studio. The brief asked for https-only; the two loopback
   sources are a deliberate addition so "whatever LLM they're using" includes local models — they

@@ -22,6 +22,8 @@ import { useSettings } from "@/data/store";
 import { InfoGrid } from "./InfoGrid";
 import { RouteRow } from "./JourneyLine";
 import { pourNodes } from "./journey";
+import { RecipeCardThumb, videoOf } from "./RecipeCardVideo";
+import cv from "./recipeCardVideo.module.css";
 import v from "./viz.module.css";
 
 const HEADER_RADII = { borderTopLeftRadius: 22, borderTopRightRadius: 22, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } as const;
@@ -111,14 +113,28 @@ export function RecipeRoute({ recipe, numeral = "num-large", hasScale = true }: 
   );
 }
 
+const VIDEO_BODY_SIZE = { containIntrinsicBlockSize: "auto 210px" } as const;
+
 function CardBody({ recipe, compact, units, hasScale }: { recipe: Recipe; compact: boolean; units: Units; hasScale: boolean }) {
+  // The expert's own video, when the recipe has one: a small picture, never part of the flight.
+  const video = videoOf(recipe);
   return (
-    <span className={v.cardBody}>
+    // A full card's video row adds ~61 px: the size it is laid out at before it is first painted says so.
+    <span className={v.cardBody} style={video && !compact ? VIDEO_BODY_SIZE : undefined}>
       <RecipeRoute recipe={recipe} numeral={compact ? "num-small" : "num-medium"} hasScale={hasScale} />
       {compact ? (
-        <span className={`t-body-s ink-mid ${v.ellipsis} ${v.cardMeta}`}>
-          {clock(totalSec(recipe))} · {tempLabel(units, recipe.tempC)}
-        </span>
+        video ? (
+          <span className={`${v.cardMeta} ${cv.metaRow}`}>
+            <span className={`t-body-s ink-mid ${v.ellipsis}`}>
+              {clock(totalSec(recipe))} · {tempLabel(units, recipe.tempC)}
+            </span>
+            <RecipeCardThumb video={video} compact />
+          </span>
+        ) : (
+          <span className={`t-body-s ink-mid ${v.ellipsis} ${v.cardMeta}`}>
+            {clock(totalSec(recipe))} · {tempLabel(units, recipe.tempC)}
+          </span>
+        )
       ) : (
         <span className={v.cardGrid}>
           <InfoGrid
@@ -132,6 +148,7 @@ function CardBody({ recipe, compact, units, hasScale }: { recipe: Recipe; compac
           />
         </span>
       )}
+      {!compact && video && <RecipeCardThumb video={video} compact={false} />}
     </span>
   );
 }

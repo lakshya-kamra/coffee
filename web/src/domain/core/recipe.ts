@@ -5,6 +5,7 @@
  */
 import type { Brewer } from "./brewer";
 import { oneDp, roundToInt } from "./format";
+import { decodeRecipeVideo, type RecipeVideo } from "./recipeVideo";
 
 export const STEP_KINDS = ["Prep", "Bloom", "Pour", "Swirl", "Stir", "Steep", "Press", "Drawdown", "Serve"] as const;
 export type StepKind = (typeof STEP_KINDS)[number];
@@ -63,6 +64,11 @@ export interface Recipe {
    * and "{water}" are filled in by noScalePrep.
    */
   readonly prepNoScale: readonly string[];
+  /**
+   * Built-ins only: the expert's own video of this recipe (shared/recipes.json). Absent when there
+   * is none. Not written by encodeRecipe: saved recipes and backups never carry it.
+   */
+  readonly video?: RecipeVideo;
 }
 
 /** The JSON shape in shared/recipes.json and in saved recipes (schema/recipes.md). */
@@ -88,6 +94,7 @@ export interface RecipeJson {
   level?: RecipeLevel;
   needs?: RecipeNeed[];
   prepNoScale?: string[];
+  video?: { youtubeId: string; title?: string; channel?: string };
 }
 
 export function stepDurationSec(s: RecipeStep): number {
@@ -255,6 +262,7 @@ export function decodeRecipe(raw: unknown, resolveBrewer: (s: string) => Brewer,
         .map((x) => ({ who: str(x.who), url: str(x.url), note: str(x.note) }))
         .filter((x) => x.who !== "")
     : [];
+  const video = decodeRecipeVideo(o.video);
   return {
     ok: true,
     value: Object.freeze({
@@ -279,6 +287,7 @@ export function decodeRecipe(raw: unknown, resolveBrewer: (s: string) => Brewer,
       level: (RECIPE_LEVELS as readonly string[]).includes(str(o.level)) ? (str(o.level) as RecipeLevel) : "",
       needs: RECIPE_NEEDS.filter((n) => strList(o.needs).includes(n)),
       prepNoScale: strList(o.prepNoScale),
+      ...(video ? { video } : {}),
     }),
   };
 }

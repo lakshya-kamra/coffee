@@ -155,7 +155,8 @@
   padding: 10px 8px 10px var(--gutter);
   text-align: left;
 }
-.rowIcon { flex: none; display: inline-flex; color: var(--ink-mid); }
+/* 44 wide for every row, so names line up whether the slot holds the brewer or a video's picture. */
+.rowIcon { flex: none; width: 44px; display: inline-flex; justify-content: center; color: var(--ink-mid); }
 /* A 7rem floor (it scales with text size): at 200% text in a 360 px pane the numbers drop to
    their own line instead of squeezing the name to a letter per line. */
 .rowMain { flex: 1 1 7rem; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -223,6 +224,11 @@
 .noScaleSide { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .noScaleArrow { padding-top: 22px; font-size: 1.25rem; }
 
+/* The expert's video (RecipeCardVideo): under the numbers in one column, atop the method in two. */
+.videoSide { margin-top: 12px; }
+.videoMain { max-width: 640px; }
+.layout .videoMain { display: none; }
+
 @container pane (min-width: 880px) {
   .detail.detail { max-width: var(--detail-max); }
   .layout {
@@ -242,6 +248,8 @@
   .fidelity { margin-top: 0; }
   .detail .sticky { display: none; }
   .placeholder { grid-column: 1 / -1; }
+  .layout .videoSide { display: none; }
+  .layout .videoMain { display: block; margin: 0 0 4px; }
 }
 
 .gap12 { margin-top: 12px; }

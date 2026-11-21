@@ -50,6 +50,7 @@ import { renderTemps, stepsInUnit, temp, tempUnit, unitsOf } from "@/domain/core
 import { GrindRangeCard, useGrindScale } from "@/features/grind";
 import { brewRecipe } from "@/features/today/brewNext";
 import { ConfirmSheet, JourneyLine, RecipeHeader, RecipeRoute, TimelineCard, journeyNodes, plannedTimelineRows } from "@/viz";
+import { RecipeVideoCard, videoOf } from "@/viz/RecipeCardVideo";
 import { needItems } from "./needs";
 import { StatGrid } from "./StatGrid";
 import r from "./recipes.module.css";
@@ -204,6 +205,11 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
     ...(!builtIn ? [{ key: "delete", title: "Delete recipe", icon: "Delete" as const, danger: true, run: () => setConfirm("delete") }] : []),
   ];
   const noScale = !settings.hasScale ? noScaleAmounts(shown.doseG, shown.waterG, method) : null;
+  // The expert's own video. It mounts with the body, so after the header's flight has landed.
+  // One column: under the numbers; two columns: at the top of the method (the numbers column is
+  // sticky and must stay short). Only one of the two is displayed, and a lazy picture that is not
+  // displayed is never fetched.
+  const video = videoOf(recipe);
 
   return (
     <>
@@ -247,6 +253,8 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
             />
           </div>
         )}
+
+        {video && <RecipeVideoCard video={video} className={r.videoSide} />}
 
         <SectionLabel text="MAKE MORE OR LESS" />
         <SoftCard>
@@ -304,6 +312,7 @@ function Body({ recipe, shown, amount, setAmount, onDeleted, fade }: { recipe: R
       </m.aside>
 
       <m.div className={r.main} initial={fade ? FADE_FROM : false} animate={FADE_TO} transition={FADE_TIMING}>
+        {video && <RecipeVideoCard video={video} className={r.videoMain} />}
         <div className={r.fidelity}>
           {FIDELITY_TERMS.has(recipe.fidelity) && recipe.isBuiltIn ? (
             <Term id={recipe.fidelity} chip>
